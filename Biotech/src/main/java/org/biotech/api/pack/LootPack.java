@@ -62,7 +62,6 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
                     // 使用 JSON 中定义的 identify 作为 key
                     ResourceLocation tableId = table.getIdentify();
                     tables.put(tableId, table);
-                    Biotech.LOGGER.debug("Loaded loot table: {}", tableId);
                 }
 
             } catch (IOException e) {

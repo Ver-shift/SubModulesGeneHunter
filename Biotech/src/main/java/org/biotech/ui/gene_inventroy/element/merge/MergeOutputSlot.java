@@ -24,7 +24,6 @@ import org.biotech.ui.BiotechTexture;
 import org.biotech.ui.IScalable;
 import org.biotech.ui.animation.IBaseAnimation;
 import org.biotech.ui.animation.ShowyAnimation;
-import org.biotech.util.TodoDebugLog;
 import org.lwjgl.opengl.GL11;
 
 
@@ -174,9 +173,6 @@ public class MergeOutputSlot extends UIElement implements IScalable {
                 event.hasHandler = true;
 
                 // 客户端只发请求，服务端执行真正的 merge 逻辑。
-                var mergeData = BiotechAPI.getGeneData(player).getMergeData();
-                TodoDebugLog.info("merge_output_click", () -> "send MergePacket with cachedOutput="
-                        + mergeData.getCachedOutputXeneCount() + ", traits=" + mergeData.getCachedTraitCount()); // TODO: remove after debug
                 PacketDistributor.sendToServer(new MergePacket());
             }
         };

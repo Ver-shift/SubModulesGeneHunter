@@ -11,7 +11,6 @@ import org.biotech.api.init.ItemInit;
 import org.biotech.api.system.merge.core.IMergeManager;
 import org.biotech.api.system.trait.core.ITraitProvider;
 import org.biotech.item.GeneItem;
-import org.biotech.util.TodoDebugLog;
 
 /**
  * 合并管理器实现 - 玩家身上的概率合并系统
@@ -65,11 +64,6 @@ public class MergeManager implements IMergeManager {
         mergeData.setCachedGeneItemCount(geneItemCount);
         mergeData.setSlotDataCacheReady(true);
 
-        TodoDebugLog.info("merge_cache", "updated: traits=" + totalTraitCount
-                + ", perGene=" + perGene
-                + ", output=" + outputCount
-                + ", geneItems=" + geneItemCount);
-
         var outputSlots = mergeData.getOutputSlots();
         if (outputCount <= 0) {
             outputSlots.setStackInSlot(0, ItemStack.EMPTY);
@@ -113,7 +107,6 @@ public class MergeManager implements IMergeManager {
     public void merge() {
         ServerPlayer player = data.getPlayer();
         if (player == null) {
-            TodoDebugLog.warn("merge_flow", () -> "abort: player is null");
             return;
         }
 
@@ -121,13 +114,11 @@ public class MergeManager implements IMergeManager {
 
         int totalTraitCount = traitCount();
         if (totalTraitCount <= 0) {
-            TodoDebugLog.info("merge_flow", () -> "abort: totalTraitCount<=0");
             return;
         }
 
         int rawOutput = outputXeneCount(totalTraitCount);
         if (rawOutput <= 0) {
-            TodoDebugLog.info("merge_flow", () -> "abort: rawOutput<=0, traits=" + totalTraitCount);
             return;
         }
 
@@ -135,7 +126,6 @@ public class MergeManager implements IMergeManager {
         int maxByInputGene = availableGeneCount / 3;
         int actualOutput = Math.min(rawOutput, maxByInputGene);
         if (actualOutput <= 0) {
-            TodoDebugLog.info("merge_flow", () -> "abort: actualOutput<=0, raw=" + rawOutput + ", maxByInputGene=" + maxByInputGene);
             return;
         }
 
@@ -146,14 +136,8 @@ public class MergeManager implements IMergeManager {
         Rarity rarity = resolveOutputRarity(averageTraitPerGene);
         var rewardItem = getRewardItemByRarity(rarity);
         if (!(rewardItem instanceof IUnidentifiedGeneItem unidentifiedGeneItem)) {
-            TodoDebugLog.warn("merge_flow", () -> "abort: reward item is not IUnidentifiedGeneItem");
             return;
         }
-
-        TodoDebugLog.info("merge_flow", () -> "execute: output=" + actualOutput
-                + ", consume=" + (actualOutput * 3)
-                + ", rarity=" + rarity
-                + ", avg=" + averageTraitPerGene);
 
         for (int i = 0; i < actualOutput; i++) {
             unidentifiedGeneItem.use(player, rarity);
@@ -170,7 +154,6 @@ public class MergeManager implements IMergeManager {
                 0.6F,
                 IUnidentifiedGeneItem.getSoundPitchFromRarity(rarity)
         );
-        TodoDebugLog.info("merge_flow", () -> "done: output granted=" + actualOutput);
     }
 
 

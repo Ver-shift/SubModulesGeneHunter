@@ -12,7 +12,5 @@ public class ModPackInit {
     @SubscribeEvent
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new LootPack());
-        Biotech.LOGGER.debug("Registered GeneLootTable data pack listener");
-
     }
 }

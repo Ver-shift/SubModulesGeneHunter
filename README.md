@@ -31,7 +31,38 @@
 3. 发版从 `main` 切 `version/*` 分支。
 4. 线上修复优先在 `version/*` 处理，再同步回 `main`。
 
-## 依赖管理约定
+## 依赖管理约定（详细去重方案）
 
-- 各模块依赖由各模块自行维护（例如 `Beyond` 的依赖写在 `Beyond/build.gradle`，`Biotech` 的依赖写在 `Biotech/build.gradle`）。
-- 暂不做全局统一依赖收敛，冲突按实际问题再处理。
+### 1) 仓库去重（根项目统一）
+
+- 所有仓库地址统一在根 `build.gradle` 的 `allprojects.repositories` 声明。
+- 子模块默认不重复写 `repositories`，防止遗漏导致传递依赖解析失败。
+
+### 2) 版本去重（根配置集中，直接引用）
+
+- 在根 `gradle.properties` 里维护共享依赖版本（可直接复制）：
+
+```ini
+# 共享依赖版本（模块可直接引用，避免重复维护）
+dep_ldlib2_version=2.2.5
+dep_curios_version=9.5.1+1.21.1
+dep_jetbrains_annotations_version=24.1.0
+```
+
+- 子模块里直接引用，不使用额外公式变量，例如 `Biotech/build.gradle`：
+
+```groovy
+implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${dep_ldlib2_version}:all")
+implementation("top.theillusivec4.curios:curios-neoforge:${dep_curios_version}")
+compileOnly("org.jetbrains:annotations:${dep_jetbrains_annotations_version}")
+```
+
+### 3) 坐标归属（模块独立）
+
+- 依赖坐标仍写在各模块 `build.gradle`（谁用谁声明）。
+- 示例：`Biotech` 依赖仍在 `Biotech/build.gradle`，只是版本由根共享配置提供。
+
+### 4) 覆盖策略（尽量少用）
+
+- 默认：模块直接使用根共享版本。
+- 仅在临时验证新版本时，才在模块内单独改版本；验证后尽量回收为共享版本。

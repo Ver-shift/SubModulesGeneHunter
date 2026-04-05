@@ -9,16 +9,7 @@ plugins {
 version = mod_version
 group = mod_group_id
 def common = project(":GalaxyLib")
-repositories {
-    mavenLocal()
-    // Biotech 专用依赖仓库：LDLib
-    maven { url = "https://maven.firstdark.dev/snapshots" }
-    // Biotech 专用依赖仓库：Curios
-    maven {
-        name = "Curios"
-        url = uri("https://maven.theillusivec4.top/")
-    }
-}
+// 仓库由根项目 build.gradle 统一下发，这里不再重复声明
 
 base {
     archivesName = mod_id
@@ -78,10 +69,10 @@ dependencies {
         // jarJar(common)
     }
 
-    // Biotech 模块独立依赖：不再放入 GalaxyLib 统一管理
-    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${ldlib2_version}:all")
-    implementation("top.theillusivec4.curios:curios-neoforge:${curios_version}")
-    compileOnly("org.jetbrains:annotations:${jetbrains_annotations_version}")
+    // Biotech 模块独立依赖：直接引用根 gradle.properties 的共享版本
+    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${dep_ldlib2_version}:all")
+    implementation("top.theillusivec4.curios:curios-neoforge:${dep_curios_version}")
+    compileOnly("org.jetbrains:annotations:${dep_jetbrains_annotations_version}")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

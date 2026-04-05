@@ -22,7 +22,6 @@ public class GeneLootTableEventHandler {
         }
 
         LootPack.syncToAllPlayers(LootPack.getLatestTables());
-        Biotech.LOGGER.debug("Synced gene loot tables to all online players");
     }
 
     @SubscribeEvent
