@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.IItemDecorator;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.item.XeneItem;
 
 /**
@@ -14,11 +15,11 @@ public class XeneItemDecorator implements IItemDecorator {
 
     @Override
     public boolean render(GuiGraphics guiGraphics, Font font, ItemStack stack, int xOffset, int yOffset) {
-        if (!(stack.getItem() instanceof XeneItem xeneItem)) {
+        if (!(stack.getItem() instanceof XeneItem)) {
             return false;
         }
 
-        ResourceLocation texture = xeneItem.getSelectedTraitTexture(stack);
+        ResourceLocation texture = IStackTraitAccess.getSelectedTraitTexture(stack);
         if (texture == null) {
             return false;
         }

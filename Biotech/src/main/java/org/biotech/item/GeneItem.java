@@ -70,14 +70,6 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
         return getTraitTooltipImage(stack);
     }
 
-    @Override
-    public TraitComp readTraitComp(ItemStack stack) {
-        GeneInstance instance = stack.get(DataComponentInit.GENE_INSTANCE.get());
-        if (instance == null) {
-            return null;
-        }
-        return instance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
-    }
 
     @Override
     public List<Component> getSlotsTooltip(List<Component> tooltips, Item.TooltipContext context, ItemStack stack) {

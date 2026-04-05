@@ -8,10 +8,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.biotech.api.BiotechAPI;
-import org.biotech.api.system.gene.GeneInstance;
-import org.biotech.api.init.DataComponentInit;
 import org.biotech.api.system.trait.core.ITrait;
-import org.biotech.component.TraitComp;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.ui.BiotechTexture;
 import org.biotech.ui.IScalable;
 import org.biotech.ui.gene_inventroy.element.Info;
@@ -178,15 +176,7 @@ public class InfoGroup extends UIElement implements IScalable {
                 continue;
             }
 
-            GeneInstance geneInstance = stack.get(DataComponentInit.GENE_INSTANCE.get());
-            if (geneInstance != null) {
-                TraitComp geneComp = geneInstance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
-                collectTraitComp(geneComp, countByTrait, infoByTrait);
-            }
-
-            // 兼容可能直接挂在物品上的词条组件。
-            TraitComp directComp = stack.get(DataComponentInit.TRAIT_COMP.get());
-            collectTraitComp(directComp, countByTrait, infoByTrait);
+            collectTraits(IStackTraitAccess.getTraits(stack), countByTrait, infoByTrait);
         }
 
         for (Map.Entry<String, Integer> entry : countByTrait.entrySet()) {
@@ -210,16 +200,16 @@ public class InfoGroup extends UIElement implements IScalable {
         return lines;
     }
 
-    private static void collectTraitComp(
-            TraitComp traitComp,
+    private static void collectTraits(
+            List<ITrait> traits,
             Map<String, Integer> countByTrait,
             Map<String, List<MutableComponent>> infoByTrait
     ) {
-        if (traitComp == null || traitComp.isEmpty()) {
+        if (traits == null || traits.isEmpty()) {
             return;
         }
 
-        for (ITrait trait : traitComp.getTraits()) {
+        for (ITrait trait : traits) {
             if (trait == null) {
                 continue;
             }

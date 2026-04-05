@@ -13,9 +13,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.biotech.api.BiotechAPI;
 import org.biotech.api.system.gene.core.IXenoItem;
-import org.biotech.api.init.DataComponentInit;
 import org.biotech.api.system.trait.core.ITraitProvider;
-import org.biotech.component.TraitComp;
 import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
@@ -61,12 +59,6 @@ public class XeneItem extends Item implements IXenoItem<XeneItem>, ITraitProvide
         // XeneItem 不显示 Curios 生成的属性修饰 tooltip。
         return List.of();
     }
-
-    @Override
-    public TraitComp readTraitComp(ItemStack stack) {
-        return stack.get(DataComponentInit.TRAIT_COMP.get());
-    }
-
 
 
     /**

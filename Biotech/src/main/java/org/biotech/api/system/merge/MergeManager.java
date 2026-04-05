@@ -9,7 +9,7 @@ import org.biotech.api.GeneData;
 import org.biotech.api.system.gene.core.IUnidentifiedGeneItem;
 import org.biotech.api.init.ItemInit;
 import org.biotech.api.system.merge.core.IMergeManager;
-import org.biotech.api.system.trait.core.ITraitProvider;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.item.GeneItem;
 
 /**
@@ -46,9 +46,7 @@ public class MergeManager implements IMergeManager {
                 continue;
             }
 
-            if (stack.getItem() instanceof ITraitProvider provider) {
-                totalTraitCount += provider.getTraitsFromStack(stack).size();
-            }
+            totalTraitCount += IStackTraitAccess.getTraitCount(stack);
             if (stack.getItem() instanceof GeneItem) {
                 geneSlotCount++;
                 geneItemCount += stack.getCount();

@@ -11,9 +11,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import org.biotech.api.system.gene.GeneInstance;
-import org.biotech.api.init.DataComponentInit;
-import org.biotech.component.TraitComp;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.item.GeneItem;
 import org.biotech.ui.IScalable;
 
@@ -175,11 +173,11 @@ public class MergeInputSlotLine extends UIElement implements IScalable {
 
     private void drawItemStack(GUIContext context, MergeInputSlot slot, float scale) {
         ItemStack itemStack = slot.getSlot().getItem();
-        if (itemStack.isEmpty() || !(itemStack.getItem() instanceof GeneItem geneItem)) {
+        if (itemStack.isEmpty() || !(itemStack.getItem() instanceof GeneItem)) {
             return;
         }
 
-        ResourceLocation textureResource = geneItem.getSelectedTraitTexture(itemStack);
+        ResourceLocation textureResource = IStackTraitAccess.getSelectedTraitTexture(itemStack);
         if (textureResource == null) {
             return;
         }
@@ -194,7 +192,7 @@ public class MergeInputSlotLine extends UIElement implements IScalable {
         context.pose.scale(scale, scale, 1);
         context.drawTexture(texture, slotPos.getHoverOffsetX() + 6, slotPos.getHoverOffsetY() + 6, 12, 12);
 
-        int traitCount = resolveTraitCount(itemStack);
+        int traitCount = IStackTraitAccess.getTraitCount(itemStack);
         if (traitCount > 1) {
             Font font = Minecraft.getInstance().font;
             String roman = toRoman(traitCount);
@@ -211,18 +209,6 @@ public class MergeInputSlotLine extends UIElement implements IScalable {
         context.pose.popPose();
     }
 
-    private static int resolveTraitCount(ItemStack itemStack) {
-        GeneInstance geneInstance = itemStack.get(DataComponentInit.GENE_INSTANCE.get());
-        if (geneInstance != null) {
-            TraitComp geneComp = geneInstance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
-            if (geneComp != null) {
-                return geneComp.size();
-            }
-        }
-
-        TraitComp directComp = itemStack.get(DataComponentInit.TRAIT_COMP.get());
-        return directComp != null ? directComp.size() : 0;
-    }
 
     private static String toRoman(int value) {
         int[] numbers = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};

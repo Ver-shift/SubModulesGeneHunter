@@ -4,7 +4,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.IItemDecorator;
-import org.biotech.component.TraitComp;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.item.GeneItem;
 
 /**
@@ -18,8 +18,7 @@ public class GeneItemDecorator implements IItemDecorator {
             return false;
         }
 
-        TraitComp comp = geneItem.readTraitComp(stack);
-        int traitCount = comp != null ? comp.size() : 0;
+        int traitCount = IStackTraitAccess.getTraitCount(stack);
         if (traitCount <= 1) {
             return false;
         }

@@ -12,14 +12,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.biotech.api.BiotechAPI;
-import org.biotech.api.system.gene.GeneInstance;
 import org.biotech.api.system.gene.inventory.PlayerGeneInventoryData;
-import org.biotech.api.init.DataComponentInit;
-import org.biotech.component.TraitComp;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.item.GeneItem;
 import org.biotech.ui.IScalable;
 import org.biotech.ui.gene_inventroy.element.inventory.*;
@@ -421,14 +418,15 @@ public class GeneInventoryGroup extends UIElement implements IScalable {
 
             var itemStack = slot.getSlot().getItem();
 
-            if (itemStack.getItem() instanceof GeneItem geneItem){
-                ResourceLocation textureResource = geneItem.getSelectedTraitTexture(itemStack);
+            if (itemStack.getItem() instanceof GeneItem){
+                ResourceLocation textureResource = IStackTraitAccess.getSelectedTraitTexture(itemStack);
+                if (textureResource == null) {
+                    return;
+                }
                 IGuiTexture texture = SpriteTexture.of(textureResource);
 
 
                 var slotPos = slot.getSlotPos();
-                int width = slotPos.getBaseWidth();
-                int height = slotPos.getBaseHeight();
 
                 // 使用 content 区域坐标（相对于屏幕的绝对坐标，已排除 padding）
                 float x = slot.getContentX();
@@ -439,7 +437,7 @@ public class GeneInventoryGroup extends UIElement implements IScalable {
                 context.pose.scale(scale, scale, 1);
                 context.drawTexture(texture, slotPos.getHoverOffsetX()+ 5,slotPos.getHoverOffsetY()+ 5, 12, 12);
 
-                int traitCount = resolveTraitCount(itemStack);
+                int traitCount = IStackTraitAccess.getTraitCount(itemStack);
                 if (traitCount > 1) {
                     Font font = Minecraft.getInstance().font;
                     String roman = toRoman(traitCount);
@@ -461,18 +459,6 @@ public class GeneInventoryGroup extends UIElement implements IScalable {
             }
         }
 
-        private static int resolveTraitCount(ItemStack itemStack) {
-            GeneInstance geneInstance = itemStack.get(DataComponentInit.GENE_INSTANCE.get());
-            if (geneInstance != null) {
-                TraitComp geneComp = geneInstance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
-                if (geneComp != null) {
-                    return geneComp.size();
-                }
-            }
-
-            TraitComp directComp = itemStack.get(DataComponentInit.TRAIT_COMP.get());
-            return directComp != null ? directComp.size() : 0;
-        }
 
         private static String toRoman(int value) {
             int[] numbers = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};

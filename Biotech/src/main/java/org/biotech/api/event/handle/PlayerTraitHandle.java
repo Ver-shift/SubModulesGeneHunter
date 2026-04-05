@@ -10,10 +10,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.biotech.Biotech;
 import org.biotech.api.BiotechAPI;
 import org.biotech.api.system.gene.GeneContext;
-import org.biotech.api.system.gene.GeneInstance;
-import org.biotech.api.init.DataComponentInit;
 import org.biotech.api.system.trait.core.ITrait;
-import org.biotech.component.TraitComp;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
 import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
@@ -60,30 +58,11 @@ public class PlayerTraitHandle {
             return;
         }
 
-        // 1) XeneItem 直接挂在 ItemStack 上的词条
-        TraitComp xeneComp = stack.get(DataComponentInit.TRAIT_COMP.get());
-        if (xeneComp != null && !xeneComp.isEmpty()) {
-            xeneComp.getTraits().forEach(trait -> {
-                if (trait != null) {
-                    trait.modifyAttributes(event);
-                }
-            });
-        }
-
-        // 2) GeneItem 在 GENE_INSTANCE 组件内的词条
-        GeneInstance geneInstance = stack.get(DataComponentInit.GENE_INSTANCE.get());
-        if (geneInstance == null) {
-            return;
-        }
-
-        TraitComp geneComp = geneInstance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
-        if (geneComp != null && !geneComp.isEmpty()) {
-            geneComp.getTraits().forEach(trait -> {
-                if (trait != null) {
-                    trait.modifyAttributes(event);
-                }
-            });
-        }
+        IStackTraitAccess.getTraits(stack).forEach(trait -> {
+            if (trait != null) {
+                trait.modifyAttributes(event);
+            }
+        });
     }
 
 
@@ -111,22 +90,7 @@ public class PlayerTraitHandle {
                 continue;
             }
 
-            // 1) 收集 XeneItem 直接附着在 ItemStack 上的词条
-            TraitComp xeneComp = stack.get(DataComponentInit.TRAIT_COMP.get());
-            if (xeneComp != null && !xeneComp.isEmpty()) {
-                traits.addAll(xeneComp.getTraits());
-            }
-
-            // 2) 收集 GeneItem 在 GENE_INSTANCE 中的词条
-            GeneInstance geneInstance = stack.get(DataComponentInit.GENE_INSTANCE.get());
-            if (geneInstance == null) {
-                continue;
-            }
-
-            TraitComp geneComp = geneInstance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
-            if (geneComp != null && !geneComp.isEmpty()) {
-                traits.addAll(geneComp.getTraits());
-            }
+            traits.addAll(IStackTraitAccess.getTraits(stack));
         }
     }
 }
