@@ -47,8 +47,21 @@ neoForge {
     }
  */
 }
-dependencies {
 
+repositories {
+    mavenLocal()
+    maven { url = "https://maven.firstdark.dev/snapshots" }
+    maven {
+        name = "Curios"
+        url = uri("https://maven.theillusivec4.top/")
+    }
+}
+
+dependencies {
+    // Shared third-party deps used by module code (primarily Biotech)
+    api("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${ldlib2_version}:all")
+    api("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+    compileOnly("org.jetbrains:annotations:${jetbrains_annotations_version}")
 }
 
 jar{

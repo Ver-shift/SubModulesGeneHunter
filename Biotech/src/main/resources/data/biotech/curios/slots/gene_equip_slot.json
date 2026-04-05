@@ -1,0 +1,7 @@
+{
+  "order": 0,
+  "size": 6,
+  "drop_rule": "ALWAYS_KEEP",
+  "add_cosmetic": false,
+  "use_native_gui": false
+}

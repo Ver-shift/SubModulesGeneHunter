@@ -1,0 +1,4 @@
+{
+  "entities": ["player"],
+  "slots": ["gene_equip_slot","xene_equip_slot"]
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "biotech:item/uncommon_unidentified_gene"
+  }
+}
