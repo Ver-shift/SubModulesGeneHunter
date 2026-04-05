@@ -1,0 +1,41 @@
+plugins {
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    version = neo_version
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+}
+
+dependencies {
+    implementation(project(":GalaxyLib"))
+    rootProject.subprojects.each {
+        if (it.name != "GalaxyLib" && it.name != project.name) {
+            implementation(project(it.path))
+        }
+    }
+}
