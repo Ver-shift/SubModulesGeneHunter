@@ -1,3 +1,10 @@
 # GameText
 
-Test module used to run and verify all integrated submodules together.
+## 模块定位
+
+`GameText` 用于联调与集成验证，不承载正式业务逻辑。
+
+## 开发说明
+
+- 默认可依赖其他模块进行联动测试。
+- 仅保留测试所需代码与资源，避免放入正式功能实现。

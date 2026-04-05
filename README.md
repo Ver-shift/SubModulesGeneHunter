@@ -1,39 +1,37 @@
 # SubmodulesGeneHunter
 
-## 模块分级
+## 项目简介
 
-- `Beyond`：肉鸽关卡系统 lib。
-- `Biotech`：局内基因、局外基因 lib。
-- `GalaxyLib`：核心库，公共依赖与 util。
-- `ModFix`：修复 mod 冲突或魔改本体，主要用于 mixin。
-- `GeneHunter`：整合包核心 mod，提供主功能并整合前置能力。
-- `GameText`：纯测试模块，不写业务代码，默认将所有 mod 作为依赖。
+这是一个 NeoForge 多模块工程，按功能拆分为多个子模块，方便 2-3 人并行开发与独立维护。
 
-## 小团队 Git 协作（2-3 人极简版）
+## 模块说明
 
-### 分支规则
+- `GalaxyLib`：公共基础库，提供通用能力与工具类。
+- `Beyond`：关卡与安全区相关玩法模块。
+- `Biotech`：基因与特性系统模块。
+- `ModFix`：兼容性修复与 Mixin 补丁模块。
+- `GeneHunter`：主整合模块，聚合并对外提供核心功能。
+- `GameText`：联调与集成测试模块。
 
-- `main`：主开发分支，保持可运行。
-- `member/<name>`：个人长期开发分支，例如 `member/alice`。
-- `version/neoforge-1.21.1-1.0.0`：版本冻结分支，永久保留。
+## 当前分工
 
-### 日常流程
+- `member/daxiazhanshenzhao`：负责除 `Beyond` 外的模块开发。
+- `member/pumpkin1zz`：负责 `Beyond` 模块开发。
 
-1. 每人只在自己的 `member/<name>` 开发。
-2. 功能完成后，从 `member/<name>` 提 PR 到 `main`。
-3. 发版时，从 `main` 切 `version/*` 分支并打版本标签。
-4. 线上修复先改 `version/*`，再同步回 `main`。
+## Git 分支规则（极简）
 
-### 同一 lib 多人维护
+- `main`：主开发分支。
+- `member/<name>`：个人开发分支。
+- `version/neoforge-1.21.1/1.0.0`：版本冻结分支，长期保留。
 
-- 一个 lib 可以多人开发，但指定 1 人做最终合并。
-- 合并前只改自己负责目录，避免跨模块顺手改动。
-- 出现冲突时，最后合并的人负责解决并通知相关作者确认。
+## 开发约定
 
-### 提交信息（尽量统一）
+1. 每个人优先在自己的 `member/*` 分支开发。
+2. 功能完成后合并到 `main`。
+3. 发版从 `main` 切 `version/*` 分支。
+4. 线上修复优先在 `version/*` 处理，再同步回 `main`。
 
-- `feat(module): ...` 新功能
-- `fix(module): ...` 问题修复
-- `chore(module): ...` 杂项/构建调整
+## 依赖管理约定
 
-示例：`feat(GeneHunter): add gene scanner ui`
+- 各模块依赖由各模块自行维护（例如 `Beyond` 的依赖写在 `Beyond/build.gradle`，`Biotech` 的依赖写在 `Biotech/build.gradle`）。
+- 暂不做全局统一依赖收敛，冲突按实际问题再处理。

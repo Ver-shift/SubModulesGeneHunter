@@ -1,6 +1,10 @@
 # ModFix
 
-Compatibility and patch module.
+## 模块定位
 
-Use this module for mod conflict fixes, targeted mixins, and emergency behavior patches.
+`ModFix` 用于处理兼容性问题、行为补丁与定向 Mixin 修复。
 
+## 开发说明
+
+- 仅放修复性质代码，避免混入新玩法实现。
+- 每个补丁建议注明修复目标与影响范围，方便后续回溯。

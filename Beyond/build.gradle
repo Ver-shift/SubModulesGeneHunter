@@ -6,7 +6,6 @@ plugins {
 
 version = mod_version
 group = mod_group_id
-def common = project(":GalaxyLib")
 repositories {
     mavenLocal()
 }
@@ -63,11 +62,8 @@ configurations {
 }
 
 dependencies {
-    if (common != null) {
-        implementation(common)
-        //if your common is a internal dependency, you need to add it to the jarJar configuration
-        //jarJar(common)
-    }
+    // Beyond 目前无需额外三方依赖，保持模块内独立管理
+    // 后续若新增依赖，直接加在本模块，不放到 GalaxyLib 统一管理
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

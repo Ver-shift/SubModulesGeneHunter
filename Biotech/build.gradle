@@ -11,6 +11,13 @@ group = mod_group_id
 def common = project(":GalaxyLib")
 repositories {
     mavenLocal()
+    // Biotech 专用依赖仓库：LDLib
+    maven { url = "https://maven.firstdark.dev/snapshots" }
+    // Biotech 专用依赖仓库：Curios
+    maven {
+        name = "Curios"
+        url = uri("https://maven.theillusivec4.top/")
+    }
 }
 
 base {
@@ -70,6 +77,11 @@ dependencies {
         // if your common is a internal dependency, you need to add it to the jarJar configuration
         // jarJar(common)
     }
+
+    // Biotech 模块独立依赖：不再放入 GalaxyLib 统一管理
+    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${ldlib2_version}:all")
+    implementation("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+    compileOnly("org.jetbrains:annotations:${jetbrains_annotations_version}")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
