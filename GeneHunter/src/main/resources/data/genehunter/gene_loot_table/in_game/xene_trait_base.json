@@ -1,0 +1,26 @@
+{
+  "identify": "genehunter:xene_trait_base",
+  "note": "一些基础属性的表，血量，攻速，攻击力什么的",
+  "loot_type": "xene_trait",
+  "pools": [
+    {
+      "name": "normal_attribute",
+      "base_weight": 10,
+      "entries": [
+        {
+          "id": "biotech:speed_trait",
+          "weight": 1
+        },
+        {
+          "id": "biotech:attack_speed_trait",
+          "weight": 1
+        },
+        {
+          "id": "biotech:health_trait",
+          "weight": 1
+        }
+      ]
+    }
+
+  ]
+}
