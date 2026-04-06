@@ -1,4 +1,4 @@
-package org.biotech.api;
+package org.biotech.api.system;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,7 +8,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import org.biotech.api.system.gene.inventory.PlayerGeneInventoryData;
-import org.galaxylib.api.system.loot.PlayerLootTableData;
 import org.biotech.api.system.merge.MergeData;
 
 /**

@@ -1,14 +1,12 @@
 package org.biotech.api.system.gene.inventory;
 
-import com.lowdragmc.lowdraglib2.gui.factory.PlayerUIMenuType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import org.biotech.api.init.BiotechMenuInit;
-import org.biotech.api.GeneData;
+import org.biotech.api.system.GeneData;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
-import org.biotech.container.GeneInventoryContainer;
 import org.biotech.container.GeneMenu;
 import org.biotech.item.GeneItem;
 

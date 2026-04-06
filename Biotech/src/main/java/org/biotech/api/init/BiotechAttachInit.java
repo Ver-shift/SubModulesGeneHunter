@@ -10,7 +10,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.biotech.Biotech;
-import org.biotech.api.GeneData;
+import org.biotech.api.system.GeneData;
 
 @EventBusSubscriber
 public class BiotechAttachInit {
@@ -43,10 +43,9 @@ public class BiotechAttachInit {
             // 设置玩家引用和ID
             geneData.setPlayer(serverPlayer);
             geneData.setPlayerId(serverPlayer.getId());
-            // 确保嵌套数据已初始化（延迟初始化）
-            geneData.getPlayerLootTableData();
-            geneData.getPlayerGeneInventoryData();
-            geneData.getMergeData();
+
+            serverPlayer.setData(GENE_DATA, geneData);
+
         }
     }
 
@@ -57,6 +56,9 @@ public class BiotechAttachInit {
             // 重生后重新设置玩家引用
             geneData.setPlayer(serverPlayer);
             geneData.setPlayerId(serverPlayer.getId());
+
+            serverPlayer.setData(GENE_DATA, geneData);
+
         }
     }
 
@@ -67,10 +69,8 @@ public class BiotechAttachInit {
             // copyOnDeath() 会自动复制数据，重新设置玩家引用
             geneData.setPlayer(serverPlayer);
             geneData.setPlayerId(serverPlayer.getId());
-            // 确保嵌套数据有效
-            geneData.getPlayerLootTableData();
-            geneData.getPlayerGeneInventoryData();
-            geneData.getMergeData();
+
+            serverPlayer.setData(GENE_DATA, geneData);
         }
     }
 
@@ -78,8 +78,6 @@ public class BiotechAttachInit {
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             GeneData geneData = serverPlayer.getData(GENE_DATA);
-            // 清除玩家引用，释放资源
-            geneData.clearPlayer();
         }
     }
 

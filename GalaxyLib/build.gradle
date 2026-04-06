@@ -51,10 +51,4 @@ neoForge {
 dependencies {
 }
 
-jar{
-    manifest {
-        attributes(
-                'FMLModType': 'GAMELIBRARY'
-        )
-    }
-}
+// Keep default mod jar type so @Mod(GalaxyLib.MODID) is constructed and registry listeners run.

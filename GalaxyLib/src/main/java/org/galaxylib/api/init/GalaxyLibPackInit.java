@@ -19,17 +19,17 @@ public class GalaxyLibPackInit {
     @SubscribeEvent
     public static void onDatapackSync(OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) {
-            LootPack.syncToPlayer(event.getPlayer(), LootPack.getLatestTables());
+            LootPack.syncToPlayer(event.getPlayer());
             return;
         }
 
-        LootPack.syncToAllPlayers(LootPack.getLatestTables());
+        LootPack.syncToAllPlayers();
     }
 
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
-            LootPack.syncToPlayer(player, LootPack.getLatestTables());
+            LootPack.syncToPlayer(player);
         }
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.util.RandomSource;
 
 import org.galaxylib.api.system.loot.core.ILootTableManager;
 import org.galaxylib.api.system.loot.core.ILootType;
+import org.galaxylib.api.system.loot.data.GeneLootTableData;
 import org.galaxylib.api.system.loot.data.LootPoolData;
 import org.galaxylib.api.system.loot.data.LootTableGroup;
 import org.galaxylib.api.system.loot.data.LootTableGroupBuilder;
@@ -119,10 +120,16 @@ public class LootTableManager implements ILootTableManager {
         LootTableGroup targetGroup = getLootTableGroup(targetLootType);
         if (targetGroup == null) return;
 
+        Map<ResourceLocation, GeneLootTableData> levelTables = getLevelTables();
+
         for (ResourceLocation identify : lootTableIdentify) {
-            var data = playerLootTableData.getDataPackTables().get(identify);
-            targetGroup.put(data);
+            GeneLootTableData data = levelTables.get(identify);
+            if (data != null) {
+                targetGroup.put(data);
+            }
         }
+
+        targetGroup.setDirty(true);
     }
 
     @Override
@@ -159,14 +166,21 @@ public class LootTableManager implements ILootTableManager {
         return pool.keySet().iterator().next();
     }
 
-    // ==================== 示例代码 ====================
-
-    private void text() {
-
-    }
 
     private LootTableGroup getLootTableGroup(Supplier<ILootType<?>> lootType) {
         return playerLootTableData.getLootTableGroup(lootType);
+    }
+
+    private Map<ResourceLocation, GeneLootTableData> getLevelTables() {
+        if (player == null || player.getServer() == null) {
+            return LootPack.getLatestTables();
+        }
+
+        Map<ResourceLocation, GeneLootTableData> tables = LevelLootData.get(player.getServer()).snapshot();
+        if (tables.isEmpty()) {
+            return LootPack.getLatestTables();
+        }
+        return tables;
     }
 
 }

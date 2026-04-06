@@ -1,5 +1,5 @@
 {
-  "identify": "genehunter:xene_trait_base",
+  "identify": "gene_hunter:xene_trait_base",
   "note": "一些基础属性的表，血量，攻速，攻击力什么的",
   "loot_type": "xene_trait",
   "pools": [

@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.biotech.Biotech;
 
+import org.biotech.api.system.GeneData;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.api.init.BiotechAttachInit;
 import org.biotech.api.init.BiotechCapInit;

@@ -55,6 +55,8 @@ public class Biotech {
         BiotechGeneInit.register(modEventBus);
         BiotechGeneInit.autoRegisterGenes();
 
+        BiotechLootTypeInit.register(modEventBus);
+
 
     }
 

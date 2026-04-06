@@ -20,6 +20,7 @@ public class GeneMenu extends ModularUIContainerMenu {
 
     private SourceBranch quickMoveSourceBranch = SourceBranch.UNKNOWN;
 
+    @SuppressWarnings("unchecked")
     public GeneMenu(int windowID, Inventory inventory, IContainerUIHolder uiHolder) {
         super((MenuType<ModularUIContainerMenu>) (MenuType<?>) BiotechMenuInit.GENE_MENU.get(), windowID, inventory, uiHolder);
     }

@@ -1,9 +1,13 @@
 package org.galaxy.gene_hunter;
 
 import com.pz.beyond.Beyond;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import org.galaxy.gene_hunter.api.init.GeneHunterAttachInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
 
 @Mod(GeneHunter.MODID)
 public class GeneHunter {
@@ -11,8 +15,15 @@ public class GeneHunter {
 
     public GeneHunter(IEventBus modEventBus, ModContainer modContainer) {
 
-        var beyond_id = Beyond.MODID;
+        GeneHunterAttachInit.register(modEventBus);
+        GeneHunterLootInit.register(modEventBus);
+        GeneHunterMenuInit.register();
 
     }
+
+    public static ResourceLocation asResource(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID,path.toLowerCase());
+    }
+
 }
 

@@ -35,6 +35,28 @@ public class XeneTraitLootType implements ILootType<ITrait> {
      */
     @Override
     public void claimResultsToPlayer(ServerPlayer player, ILootTableManager.LootResult lootResult) {
+
+        ItemStack xeneStack = stackLick(lootResult);
+
+            IDynamicStackHandler slotHandler = BiotechAPI.getXeneEquipSlots(player);
+            if (slotHandler == null) {
+                return;
+            }
+
+            // 找到第一个空槽位并放入物品
+            for (int i = 0; i < slotHandler.getSlots(); i++) {
+                if (slotHandler.getStackInSlot(i).isEmpty()) {
+                    slotHandler.setStackInSlot(i, xeneStack);
+                    break;
+                }
+            }
+
+    }
+
+    /**
+     * 将结果转移成物品stack
+     */
+    public ItemStack stackLick(ILootTableManager.LootResult lootResult){
         // 创建 TraitComp 并收集所有词条
         TraitComp comp = TraitComp.empty();
         for (var entry : lootResult.result()) {
@@ -49,19 +71,11 @@ public class XeneTraitLootType implements ILootType<ITrait> {
             ItemStack xeneStack = new ItemStack(BiotechItemInit.XENE_ITEM.get());
             xeneStack.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
 
-            IDynamicStackHandler slotHandler = BiotechAPI.getXeneEquipSlots(player);
-            if (slotHandler == null) {
-                return;
-            }
-
-            // 找到第一个空槽位并放入物品
-            for (int i = 0; i < slotHandler.getSlots(); i++) {
-                if (slotHandler.getStackInSlot(i).isEmpty()) {
-                    slotHandler.setStackInSlot(i, xeneStack);
-                    break;
-                }
-            }
+            return xeneStack;
         }
+
+
+        return ItemStack.EMPTY;
     }
 
 

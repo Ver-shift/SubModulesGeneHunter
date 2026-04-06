@@ -72,6 +72,29 @@ dependencies {
     implementation(galaxyLib)
     implementation(beyond)
     implementation(biotech)
+
+    //spell book
+    implementation "io.redspace:irons_spellbooks:${iron_mod}"
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    implementation "dev.kosmx.player-anim:player-animation-lib-forge:${player_animator_version}"
+    implementation "top.theillusivec4.curios:curios-neoforge:${dep_curios_version}"
+
+    //better combat
+    implementation "maven.modrinth:better-combat:${better_combat_version}"
+    api "me.shedaniel.cloth:cloth-config-${cloth_config_version}"
+
+    //Puzzles Lib
+    implementation "maven.modrinth:puzzles-lib:${puzzles_Lib_version}"
+
+    //simply_swords
+    implementation("maven.modrinth:simply-swords:${simply_swords}")
+    implementation("maven.modrinth:architectury-api:${architectury_api_version}")
+    implementation("maven.modrinth:simply-tooltips:${simply_tooltips_version}")
+    implementation("me.fzzyhmstrs:fzzy_config:${fzzy_config_version}")
+
+    //lidlib 2 给这里也整上，毕竟很好用
+    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${dep_ldlib2_version}:all")
+
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

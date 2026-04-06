@@ -78,6 +78,10 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
     @Override
     protected void apply(Map<ResourceLocation, GeneLootTableData> tables, ResourceManager resourceManager, ProfilerFiller profiler) {
         latestTables = Collections.unmodifiableMap(new HashMap<>(tables));
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server != null) {
+            LevelLootData.get(server).setTables(latestTables);
+        }
         GalaxyLib.LOGGER.info("Loaded {} gene loot tables from data packs", tables.size());
 
         // 注意：reload 阶段可能还拿不到稳定的 server 引用，玩家同步放到 OnDatapackSyncEvent。
@@ -90,21 +94,19 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
         return latestTables;
     }
 
-    public static void syncToAllPlayers(Map<ResourceLocation, GeneLootTableData> tables) {
+    public static void syncToAllPlayers() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) {
             return;
         }
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            syncToPlayer(player, tables);
+            syncToPlayer(player);
         }
     }
 
-    public static void syncToPlayer(ServerPlayer player, Map<ResourceLocation, GeneLootTableData> tables) {
+    public static void syncToPlayer(ServerPlayer player) {
         try {
-            GalaxyLibAPI.getPlayerLootTableData(player).setDataPackTables(tables);
-
             var manager = GalaxyLibAPI.getLootTableManager(player);
             if (manager != null) {
                 manager.init();
@@ -114,18 +116,4 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
         }
     }
 
-    /**
-     * 从资源路径提取表ID
-     * <p>
-     * 例如：data/biotech/gene_loot_table/in_game/sword.json -> biotech:in_game/sword
-     */
-    private ResourceLocation extractTableId(ResourceLocation location) {
-        String path = location.getPath();
-        // 去掉前缀 "gene_loot_table/"
-        path = path.substring(PATH_PREFIX.length() + 1);
-        // 去掉扩展名 ".json"
-        path = path.substring(0, path.length() - 5);
-
-        return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), path);
-    }
 }

@@ -5,7 +5,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import org.biotech.api.GeneData;
+import org.biotech.api.system.GeneData;
 import org.biotech.api.system.gene.core.IUnidentifiedGeneItem;
 import org.biotech.api.init.BiotechItemInit;
 import org.biotech.api.system.merge.core.IMergeManager;

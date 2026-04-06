@@ -1,7 +1,5 @@
 package org.galaxy.gene_hunter.api.system.choice.core;
 
-import net.minecraft.world.entity.player.Player;
-
 public interface IChoiceManager {
 
 
@@ -17,5 +15,12 @@ public interface IChoiceManager {
     /**
      * 进行抽取
      */
-    void doRoll();
+    void doXeneRoll();
+    void doWeaponRoll();
+
+
+    /**
+     * 对当前的holderData进行刷新
+     */
+    void refresh();
 }

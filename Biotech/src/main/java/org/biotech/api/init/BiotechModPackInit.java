@@ -11,6 +11,6 @@ import org.galaxylib.api.system.loot.LootPack;
 public class BiotechModPackInit {
     @SubscribeEvent
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(new LootPack());
+
     }
 }

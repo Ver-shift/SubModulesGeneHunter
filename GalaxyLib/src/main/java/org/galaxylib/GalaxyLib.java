@@ -19,8 +19,8 @@ public class GalaxyLib {
      public GalaxyLib(IEventBus modEventBus, ModContainer modContainer) {
          GalaxyLibAttributeInit.register(modEventBus);
 
-         GalaxyLibLootTypeInit.register(modEventBus);
          modEventBus.addListener(GalaxyLibLootTypeInit::registerRegistry);
+         GalaxyLibLootTypeInit.register(modEventBus);
 
          GalaxyLibAttachInit.register(modEventBus);
      }

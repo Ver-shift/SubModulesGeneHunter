@@ -40,6 +40,10 @@ public class GalaxyLibAttachInit {
                 lootTableData = new PlayerLootTableData();
                 serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
             }
+
+            lootTableData.setPlayer(serverPlayer);
+            lootTableData.setPlayerId(serverPlayer.getId());
+            serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
         }
     }
 
@@ -52,6 +56,9 @@ public class GalaxyLibAttachInit {
                 lootTableData = new PlayerLootTableData();
                 serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
             }
+            lootTableData.setPlayer(serverPlayer);
+            lootTableData.setPlayerId(serverPlayer.getId());
+            serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
         }
     }
 
@@ -61,8 +68,12 @@ public class GalaxyLibAttachInit {
             // copyOnDeath() 会自动处理数据复制，这里只需确保新玩家数据有效
             PlayerLootTableData lootTableData = serverPlayer.getData(PLAYER_LOOT_TABLE_DATA);
             if (lootTableData == null) {
-                serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, new PlayerLootTableData());
+                lootTableData = new PlayerLootTableData();
+                serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
             }
+            lootTableData.setPlayer(serverPlayer);
+            lootTableData.setPlayerId(serverPlayer.getId());
+            serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
         }
     }
 
