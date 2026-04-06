@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 import org.biotech.api.BiotechAPI;
-import org.biotech.api.init.DataComponentInit;
+import org.biotech.api.init.BiotechDataComponentInit;
 import org.biotech.component.Example;
 
 /**
@@ -22,7 +22,7 @@ public class TextGeneItem extends Item {
     public TextGeneItem() {
         super(new Properties()
                 .component(DataComponents.RARITY, Rarity.UNCOMMON)
-                .component(DataComponentInit.EXAMPLE.get(), new Example()));
+                .component(BiotechDataComponentInit.EXAMPLE.get(), new Example()));
     }
 
     @Override

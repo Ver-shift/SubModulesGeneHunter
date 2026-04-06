@@ -10,8 +10,8 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.biotech.api.system.gene.GeneInstance;
 import org.biotech.api.system.gene.core.IGene;
 import org.biotech.api.system.gene.core.IGeneItem;
-import org.biotech.api.init.DataComponentInit;
-import org.biotech.api.init.ItemInit;
+import org.biotech.api.init.BiotechDataComponentInit;
+import org.biotech.api.init.BiotechItemInit;
 import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.api.system.trait.core.ITraitProvider;
 import org.biotech.api.util.TooltipUtil;
@@ -33,7 +33,7 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
     public GeneItem() {
         super(new Properties()
                 .stacksTo(1)
-                .component(DataComponentInit.GENE_INSTANCE.get(), GeneInstance.EMPTY)
+                .component(BiotechDataComponentInit.GENE_INSTANCE.get(), GeneInstance.EMPTY)
         );
     }
 
@@ -83,7 +83,7 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
     }
 
     public GeneInstance getGeneInstance() {
-        return Objects.requireNonNull(this.components().get(DataComponentInit.GENE_INSTANCE.get()));
+        return Objects.requireNonNull(this.components().get(BiotechDataComponentInit.GENE_INSTANCE.get()));
     }
 
     @Override
@@ -138,7 +138,7 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
     }
 
     private IGene getGeneFromStack(ItemStack stack) {
-        GeneInstance instance = stack.get(DataComponentInit.GENE_INSTANCE.get());
+        GeneInstance instance = stack.get(BiotechDataComponentInit.GENE_INSTANCE.get());
         return instance != null ? instance.getGene() : null;
     }
 
@@ -147,9 +147,9 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
      * 稀有度与基因稀有度相同
      */
     public static ItemStack createForGene(IGene gene) {
-        ItemStack stack = new ItemStack(ItemInit.GENE_ITEM.get());
+        ItemStack stack = new ItemStack(BiotechItemInit.GENE_ITEM.get());
         GeneInstance instance = new GeneInstance(gene);
-        stack.set(DataComponentInit.GENE_INSTANCE.get(), instance);
+        stack.set(BiotechDataComponentInit.GENE_INSTANCE.get(), instance);
         
         // 设置物品稀有度与基因稀有度相同
         // 从 GeneInstance 的组件中获取稀有度
@@ -174,13 +174,13 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
         }
         
         // 获取当前的 GeneInstance
-        GeneInstance instance = stack.get(DataComponentInit.GENE_INSTANCE.get());
+        GeneInstance instance = stack.get(BiotechDataComponentInit.GENE_INSTANCE.get());
         if (instance == null) {
             return false;
         }
         
         // 获取或创建 TraitComp
-        TraitComp comp = instance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
+        TraitComp comp = instance.getComponents().get(BiotechDataComponentInit.TRAIT_COMP.get());
         if (comp == null) {
             comp = TraitComp.empty();
         }
@@ -189,10 +189,10 @@ public class GeneItem extends Item implements IGeneItem<GeneItem>, ITraitProvide
         comp.addTrait(trait);
         
         // 将 TraitComp 设置回 GeneInstance
-        instance.set(DataComponentInit.TRAIT_COMP.get(), comp);
+        instance.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
         
         // 更新 ItemStack 的 GeneInstance
-        stack.set(DataComponentInit.GENE_INSTANCE.get(), instance);
+        stack.set(BiotechDataComponentInit.GENE_INSTANCE.get(), instance);
         
         return true;
     }

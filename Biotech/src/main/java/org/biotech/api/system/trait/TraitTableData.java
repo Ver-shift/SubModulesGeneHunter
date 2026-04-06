@@ -6,7 +6,7 @@ import lombok.Data;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import org.biotech.api.init.TraitInit;
+import org.biotech.api.init.BiotechTraitInit;
 import org.biotech.api.system.trait.core.ITrait;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class TraitTableData {
     private List<ITrait> allTraits = new ArrayList<>();
 
     public TraitTableData() {
-        this.allTraits = TraitInit.getAllTraits();
+        this.allTraits = BiotechTraitInit.getAllTraits();
     }
 
     public TraitTableData(List<ITrait> allTraits) {

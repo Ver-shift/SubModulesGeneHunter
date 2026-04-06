@@ -6,6 +6,7 @@ import lombok.Data;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.biotech.api.init.BiotechTraitInit;
 import org.biotech.api.system.trait.core.ITrait;
 
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class TraitComp {
     public static TraitComp random(int count) {
         TraitComp comp = new TraitComp();
         // 从 TraitInit 获取随机词条
-        var allTraits = org.biotech.api.init.TraitInit.getAllTraits();
+        var allTraits = BiotechTraitInit.getAllTraits();
         if (allTraits.isEmpty()) return comp;
 
         java.util.Collections.shuffle(allTraits);

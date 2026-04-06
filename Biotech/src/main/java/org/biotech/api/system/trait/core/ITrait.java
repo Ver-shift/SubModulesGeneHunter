@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import org.biotech.api.init.TraitInit;
+import org.biotech.api.init.BiotechTraitInit;
 import org.biotech.api.util.IActive;
 import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 
@@ -72,7 +72,7 @@ public interface ITrait extends IActive {
 
     // CODEC - 通过 ResourceLocation 序列化
     Codec<ITrait> CODEC = ResourceLocation.CODEC.xmap(
-        TraitInit::getTraitById,
+        BiotechTraitInit::getTraitById,
         trait -> {
             if (trait == null || trait.getId() == null) {
                 return EMPTY_TRAIT_ID;
@@ -92,7 +92,7 @@ public interface ITrait extends IActive {
             if (EMPTY_TRAIT_ID.equals(id)) {
                 return null;
             }
-            return TraitInit.getTraitById(id);
+            return BiotechTraitInit.getTraitById(id);
         }
 
         @Override

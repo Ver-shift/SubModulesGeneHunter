@@ -8,7 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import org.biotech.api.system.gene.inventory.PlayerGeneInventoryData;
-import org.biotech.api.system.loot.PlayerLootTableData;
+import org.galaxylib.api.system.loot.PlayerLootTableData;
 import org.biotech.api.system.merge.MergeData;
 
 /**
@@ -59,6 +59,20 @@ public class GeneData {
             mergeData = new MergeData();
         }
         return mergeData;
+    }
+
+    /**
+     * 清除玩家引用（用于玩家下线时释放资源）
+     */
+    public void clearPlayer() {
+        this.player = null;
+    }
+
+    /**
+     * 检查数据是否已初始化
+     */
+    public boolean isInitialized() {
+        return player != null && playerId != -1;
     }
 
 

@@ -1,7 +1,7 @@
 package org.biotech.mixin;
 
 import net.minecraft.world.item.ItemStack;
-import org.biotech.api.init.DataComponentInit;
+import org.biotech.api.init.BiotechDataComponentInit;
 import org.biotech.api.system.gene.GeneInstance;
 import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.component.TraitComp;
@@ -16,15 +16,15 @@ public abstract class ItemStackTraitMixin implements IStackTraitAccess {
     public TraitComp biotech$getTraitComp() {
         ItemStack stack = (ItemStack) (Object) this;
 
-        GeneInstance instance = stack.get(DataComponentInit.GENE_INSTANCE.get());
+        GeneInstance instance = stack.get(BiotechDataComponentInit.GENE_INSTANCE.get());
         if (instance != null) {
-            TraitComp geneComp = instance.getComponents().get(DataComponentInit.TRAIT_COMP.get());
+            TraitComp geneComp = instance.getComponents().get(BiotechDataComponentInit.TRAIT_COMP.get());
             if (geneComp != null) {
                 return geneComp;
             }
         }
 
-        return stack.get(DataComponentInit.TRAIT_COMP.get());
+        return stack.get(BiotechDataComponentInit.TRAIT_COMP.get());
     }
 }
 

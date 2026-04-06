@@ -4,11 +4,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.biotech.api.BiotechAPI;
-import org.biotech.api.init.DataComponentInit;
-import org.biotech.api.init.ItemInit;
-import org.biotech.api.init.TraitInit;
-import org.biotech.api.system.loot.core.ILootTableManager;
-import org.biotech.api.system.loot.core.ILootType;
+import org.biotech.api.init.BiotechDataComponentInit;
+import org.biotech.api.init.BiotechItemInit;
+import org.biotech.api.init.BiotechTraitInit;
+import org.galaxylib.api.system.loot.core.ILootTableManager;
+import org.galaxylib.api.system.loot.core.ILootType;
 import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.component.TraitComp;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
@@ -25,7 +25,7 @@ public class XeneTraitLootType implements ILootType<ITrait> {
 
     @Override
     public ITrait getLoot(ResourceLocation lootId, int count) {
-        return TraitInit.getTraitById(lootId);
+        return BiotechTraitInit.getTraitById(lootId);
     }
 
     /**
@@ -46,8 +46,8 @@ public class XeneTraitLootType implements ILootType<ITrait> {
 
         // 如果收集到了词条，创建带 TraitComp 的 XeneItem 并放入 xene_equip_slot 槽位
         if (!comp.isEmpty()) {
-            ItemStack xeneStack = new ItemStack(ItemInit.XENE_ITEM.get());
-            xeneStack.set(DataComponentInit.TRAIT_COMP.get(), comp);
+            ItemStack xeneStack = new ItemStack(BiotechItemInit.XENE_ITEM.get());
+            xeneStack.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
 
             IDynamicStackHandler slotHandler = BiotechAPI.getXeneEquipSlots(player);
             if (slotHandler == null) {

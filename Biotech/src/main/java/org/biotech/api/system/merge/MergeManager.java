@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import org.biotech.api.GeneData;
 import org.biotech.api.system.gene.core.IUnidentifiedGeneItem;
-import org.biotech.api.init.ItemInit;
+import org.biotech.api.init.BiotechItemInit;
 import org.biotech.api.system.merge.core.IMergeManager;
 import org.biotech.api.system.trait.core.IStackTraitAccess;
 import org.biotech.item.GeneItem;
@@ -195,9 +195,9 @@ public class MergeManager implements IMergeManager {
 
     private static net.minecraft.world.item.Item getRewardItemByRarity(Rarity rarity) {
         return switch (rarity) {
-            case EPIC -> ItemInit.EPIC_UNIDENTIFIED_GENE.get();
-            case RARE -> ItemInit.RARE_UNIDENTIFIED_GENE.get();
-            default -> ItemInit.UNCOMMON_UNIDENTIFIED_GENE.get();
+            case EPIC -> BiotechItemInit.EPIC_UNIDENTIFIED_GENE.get();
+            case RARE -> BiotechItemInit.RARE_UNIDENTIFIED_GENE.get();
+            default -> BiotechItemInit.UNCOMMON_UNIDENTIFIED_GENE.get();
         };
 
     }

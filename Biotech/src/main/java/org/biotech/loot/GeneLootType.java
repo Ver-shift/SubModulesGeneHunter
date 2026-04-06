@@ -2,8 +2,8 @@ package org.biotech.loot;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.biotech.api.init.GeneInit;
-import org.biotech.api.system.loot.core.ILootType;
+import org.biotech.api.init.BiotechGeneInit;
+import org.galaxylib.api.system.loot.core.ILootType;
 import org.biotech.item.GeneItem;
 
 /**
@@ -19,10 +19,10 @@ public class GeneLootType implements ILootType<ItemStack> {
     @Override
     public ItemStack getLoot(ResourceLocation lootId, int count) {
         // 从注册表获取基因
-        var gene = GeneInit.getGeneById(lootId);
+        var gene = BiotechGeneInit.getGeneById(lootId);
         
         // 检查基因是否存在（空基因检查）
-        if (gene == null || gene == GeneInit.EMPTY) {
+        if (gene == null || gene == BiotechGeneInit.EMPTY) {
             return ItemStack.EMPTY;
         }
         

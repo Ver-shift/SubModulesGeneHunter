@@ -9,8 +9,8 @@ import org.biotech.api.system.gene.GeneInstance;
 import org.biotech.api.system.gene.GeneRegistryHolder;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.api.init.*;
-import org.biotech.api.system.loot.core.ILootTableManager;
-import org.biotech.api.system.loot.core.ILootType;
+import org.galaxylib.api.system.loot.core.ILootTableManager;
+import org.galaxylib.api.system.loot.core.ILootType;
 import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.component.TraitComp;
 
@@ -25,11 +25,11 @@ public class GeneTraitLootType implements ILootType<ITrait> {
 
     @Override
     public ITrait getLoot(ResourceLocation lootId, int count) {
-        return TraitInit.getTraitById(lootId);
+        return BiotechTraitInit.getTraitById(lootId);
     }
 
     // 使用 GeneRegistryHolder 延迟获取 EMPTY 基因，避免注册时空指针
-    private static final GeneRegistryHolder EMPTY_GENE_HOLDER = new GeneRegistryHolder(GeneInit.EMPTY_GENE);
+    private static final GeneRegistryHolder EMPTY_GENE_HOLDER = new GeneRegistryHolder(BiotechGeneInit.EMPTY_GENE);
 
     @Override
     public void claimResultsToPlayer(ServerPlayer player, ILootTableManager.LootResult lootResult) {
@@ -57,18 +57,18 @@ public class GeneTraitLootType implements ILootType<ITrait> {
         GeneInstance instance = EMPTY_GENE_HOLDER.getInstance();
 
         // 将 TraitComp 放入 GeneInstance 的组件中
-        instance.set(DataComponentInit.TRAIT_COMP.get(), comp);
+        instance.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
 
         // 创建 ItemStack 并设置 GENE_INSTANCE 组件
-        ItemStack stack = new ItemStack(ItemInit.GENE_ITEM.get());
-        stack.set(DataComponentInit.GENE_INSTANCE.get(), instance);
+        ItemStack stack = new ItemStack(BiotechItemInit.GENE_ITEM.get());
+        stack.set(BiotechDataComponentInit.GENE_INSTANCE.get(), instance);
 
         return new ClaimResult(manager.add(stack), stack.copy(), comp.size());
     }
 
     @Override
     public int getPoolCount(ServerPlayer player) {
-        double value = player.getAttributes().getInstance(AttributeInit.GENE_TRAIT_ROLL_COUNT).getValue();
+        double value = player.getAttributes().getInstance(BiotechAttributeInit.GENE_TRAIT_ROLL_COUNT).getValue();
         return ILootType.getPoolCountFromAttribute((float) value, RandomSource.create());
     }
 }

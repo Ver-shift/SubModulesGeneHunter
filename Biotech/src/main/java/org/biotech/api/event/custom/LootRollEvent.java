@@ -4,7 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import org.biotech.api.system.loot.data.GeneLootTableData;
+import org.galaxylib.api.system.loot.data.GeneLootTableData;
 
 import java.util.List;
 

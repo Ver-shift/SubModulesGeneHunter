@@ -6,7 +6,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import org.biotech.api.system.gene.core.GeneRarity;
-import org.biotech.api.init.DataComponentInit;
+import org.biotech.api.init.BiotechDataComponentInit;
 import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.component.TraitComp;
 
@@ -82,7 +82,7 @@ public class GeneConfigBuilder {
     public DataComponentMap build() {
         // 将累积的词条组件设置到 builder
         if (traitCompBuilder != null && !traitCompBuilder.isEmpty()) {
-            componentBuilder.set(DataComponentInit.TRAIT_COMP.get(), traitCompBuilder);
+            componentBuilder.set(BiotechDataComponentInit.TRAIT_COMP.get(), traitCompBuilder);
         }
 
         if (!valid()) {

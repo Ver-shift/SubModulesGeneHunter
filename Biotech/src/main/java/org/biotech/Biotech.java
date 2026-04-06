@@ -10,7 +10,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.biotech.api.config.ServerConfig;
 import org.biotech.api.event.handle.PlayerTraitHandle;
 import org.biotech.api.init.*;
-import org.biotech.api.init.MenuInit;
 import org.slf4j.Logger;
 
 @Mod(Biotech.MODID)
@@ -26,12 +25,12 @@ public class Biotech {
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
 
 
-        DataComponentInit.register(modEventBus);
-        ItemInit.register(modEventBus);
-        CreativeTabInit.register(modEventBus);
-        AttachInit.register(modEventBus);
-        AttributeInit.register(modEventBus);
-        MenuInit.register(modEventBus);
+        BiotechDataComponentInit.register(modEventBus);
+        BiotechItemInit.register(modEventBus);
+        BiotechCreativeTabInit.register(modEventBus);
+        BiotechAttachInit.register(modEventBus);
+        BiotechAttributeInit.register(modEventBus);
+        BiotechMenuInit.register(modEventBus);
 
         // 显式注册 Curios 属性事件，避免注解订阅失效时不触发。
         NeoForge.EVENT_BUS.addListener(PlayerTraitHandle::onCurioAttributeModifier);
@@ -48,16 +47,15 @@ public class Biotech {
      */
     public void newRegistryInit(IEventBus modEventBus) {
 
-        modEventBus.addListener(TraitInit::registerRegistry);
-        TraitInit.register(modEventBus);
-        TraitInit.autoRegisterTraits();
+        modEventBus.addListener(BiotechTraitInit::registerRegistry);
+        BiotechTraitInit.register(modEventBus);
+        BiotechTraitInit.autoRegisterTraits();
 
-        modEventBus.addListener(GeneInit::registerRegistry);
-        GeneInit.register(modEventBus);
-        GeneInit.autoRegisterGenes();
+        modEventBus.addListener(BiotechGeneInit::registerRegistry);
+        BiotechGeneInit.register(modEventBus);
+        BiotechGeneInit.autoRegisterGenes();
 
-        modEventBus.addListener(LootTypeInit::registerRegistry);
-        LootTypeInit.register(modEventBus);
+
     }
 
 

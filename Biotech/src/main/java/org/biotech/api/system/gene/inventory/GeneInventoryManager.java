@@ -5,7 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import org.biotech.api.init.MenuInit;
+import org.biotech.api.init.BiotechMenuInit;
 import org.biotech.api.GeneData;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.container.GeneInventoryContainer;
@@ -32,7 +32,7 @@ public class GeneInventoryManager implements IGeneInventoryManager {
             return false;
         }
         var opened = player.openMenu(new SimpleMenuProvider(
-                (containerId, inventory, p) -> new GeneMenu(containerId, inventory, MenuInit.GENE_MENU_CONTAINER),
+                (containerId, inventory, p) -> new GeneMenu(containerId, inventory, BiotechMenuInit.GENE_MENU_CONTAINER),
                 Component.empty())
         );
         return opened.isPresent();

@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.biotech.Biotech;
 import net.minecraft.world.item.ItemStack;
 import org.biotech.api.system.gene.GeneConfigBuilder;
-import org.biotech.api.init.GeneInit;
+import org.biotech.api.init.BiotechGeneInit;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
@@ -66,7 +66,7 @@ public interface IGene extends ICurioItem {
 
     // CODEC - 通过 ResourceLocation 序列化
     Codec<IGene> CODEC = ResourceLocation.CODEC.xmap(
-        GeneInit::getGeneById,  // ResourceLocation -> IGene
+        BiotechGeneInit::getGeneById,  // ResourceLocation -> IGene
         IGene::getID            // IGene -> ResourceLocation
     );
 
@@ -77,7 +77,7 @@ public interface IGene extends ICurioItem {
     StreamCodec<RegistryFriendlyByteBuf, IGene> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, IGene>() {
         @Override
         public IGene decode(RegistryFriendlyByteBuf buf) {
-            return GeneInit.getGeneById(buf.readResourceLocation());
+            return BiotechGeneInit.getGeneById(buf.readResourceLocation());
         }
 
         @Override

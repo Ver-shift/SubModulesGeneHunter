@@ -14,3 +14,15 @@ allprojects {
         }
     }
 }
+
+subprojects {
+    plugins.withId('java') {
+        dependencies {
+            compileOnly("org.projectlombok:lombok:${dep_lombok_version}")
+            annotationProcessor("org.projectlombok:lombok:${dep_lombok_version}")
+            testCompileOnly("org.projectlombok:lombok:${dep_lombok_version}")
+            testAnnotationProcessor("org.projectlombok:lombok:${dep_lombok_version}")
+        }
+    }
+}
+

@@ -4,7 +4,7 @@ import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
 import org.biotech.api.BiotechAPI;
-import org.biotech.api.init.MenuInit;
+import org.biotech.api.init.BiotechMenuInit;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -21,7 +21,7 @@ public class GeneMenu extends ModularUIContainerMenu {
     private SourceBranch quickMoveSourceBranch = SourceBranch.UNKNOWN;
 
     public GeneMenu(int windowID, Inventory inventory, IContainerUIHolder uiHolder) {
-        super((MenuType<ModularUIContainerMenu>) (MenuType<?>) MenuInit.GENE_MENU.get(), windowID, inventory, uiHolder);
+        super((MenuType<ModularUIContainerMenu>) (MenuType<?>) BiotechMenuInit.GENE_MENU.get(), windowID, inventory, uiHolder);
     }
 
     @Override
