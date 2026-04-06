@@ -1,21 +1,26 @@
 package org.galaxy.gene_hunter.api.system.choice;
 
+import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Data;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.core.ILootType;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Data
-public class ChoiceHolderData {
+public class ChoiceHolderData implements IPersistedSerializable {
 
     // 槽位数量常量
     public static final int CHOICE_SLOT_COUNT = 9;
@@ -23,11 +28,16 @@ public class ChoiceHolderData {
     /**
      * 用来进行暂时性的存储，用来显示存储信息
      */
+
+    @Persisted
+    @DescSynced
     private ItemStackHandler choiceHolder;
 
     /**
      * 默认的数量
      */
+    @Persisted
+    @DescSynced
     private int choiceCount = 3;
 
     private ILootType<?> currentLootType;
@@ -43,7 +53,7 @@ public class ChoiceHolderData {
         this.choiceCount = choiceCount;
     }
 
-    private ItemStackHandler createChoiceHolderHandler() {
+    private static ItemStackHandler createChoiceHolderHandler() {
         return new ItemStackHandler(CHOICE_SLOT_COUNT) {
             @Override
             protected void onContentsChanged(int slot) {
@@ -52,61 +62,47 @@ public class ChoiceHolderData {
         };
     }
 
-    // CODEC - 序列化（手动编写，因为 ILootType 无法自动处理）
+    private Optional<ResourceLocation> getCurrentLootTypeId() {
+        return Optional.ofNullable(currentLootType)
+            .map(type -> GalaxyLibLootTypeInit.LOOT_TYPE_REGISTRY.getKey(type));
+    }
+
+    private static ILootType<?> resolveLootType(Optional<ResourceLocation> lootTypeId) {
+        return lootTypeId.map(GalaxyLibLootTypeInit::getLootTypeById).orElse(null);
+    }
+
+    // CODEC - choiceHolder/choiceCount 交给注解持久化，这里补充手写兼容字段（lootType）
     public static final Codec<ChoiceHolderData> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            ItemStack.CODEC.listOf().fieldOf("choice_holder").forGetter(ChoiceHolderData::getChoiceHolderAsList),
-            Codec.INT.fieldOf("choice_count").forGetter(ChoiceHolderData::getChoiceCount)
-        ).apply(instance, (items, count) -> {
-            ItemStackHandler handler = new ItemStackHandler(CHOICE_SLOT_COUNT);
-            for (int i = 0; i < handler.getSlots() && i < items.size(); i++) {
-                handler.setStackInSlot(i, items.get(i));
-            }
-            return new ChoiceHolderData(handler, count);
+            Codec.INT.fieldOf("choice_count").forGetter(ChoiceHolderData::getChoiceCount),
+            ResourceLocation.CODEC.optionalFieldOf("loot_type_id").forGetter(ChoiceHolderData::getCurrentLootTypeId)
+        ).apply(instance, (count, lootTypeId) -> {
+            ChoiceHolderData data = new ChoiceHolderData(null, count);
+            data.setCurrentLootType(resolveLootType(lootTypeId));
+            return data;
         })
     );
 
-    // STREAM_CODEC - 网络同步
+    // STREAM_CODEC - 与 CODEC 保持一致，网络同步 choiceCount + lootTypeId
     public static final StreamCodec<RegistryFriendlyByteBuf, ChoiceHolderData> STREAM_CODEC = StreamCodec.composite(
-        ItemStack.STREAM_CODEC.apply(ByteBufCodecs.collection(ArrayList::new)),
-        ChoiceHolderData::getChoiceHolderAsList,
         ByteBufCodecs.VAR_INT,
         ChoiceHolderData::getChoiceCount,
-        (items, count) -> {
-            ItemStackHandler handler = new ItemStackHandler(CHOICE_SLOT_COUNT);
-            for (int i = 0; i < handler.getSlots() && i < items.size(); i++) {
-                handler.setStackInSlot(i, items.get(i));
-            }
-            return new ChoiceHolderData(handler, count);
+        ByteBufCodecs.optional(ResourceLocation.STREAM_CODEC),
+        ChoiceHolderData::getCurrentLootTypeId,
+        (count, lootTypeId) -> {
+            ChoiceHolderData data = new ChoiceHolderData(null, count);
+            data.setCurrentLootType(resolveLootType(lootTypeId));
+            return data;
         }
     );
 
-    /**
-     * 获取选择槽中的物品列表（用于序列化）
-     */
-    private List<ItemStack> getChoiceHolderAsList() {
-        List<ItemStack> list = new ArrayList<>();
-        for (int i = 0; i < choiceHolder.getSlots(); i++) {
-            list.add(choiceHolder.getStackInSlot(i));
-        }
-        return list;
+
+
+
+    public ItemStackHandler getChoiceHolderHandler() {
+        return choiceHolder;
     }
 
-    /**
-     * 获取选择槽中的物品列表（兼容旧代码）
-     */
-    public List<ItemStack> getChoiceHolder() {
-        return getChoiceHolderAsList();
-    }
-
-    /**
-     * 设置选择槽中的物品（兼容旧代码）
-     */
-    public void setChoiceHolder(List<ItemStack> items) {
-        for (int i = 0; i < choiceHolder.getSlots() && i < items.size(); i++) {
-            choiceHolder.setStackInSlot(i, items.get(i));
-        }
-    }
 
     /**
      * 清空选择槽

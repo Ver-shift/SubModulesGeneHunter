@@ -1,5 +1,6 @@
 package org.galaxy.gene_hunter.api.system.choice.core;
 
+
 public interface IChoiceManager {
 
 
@@ -23,4 +24,6 @@ public interface IChoiceManager {
      * 对当前的holderData进行刷新
      */
     void refresh();
+
+
 }
