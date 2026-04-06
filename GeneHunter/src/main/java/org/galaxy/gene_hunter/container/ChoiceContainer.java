@@ -1,4 +1,4 @@
-package org.biotech.container;
+package org.galaxy.gene_hunter;
 
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
