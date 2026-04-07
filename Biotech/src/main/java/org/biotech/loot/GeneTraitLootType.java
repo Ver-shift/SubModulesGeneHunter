@@ -71,4 +71,37 @@ public class GeneTraitLootType implements ILootType<ITrait> {
         double value = player.getAttributes().getInstance(BiotechAttributeInit.GENE_TRAIT_ROLL_COUNT).getValue();
         return ILootType.getPoolCountFromAttribute((float) value, RandomSource.create());
     }
+
+    /**
+     * 将抽取结果转换为 GeneItem ItemStack
+     * 收集所有词条到 TraitComp，然后创建带 GENE_INSTANCE 组件的 GeneItem
+     */
+    @Override
+    public ItemStack stackLike(ILootTableManager.LootResult lootResult) {
+        // 创建 TraitComp 并收集所有词条
+        TraitComp comp = TraitComp.empty();
+        for (var entry : lootResult.result()) {
+            ITrait trait = getLoot(entry.getId(), entry.getCount());
+            if (trait != null) {
+                comp.addTrait(trait);
+            }
+        }
+
+        // 如果收集到了词条，创建带 TraitComp 的 GeneItem
+        if (!comp.isEmpty()) {
+            // 使用 GeneRegistryHolder 延迟获取 GeneInstance，避免注册时空指针
+            GeneInstance instance = EMPTY_GENE_HOLDER.getInstance();
+
+            // 将 TraitComp 放入 GeneInstance 的组件中
+            instance.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
+
+            // 创建 ItemStack 并设置 GENE_INSTANCE 组件
+            ItemStack stack = new ItemStack(BiotechItemInit.GENE_ITEM.get());
+            stack.set(BiotechDataComponentInit.GENE_INSTANCE.get(), instance);
+
+            return stack;
+        }
+
+        return ItemStack.EMPTY;
+    }
 }

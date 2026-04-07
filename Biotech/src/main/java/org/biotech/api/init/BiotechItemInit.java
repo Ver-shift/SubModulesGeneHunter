@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.biotech.Biotech;
 import org.biotech.item.*;
+import org.biotech.item.xene.XeneItem;
 
 public class BiotechItemInit {
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, Biotech.MODID);

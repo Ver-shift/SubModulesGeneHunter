@@ -1,10 +1,12 @@
-package org.biotech.item;
+package org.biotech.item.xene;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.ServerOpList;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
@@ -69,6 +71,10 @@ public class XeneItem extends Item implements IXenoItem<XeneItem>, ITraitProvide
      */
     @Override
     public boolean canUnequip(SlotContext slotContext, ItemStack stack) {
-        return true;
+        if (slotContext.entity() instanceof ServerPlayer player){
+            player.gameMode.isCreative();
+            return true;
+        }
+        return false;
     }
 }

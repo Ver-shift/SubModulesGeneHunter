@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.IItemDecorator;
 import org.biotech.api.system.trait.core.IStackTraitAccess;
-import org.biotech.item.XeneItem;
+import org.biotech.item.xene.XeneItem;
 
 /**
  * Replaces the GUI icon rendering of XeneItem with the selected trait texture.

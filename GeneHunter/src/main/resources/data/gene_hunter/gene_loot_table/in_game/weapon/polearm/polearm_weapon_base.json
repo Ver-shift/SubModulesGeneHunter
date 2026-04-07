@@ -1,0 +1,97 @@
+{
+  "identify": "gene_hunter:polearm_weapon_base",
+  "note": "长杆武器基础战利品表 - 包含长矛、镰刀、戟",
+  "loot_type": "weapon",
+  "pools": [
+    {
+      "name": "iron_tier",
+      "base_weight": 100,
+      "entries": [
+        {
+          "id": "simplyswords:iron_spear",
+          "weight": 15
+        },
+        {
+          "id": "simplyswords:iron_scythe",
+          "weight": 10
+        },
+        {
+          "id": "simplyswords:iron_halberd",
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "name": "gold_tier",
+      "base_weight": 60,
+      "entries": [
+        {
+          "id": "simplyswords:gold_spear",
+          "weight": 15
+        },
+        {
+          "id": "simplyswords:gold_scythe",
+          "weight": 10
+        },
+        {
+          "id": "simplyswords:gold_halberd",
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "name": "diamond_tier",
+      "base_weight": 40,
+      "entries": [
+        {
+          "id": "simplyswords:diamond_spear",
+          "weight": 15
+        },
+        {
+          "id": "simplyswords:diamond_scythe",
+          "weight": 10
+        },
+        {
+          "id": "simplyswords:diamond_halberd",
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "name": "netherite_tier",
+      "base_weight": 20,
+      "entries": [
+        {
+          "id": "simplyswords:netherite_spear",
+          "weight": 15
+        },
+        {
+          "id": "simplyswords:netherite_scythe",
+          "weight": 10
+        },
+        {
+          "id": "simplyswords:netherite_halberd",
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "name": "runic_tier",
+      "base_weight": 10,
+      "entries": [
+        {
+          "id": "simplyswords:runic_spear",
+          "weight": 15
+        },
+        {
+          "id": "simplyswords:runic_scythe",
+          "weight": 10
+        },
+        {
+          "id": "simplyswords:runic_halberd",
+          "weight": 10
+        }
+      ]
+    }
+  ]
+}

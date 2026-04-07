@@ -1,0 +1,7 @@
+{
+  "commands.gene_hunter.start_roll.weapon.success": "Started weapon roll for player %s",
+  "commands.gene_hunter.start_roll.xene.success": "Started Xene trait roll for player %s",
+  "commands.gene_hunter.start_roll.failed.unknown_type": "Unknown loot type: %s. Available types: weapon, xene",
+  "commands.gene_hunter.start_roll.failed.no_manager": "Unable to get player's ChoiceManager",
+  "commands.gene_hunter.start_roll.failed.error": "Error executing command: %s"
+}

@@ -1,0 +1,112 @@
+{
+  "identify": "gene_hunter:two_hand_weapon_base",
+  "note": "双手武器基础战利品表 - 包含巨剑、巨锤、巨斧",
+  "loot_type": "weapon",
+  "pools": [
+    {
+      "name": "iron_tier",
+      "base_weight": 100,
+      "entries": [
+        {
+          "id": "simplyswords:iron_claymore",
+          "weight": 15,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:iron_greathammer",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:iron_greataxe",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        }
+      ]
+    },
+    {
+      "name": "gold_tier",
+      "base_weight": 60,
+      "entries": [
+        {
+          "id": "simplyswords:gold_claymore",
+          "weight": 15,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:gold_greathammer",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:gold_greataxe",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        }
+      ]
+    },
+    {
+      "name": "diamond_tier",
+      "base_weight": 40,
+      "entries": [
+        {
+          "id": "simplyswords:diamond_claymore",
+          "weight": 15,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:diamond_greathammer",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:diamond_greataxe",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        }
+      ]
+    },
+    {
+      "name": "netherite_tier",
+      "base_weight": 20,
+      "entries": [
+        {
+          "id": "simplyswords:netherite_claymore",
+          "weight": 15,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:netherite_greathammer",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:netherite_greataxe",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        }
+      ]
+    },
+    {
+      "name": "runic_tier",
+      "base_weight": 10,
+      "entries": [
+        {
+          "id": "simplyswords:runic_claymore",
+          "weight": 15,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:runic_greathammer",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        },
+        {
+          "id": "simplyswords:runic_greataxe",
+          "weight": 10,
+          "nbt": "{Damage:0}"
+        }
+      ]
+    }
+  ]
+}

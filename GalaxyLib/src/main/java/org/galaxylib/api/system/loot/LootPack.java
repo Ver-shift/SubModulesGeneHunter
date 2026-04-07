@@ -46,6 +46,9 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
             ResourceLocation location = entry.getKey();
             Resource resource = entry.getValue();
 
+            // Print each data pack name while loading loot table definitions.
+            GalaxyLib.LOGGER.info("Loading loot table {} from data pack {}", location, resource.sourcePackId());
+
             try (BufferedReader reader = resource.openAsReader()) {
                 // 解析 JSON
                 JsonElement json = JsonParser.parseReader(reader);

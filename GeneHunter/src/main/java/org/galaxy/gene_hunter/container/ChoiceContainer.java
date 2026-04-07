@@ -44,21 +44,19 @@ public class ChoiceContainer {
             var choice = new Choice();
             root.addChild(choice);
             choice.getSlot().bind(handler, i);
+            choice.getSlot().setSlotIndex(i);
         }
 
-        var button = new Button(){
-            @Override
-            public Button setOnClick(@Nullable UIEventListener onClick) {
-                RPCPacketDistributor.rpcToServer("gene_hunter:refresh_choice");
-                return super.setOnClick(onClick);
-            }
-        };
+        var button = new Button();
         button.layout(layout -> {
-            layout.heightPercent(5);
-            layout.widthPercent(5);
+            layout.heightPercent(10);
+            layout.widthPercent(10);
             layout.positionType(TaffyPosition.ABSOLUTE);
             layout.left(2);
             layout.top(2);
+        });
+        button.addEventListener(UIEvents.CLICK, event -> {
+            RPCPacketDistributor.rpcToServer("gene_hunter:refresh_choice");
         });
 
         root.addChild(button);

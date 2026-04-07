@@ -1,10 +1,18 @@
 package org.galaxylib.api.system.loot.core;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.data.LootPoolData;
 import org.galaxylib.api.system.loot.data.LootTableGroupBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,6 +38,8 @@ public interface ILootTableManager {
      * @return 抽取结果列表
      */
     LootResult roolWithoutReplacement(Supplier<ILootType<?>> lootType);
+    LootResult roolWithoutReplacement(ILootType<?> lootType);
+
 
     /**
      * 放回抽取
@@ -40,7 +50,7 @@ public interface ILootTableManager {
      * @return 抽取结果列表
      */
     LootResult rollWithReplacement(Supplier<ILootType<?>> lootType);
-
+    LootResult rollWithReplacement(ILootType<?> lootType);
     /**
      * 批量设置指定名称的所有 pool 的 weight
      * <p>
@@ -70,7 +80,38 @@ public interface ILootTableManager {
     /**
      * 抽取结果记录
      */
-    record LootResult(List<LootPoolData.Entry> result, ILootType<?> lootType) {}
+    record LootResult(List<LootPoolData.Entry> result, ILootType<?> lootType) {
+
+        /**
+         * 获取战利品类型的 ID（用于序列化）
+         */
+        private Optional<ResourceLocation> getLootTypeId() {
+            return Optional.ofNullable(lootType)
+                .map(type -> GalaxyLibLootTypeInit.LOOT_TYPE_REGISTRY.getKey(type));
+        }
+
+        /**
+         * 根据 ID 解析战利品类型
+         */
+        private static ILootType<?> resolveLootType(Optional<ResourceLocation> lootTypeId) {
+            return lootTypeId.map(GalaxyLibLootTypeInit::getLootTypeById).orElse(null);
+        }
+
+        public static final Codec<LootResult> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                LootPoolData.Entry.CODEC.listOf().fieldOf("result").forGetter(LootResult::result),
+                ResourceLocation.CODEC.optionalFieldOf("loot_type_id").forGetter(LootResult::getLootTypeId)
+            ).apply(instance, (entries, lootTypeId) -> new LootResult(entries, resolveLootType(lootTypeId)))
+        );
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, LootResult> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.collection(ArrayList::new, LootPoolData.Entry.STREAM_CODEC),
+            LootResult::result,
+            ByteBufCodecs.optional(ResourceLocation.STREAM_CODEC),
+            LootResult::getLootTypeId,
+            (entries, lootTypeId) -> new LootResult(entries, resolveLootType(lootTypeId))
+        );
+    }
 
     void init();
 }

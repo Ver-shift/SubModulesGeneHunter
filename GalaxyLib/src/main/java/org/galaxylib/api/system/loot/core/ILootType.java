@@ -18,6 +18,12 @@ public interface ILootType<T> {
      */
     T getLoot(ResourceLocation lootId,int count);
 
+
+    /**
+     * 可以给词条 当成多词条用，
+     * @param player
+     * @return
+     */
     default int getPoolCount(ServerPlayer player){
         double value = player.getAttributes().getInstance(GalaxyLibAttributeInit.ITEM_ROLL_COUNT).getValue();
 
@@ -35,14 +41,23 @@ public interface ILootType<T> {
         for (var entry : lootResult.result()) {
             // 通过 lootType 获取实际的战利品对象
             Object loot = lootResult.lootType().getLoot(entry.getId(), entry.getCount());
-
-            if (loot instanceof ItemStack stack) {
-                // 添加到玩家背包，如果背包满了则掉落在地上
-                if (!player.getInventory().add(stack)) {
-                    player.spawnAtLocation(stack);
-                }
+            claimItemStackToPlayer(player, loot);
+        }
+    }
+    default void claimItemStackToPlayer(ServerPlayer player, Object itemStack){
+        if (itemStack instanceof ItemStack stack) {
+            // 添加到玩家背包，如果背包满了则掉落在地上
+            if (!player.getInventory().add(stack)) {
+                player.spawnAtLocation(stack);
             }
         }
+    }
+
+    default ItemStack stackLike(ILootTableManager.LootResult lootResult){
+        if (getLoot(lootResult.result().get(0).getId(),1) instanceof ItemStack stack) {
+            return stack;
+        }
+        return ItemStack.EMPTY;
     }
     
     /**

@@ -1,0 +1,7 @@
+{
+  "commands.gene_hunter.start_roll.weapon.success": "已为玩家 %s 启动武器抽取",
+  "commands.gene_hunter.start_roll.xene.success": "已为玩家 %s 启动 Xene 特质抽取",
+  "commands.gene_hunter.start_roll.failed.unknown_type": "未知的战利品类型: %s。可用类型: weapon, xene",
+  "commands.gene_hunter.start_roll.failed.no_manager": "无法获取玩家的 ChoiceManager",
+  "commands.gene_hunter.start_roll.failed.error": "执行命令时出错: %s"
+}

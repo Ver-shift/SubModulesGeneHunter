@@ -30,7 +30,7 @@ public class LootTableManager implements ILootTableManager {
     }
 
     @Override
-    public void init(){
+    public void init() {
 
     }
 
@@ -48,9 +48,14 @@ public class LootTableManager implements ILootTableManager {
     @Override
     public LootResult roolWithoutReplacement(Supplier<ILootType<?>> lootType) {
         ILootType<?> type = lootType.get();
-        int count = type.getPoolCount(player);
+        return roolWithoutReplacement(type);
+    }
+
+    @Override
+    public LootResult roolWithoutReplacement(ILootType<?> lootType) {
+        int count = lootType.getPoolCount(player);
         LootTableGroup group = getLootTableGroup(lootType);
-        if (group == null) return new LootResult(List.of(), type);
+        if (group == null) return new LootResult(List.of(), lootType);
 
         List<LootPoolData.Entry> results = new ArrayList<>();
         RandomSource random = player.getRandom();
@@ -68,20 +73,24 @@ public class LootTableManager implements ILootTableManager {
             if (entry != null) {
                 results.add(entry);
             }
-
             // 不放回：从池中移除已抽中的条目
             chancePool.remove(selectedId);
         }
 
-        return new LootResult(results, type);
+        return new LootResult(results, lootType);
     }
 
     @Override
     public LootResult rollWithReplacement(Supplier<ILootType<?>> lootType) {
         ILootType<?> type = lootType.get();
-        int count = type.getPoolCount(player);
+        return roolWithoutReplacement(type);
+    }
+
+    @Override
+    public LootResult rollWithReplacement(ILootType<?> lootType) {
+        int count = lootType.getPoolCount(player);
         LootTableGroup group = getLootTableGroup(lootType);
-        if (group == null) return new LootResult(List.of(), type);
+        if (group == null) return new LootResult(List.of(), lootType);
 
         List<LootPoolData.Entry> results = new ArrayList<>();
         RandomSource random = player.getRandom();
@@ -101,8 +110,7 @@ public class LootTableManager implements ILootTableManager {
             }
             // 放回：不移除，保持池子不变
         }
-
-        return new LootResult(results, type);
+        return new LootResult(results, lootType);
     }
 
 
@@ -134,7 +142,7 @@ public class LootTableManager implements ILootTableManager {
 
     @Override
     public void claimResults(LootResult results) {
-        results.lootType().claimResultsToPlayer(player,results);
+        results.lootType().claimResultsToPlayer(player, results);
     }
 
 
@@ -142,26 +150,27 @@ public class LootTableManager implements ILootTableManager {
 
     /**
      * 加权随机选择 - 使用 globeChance 概率
-     * @param pool 概率池 (Entry ID -> 概率)
+     *
+     * @param pool   概率池 (Entry ID -> 概率)
      * @param random 随机数源
      * @return 选中的 Entry ID
      */
     private ResourceLocation weightedRandomSelect(Map<ResourceLocation, Float> pool, RandomSource random) {
         if (pool.isEmpty()) return null;
-        
+
         float totalChance = (float) pool.values().stream().mapToDouble(f -> f).sum();
         if (totalChance <= 0) return null;
-        
+
         float randomValue = random.nextFloat() * totalChance;
         float currentChance = 0;
-        
+
         for (Map.Entry<ResourceLocation, Float> entry : pool.entrySet()) {
             currentChance += entry.getValue();
             if (randomValue <= currentChance) {
                 return entry.getKey();
             }
         }
-        
+
         // 返回最后一个（防止浮点误差）
         return pool.keySet().iterator().next();
     }
@@ -169,6 +178,9 @@ public class LootTableManager implements ILootTableManager {
 
     private LootTableGroup getLootTableGroup(Supplier<ILootType<?>> lootType) {
         return playerLootTableData.getLootTableGroup(lootType);
+    }
+    private LootTableGroup getLootTableGroup(ILootType<?> lootType) {
+        return playerLootTableData.getLootTableGroup(() -> lootType);
     }
 
     private Map<ResourceLocation, GeneLootTableData> getLevelTables() {

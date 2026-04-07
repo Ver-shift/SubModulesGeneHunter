@@ -2,8 +2,10 @@ package org.biotech.loot;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.biotech.api.BiotechAPI;
+import org.biotech.api.init.BiotechAttributeInit;
 import org.biotech.api.init.BiotechDataComponentInit;
 import org.biotech.api.init.BiotechItemInit;
 import org.biotech.api.init.BiotechTraitInit;
@@ -36,8 +38,14 @@ public class XeneTraitLootType implements ILootType<ITrait> {
     @Override
     public void claimResultsToPlayer(ServerPlayer player, ILootTableManager.LootResult lootResult) {
 
-        ItemStack xeneStack = stackLick(lootResult);
+        ItemStack xeneStack = stackLike(lootResult);
+        claimItemStackToPlayer(player, xeneStack);
 
+    }
+
+    @Override
+    public void claimItemStackToPlayer(ServerPlayer player, Object itemStack) {
+        if (itemStack instanceof ItemStack stack) {
             IDynamicStackHandler slotHandler = BiotechAPI.getXeneEquipSlots(player);
             if (slotHandler == null) {
                 return;
@@ -46,17 +54,20 @@ public class XeneTraitLootType implements ILootType<ITrait> {
             // 找到第一个空槽位并放入物品
             for (int i = 0; i < slotHandler.getSlots(); i++) {
                 if (slotHandler.getStackInSlot(i).isEmpty()) {
-                    slotHandler.setStackInSlot(i, xeneStack);
+                    slotHandler.setStackInSlot(i, stack);
                     break;
                 }
             }
+        }
+
 
     }
 
     /**
      * 将结果转移成物品stack
      */
-    public ItemStack stackLick(ILootTableManager.LootResult lootResult){
+    @Override
+    public ItemStack stackLike(ILootTableManager.LootResult lootResult){
         // 创建 TraitComp 并收集所有词条
         TraitComp comp = TraitComp.empty();
         for (var entry : lootResult.result()) {
@@ -78,5 +89,9 @@ public class XeneTraitLootType implements ILootType<ITrait> {
         return ItemStack.EMPTY;
     }
 
-
+    @Override
+    public int getPoolCount(ServerPlayer player) {
+        double value = player.getAttributes().getInstance(BiotechAttributeInit.XENE_TRAIT_ROLL_COUNT).getValue();
+        return ILootType.getPoolCountFromAttribute((float) value, RandomSource.create());
+    }
 }

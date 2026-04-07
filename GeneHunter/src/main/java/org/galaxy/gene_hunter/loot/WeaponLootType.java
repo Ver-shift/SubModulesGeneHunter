@@ -3,9 +3,13 @@ package org.galaxy.gene_hunter.loot;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.galaxy.gene_hunter.api.GeneHunterAPI;
+import org.galaxy.gene_hunter.api.system.GeneHunterData;
+import org.galaxy.gene_hunter.api.util.ItemType;
 import org.galaxylib.api.system.loot.core.ILootType;
 
 /**
@@ -16,6 +20,11 @@ public class WeaponLootType implements ILootType<ItemStack> {
     @Override
     public String getName() {
         return "weapon";
+    }
+
+    @Override
+    public int getPoolCount(ServerPlayer player) {
+        return GeneHunterAPI.getChoiceManager(player).getChoiceCount();
     }
 
     @Override
@@ -32,7 +41,7 @@ public class WeaponLootType implements ILootType<ItemStack> {
         ItemStack stack = new ItemStack(item, count);
         
         // 检测是否是武器（有攻击伤害属性）
-        if (isWeapon(stack)) {
+        if (ItemType.isWeapon(stack)) {
             return stack;
         }
         
@@ -41,16 +50,5 @@ public class WeaponLootType implements ILootType<ItemStack> {
 
 
 
-    /**
-     * 检测物品是否为武器（有攻击伤害属性）
-     */
-    public static boolean isWeapon(ItemStack stack) {
-        // 检查属性修饰符中是否有攻击伤害
-        var modifiers = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
-        if (modifiers != null) {
-            return modifiers.modifiers().stream()
-                    .anyMatch(modifier -> modifier.attribute().equals(Attributes.ATTACK_DAMAGE));
-        }
-        return false;
-    }
+
 }
