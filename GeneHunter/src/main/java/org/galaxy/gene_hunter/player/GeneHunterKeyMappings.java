@@ -1,6 +1,8 @@
 package org.galaxy.gene_hunter.player;
 
 import com.lowdragmc.lowdraglib2.networking.rpc.RPCPacketDistributor;
+import com.lowdragmc.lowdraglib2.plugin.LDLibPlugin;
+import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegister;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -29,5 +31,4 @@ public class GeneHunterKeyMappings {
             }
         }
     }
-
 }

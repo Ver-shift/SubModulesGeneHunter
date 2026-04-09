@@ -1,78 +1,36 @@
 package com.pz.beyond;
 
 import com.mojang.logging.LogUtils;
-import com.pz.beyond.registry.ModAttachments;
-import com.pz.beyond.util.SafeZoneRuleUtil;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
-import net.neoforged.api.distmarker.Dist;
+import com.pz.beyond.api.init.BeyondAttachInit;
+
+import com.pz.beyond.api.init.BeyondZoneRuleInit;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Beyond.MODID)
 public class Beyond
 {
-    // Define mod id in a common place for everything to reference
     public static final String MODID = "beyond";
-    // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public Beyond(IEventBus modEventBus, ModContainer modContainer)
     {
 
-        registers(modEventBus,
-                ModAttachments.ATTACHMENT_TYPES
-                );
+        BeyondAttachInit.register(modEventBus);
 
-
-        // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
-
-
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modEventBus.addListener(BeyondZoneRuleInit::registerRegistry);
+        BeyondZoneRuleInit.register(modEventBus);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event)
-    {
-        SafeZoneRuleUtil.initAutoRules();
-    }
 
-    /**
-     * 注册方法
-     * @param modEventBus
-     * @param registers
-     */
-    public static void registers(IEventBus modEventBus,DeferredRegister<?>... registers) {
-        for (DeferredRegister<?> register : registers){
-            register.register(modEventBus);
-        }
 
+
+
+
+    public static ResourceLocation asResource(String path){
+        return ResourceLocation.fromNamespaceAndPath(MODID, path.toLowerCase());
     }
 }

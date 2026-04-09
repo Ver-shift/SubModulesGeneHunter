@@ -72,8 +72,8 @@ public class XeneItem extends Item implements IXenoItem<XeneItem>, ITraitProvide
     @Override
     public boolean canUnequip(SlotContext slotContext, ItemStack stack) {
         if (slotContext.entity() instanceof ServerPlayer player){
-            player.gameMode.isCreative();
-            return true;
+            // 只有创造模式玩家可以卸下
+            return player.gameMode.isCreative();
         }
         return false;
     }
