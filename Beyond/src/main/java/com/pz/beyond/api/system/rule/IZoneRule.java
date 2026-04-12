@@ -5,15 +5,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
-public interface IZoneRule<T extends AbstractZone> {
+public interface IZoneRule {
 
-    ResourceLocation getIdentifier();
+
 
     /**
      * 玩家区域内的行为
      * @param level
      */
-    default void levelTick(ServerLevel level,T zoneType) {
+    default void levelTick(ServerLevel level,AbstractZone zoneType) {
 
     }
 
@@ -21,7 +21,7 @@ public interface IZoneRule<T extends AbstractZone> {
      * 玩家在区域内的行为
      * @param player
      */
-    default void playerTick(ServerPlayer player,T zoneType) {
+    default void playerTick(ServerPlayer player,AbstractZone zoneType) {
 
     }
 

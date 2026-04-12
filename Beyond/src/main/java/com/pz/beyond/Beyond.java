@@ -2,6 +2,10 @@ package com.pz.beyond;
 
 import com.mojang.logging.LogUtils;
 import com.pz.beyond.api.init.BeyondAttachInit;
+import com.pz.beyond.api.init.BeyondEncounters;
+import com.pz.beyond.api.init.BeyondNodeColors;
+import com.pz.beyond.api.init.BeyondSceneTypes;
+import com.pz.beyond.api.init.BeyondZoneInit;
 
 import com.pz.beyond.api.init.BeyondZoneRuleInit;
 import net.minecraft.resources.ResourceLocation;
@@ -21,11 +25,27 @@ public class Beyond
 
         BeyondAttachInit.register(modEventBus);
 
-        modEventBus.addListener(BeyondZoneRuleInit::registerRegistry);
-        BeyondZoneRuleInit.register(modEventBus);
+        newRegister(modEventBus);
+
+
     }
 
+    public static void newRegister(IEventBus modEventBus) {
+        modEventBus.addListener(BeyondNodeColors::registerRegistry);
+        BeyondNodeColors.register(modEventBus);
 
+        modEventBus.addListener(BeyondSceneTypes::registerRegistry);
+        BeyondSceneTypes.register(modEventBus);
+
+        modEventBus.addListener(BeyondEncounters::registerRegistry);
+        BeyondEncounters.register(modEventBus);
+
+        modEventBus.addListener(BeyondZoneRuleInit::registerRegistry);
+        BeyondZoneRuleInit.register(modEventBus);
+
+        modEventBus.addListener(BeyondZoneInit::registerRegistry);
+        BeyondZoneInit.register(modEventBus);
+    }
 
 
 

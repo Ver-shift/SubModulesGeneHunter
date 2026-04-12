@@ -8,16 +8,30 @@ import net.minecraft.resources.ResourceLocation;
 public abstract class AbstractRule implements IZoneRule{
 
     private final ResourceLocation identifier;
-    /**
-     * rule 的价值，用来测试收益
-     */
-    private int rule_value;
-
-    private RuleType rule_type = RuleType.Natural;
+//    /**
+//     * rule 的价值，用来测试收益
+//     */
+//    private int ruleValue;
+//
+//    private RuleType ruleType = RuleType.Natural;
 
     public AbstractRule(ResourceLocation identifier) {
         this.identifier = identifier;
     }
+
+    public ResourceLocation getIdentifier() {
+        return identifier;
+    }
+
+    protected abstract int getRuleValue();
+    protected abstract RuleType getRuleType();
+    protected abstract int getMaxLevel();
+
+
+
+
+
+
 
     public enum RuleType{
 
