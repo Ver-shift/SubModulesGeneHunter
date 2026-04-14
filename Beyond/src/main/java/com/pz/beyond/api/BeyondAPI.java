@@ -1,30 +1,26 @@
 package com.pz.beyond.api;
 
-import com.pz.beyond.api.init.BeyondZoneInit;
+import com.pz.beyond.api.init.BeyondAttachInit;
+import com.pz.beyond.api.system.progress.ProgressCatalog;
 import com.pz.beyond.api.system.zone.LevelZoneData;
-import com.pz.beyond.api.system.zone.SaveLevelData;
 import com.pz.beyond.api.system.zone.ZoneData;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-
-import java.util.List;
 
 public class BeyondAPI {
 
-    @OnlyIn(Dist.DEDICATED_SERVER)
-    public static LevelZoneData getLevelZoneData(ResourceKey<Level> level) {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) {
-            return new LevelZoneData();
-        }
-        return SaveLevelData.get(server).getOrCreateLevelData(Level.OVERWORLD);
+    /**
+     * 目前只有主世界有这个数据哦。
+     * @param level
+     * @return
+     */
+    public static ProgressCatalog getProgressCatalog(Level level) {
+        return level.getData(BeyondAttachInit.PROGRESS_CATALOG);
     }
 
-    public static LevelZoneData getOverworldZoneData(){
-        return getLevelZoneData(Level.OVERWORLD);
+    public static LevelZoneData getZoneData(Level level) {
+        return level.getData(BeyondAttachInit.LEVEL_ZONE_DATA);
     }
+
 }

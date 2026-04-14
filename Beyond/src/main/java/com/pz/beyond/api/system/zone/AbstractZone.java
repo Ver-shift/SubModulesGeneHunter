@@ -6,12 +6,13 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class AbstractZone {
+public abstract class AbstractZone<T> {
 
     /**
      * 标识符
@@ -32,7 +33,9 @@ public abstract class AbstractZone {
         return identifier;
     }
 
-
+    protected T getAttachData(Level level){
+        return null;
+    }
 
 
 }

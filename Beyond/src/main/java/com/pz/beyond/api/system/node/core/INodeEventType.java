@@ -1,6 +1,6 @@
 package com.pz.beyond.api.system.node.core;
 
-import com.pz.beyond.api.system.node.NodeData;
+import com.pz.beyond.api.system.node.RolledData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,7 +17,7 @@ public interface INodeEventType {
 
 
 
-    record Context(List<ServerPlayer> players, ServerLevel level, NodeData nodeData){
+    record Context(List<ServerPlayer> players, ServerLevel level, RolledData rolledData){
 
     }
 

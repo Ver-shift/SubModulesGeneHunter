@@ -12,7 +12,7 @@ import java.util.Optional;
 /**
  * 节点事件类型，由节点和颜色决定的类型。
  */
-public class EncounterType implements IEncounterType {
+public class EncounterType {
 
     public static final String COLOR = "color";
     public static final String SCENE_TYPE = "scene_type";
