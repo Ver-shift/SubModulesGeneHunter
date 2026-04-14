@@ -8,6 +8,7 @@ import com.pz.beyond.api.system.zone.core.IRuleContainer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import lombok.Data;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
@@ -35,43 +36,43 @@ public class ZoneData implements IRuleContainer {
 
     ).apply(builder, ZoneData::new));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ZoneData> STREAM_CODEC = new StreamCodec<>() {
+    private static final StreamCodec<RegistryFriendlyByteBuf, AbstractZone> ZONE_STREAM_CODEC = new StreamCodec<>() {
         @Override
-        public ZoneData decode(RegistryFriendlyByteBuf buf) {
-            AbstractZone zone = BeyondZoneInit.getZoneById(buf.readResourceLocation());
-
-            int listenerSize = buf.readVarInt();
-            List<RuleData> listeners = new ArrayList<>(listenerSize);
-            for (int i = 0; i < listenerSize; i++) {
-                listeners.add(RuleData.STREAM_CODEC.decode(buf));
-            }
-
-            int chunkKeySize = buf.readVarInt();
-            List<Long> chunkKeys = new ArrayList<>(chunkKeySize);
-            for (int i = 0; i < chunkKeySize; i++) {
-                chunkKeys.add(buf.readLong());
-            }
-
-            return new ZoneData(zone, listeners, chunkKeys);
+        public AbstractZone decode(RegistryFriendlyByteBuf buf) {
+            return BeyondZoneInit.getZoneById(buf.readResourceLocation());
         }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buf, ZoneData data) {
-            buf.writeResourceLocation(data.getZoneId());
-
-            List<RuleData> listeners = data.listeners == null ? List.of() : data.listeners;
-            buf.writeVarInt(listeners.size());
-            for (RuleData listener : listeners) {
-                RuleData.STREAM_CODEC.encode(buf, listener);
-            }
-
-            List<Long> chunkKeys = data.getChunkKeyList();
-            buf.writeVarInt(chunkKeys.size());
-            for (Long key : chunkKeys) {
-                buf.writeLong(key);
-            }
+        public void encode(RegistryFriendlyByteBuf buf, AbstractZone zone) {
+            buf.writeResourceLocation(BeyondZoneInit.getZoneId(zone));
         }
     };
+
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<RuleData>> LISTENER_LIST_STREAM_CODEC =
+        ByteBufCodecs.collection(ArrayList::new, RuleData.STREAM_CODEC);
+    private static final StreamCodec<RegistryFriendlyByteBuf, Long> LONG_STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public Long decode(RegistryFriendlyByteBuf buf) {
+            return buf.readLong();
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buf, Long value) {
+            buf.writeLong(value == null ? 0L : value);
+        }
+    };
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<Long>> CHUNK_KEY_LIST_STREAM_CODEC =
+        ByteBufCodecs.collection(ArrayList::new, LONG_STREAM_CODEC);
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ZoneData> STREAM_CODEC = StreamCodec.composite(
+        ZONE_STREAM_CODEC,
+        ZoneData::getZone,
+        LISTENER_LIST_STREAM_CODEC,
+        ZoneData::getListenersSafe,
+        CHUNK_KEY_LIST_STREAM_CODEC,
+        ZoneData::getChunkKeyList,
+        ZoneData::new
+    );
 
     public ZoneData(AbstractZone zone) {
         this.zone = zone;
@@ -99,6 +100,10 @@ public class ZoneData implements IRuleContainer {
         List<Long> keys = new ArrayList<>(chunkKeys.size());
         chunkKeys.forEach((long key) -> keys.add(key));
         return keys;
+    }
+
+    private List<RuleData> getListenersSafe() {
+        return listeners == null ? List.of() : listeners;
     }
 
 
