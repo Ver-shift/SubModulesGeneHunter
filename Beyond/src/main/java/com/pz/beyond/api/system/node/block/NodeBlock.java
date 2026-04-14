@@ -1,8 +1,6 @@
-package com.pz.beyond.api.system.node;
+package com.pz.beyond.api.system.node.block;
 
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class NodeBlock extends Block {
     public NodeBlock(Properties properties) {

@@ -2,6 +2,7 @@ package com.pz.beyond.api.init;
 
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.system.node.EncounterType;
+import com.pz.beyond.api.system.node.NodeColor;
 import com.pz.beyond.progress.encounter.*;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -47,13 +48,13 @@ public class BeyondEncounters {
     // Boss 类型使用颜色参数（都是商店+Boss）
     // 绿色
     public static final Supplier<EncounterType> BOSS_GREEN = ENCOUNTERS.register("boss_green",
-        () -> new BossEncounter(BeyondNodeColors.GREEN));
+        () -> new BossEncounter(NodeColor.GREEN));
     // 橙色
     public static final Supplier<EncounterType> BOSS_ORANGE = ENCOUNTERS.register("boss_orange",
-        () -> new BossEncounter(BeyondNodeColors.ORANGE));
+        () -> new BossEncounter(NodeColor.ORANGE));
     // 红色
     public static final Supplier<EncounterType> BOSS_RED = ENCOUNTERS.register("boss_red",
-        () -> new BossEncounter(BeyondNodeColors.RED));
+        () -> new BossEncounter(NodeColor.RED));
 
     public static void registerRegistry(NewRegistryEvent event) {
         event.register(ENCOUNTER_REGISTRY);

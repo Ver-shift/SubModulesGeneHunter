@@ -36,15 +36,17 @@ public class ProgressType {
 
     /**
      * 根据权重抽取事件列表
+     * @param encounterType 遭遇类型
+     * @param random 随机源
      */
-    public List<NodeEventType> roll(EncounterType encounterType) {
+    public List<NodeEventType> roll(EncounterType encounterType, Random random) {
         List<EventMapping> mappings = encounterEvents.get(encounterType);
         if (mappings == null || mappings.isEmpty()) {
             return List.of(BeyondNodeEventTypes.EMPTY);
         }
 
         int totalWeight = mappings.stream().mapToInt(EventMapping::weight).sum();
-        int roll = new Random().nextInt(totalWeight);
+        int roll = random.nextInt(totalWeight);
         int cumulative = 0;
         for (EventMapping mapping : mappings) {
             cumulative += mapping.weight();

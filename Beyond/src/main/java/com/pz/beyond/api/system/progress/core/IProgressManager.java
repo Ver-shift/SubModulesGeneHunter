@@ -20,5 +20,9 @@ public interface IProgressManager {
      */
     void createProgress(ResourceLocation id, Consumer<ProgressType.Builder> consumer);
 
-    
+    /**
+     * 开启一把游戏
+     *
+     */
+    void startGame();
 }

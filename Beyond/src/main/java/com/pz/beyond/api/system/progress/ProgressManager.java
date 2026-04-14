@@ -16,4 +16,9 @@ public class ProgressManager implements IProgressManager {
     public void createProgress(ResourceLocation id, Consumer<ProgressType.Builder> consumer) {
 
     }
+
+    @Override
+    public void startGame() {
+
+    }
 }
