@@ -1,7 +1,6 @@
 package com.pz.beyond.api.system.progress;
 
 import lombok.Data;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -11,7 +10,9 @@ import java.util.HashMap;
  */
 @Data
 public class ProgressCatalog {
-
-    private HashMap<ResourceLocation,Progress> progress= new HashMap<>();
+    /**
+     * ResourceLocation - progressType
+     */
+    private HashMap<ResourceLocation, Progress> progress = new HashMap<>();
     private Progress currentProgress;
 }

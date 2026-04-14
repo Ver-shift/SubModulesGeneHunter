@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.pz.beyond.api.init.BeyondAttachInit;
 import com.pz.beyond.api.init.BeyondEncounters;
 import com.pz.beyond.api.init.BeyondNodeColors;
+import com.pz.beyond.api.init.BeyondNodeEventTypes;
 import com.pz.beyond.api.init.BeyondSceneTypes;
 import com.pz.beyond.api.init.BeyondZoneInit;
 
@@ -39,6 +40,9 @@ public class Beyond
 
         modEventBus.addListener(BeyondEncounters::registerRegistry);
         BeyondEncounters.register(modEventBus);
+
+        modEventBus.addListener(BeyondNodeEventTypes::registerRegistry);
+        BeyondNodeEventTypes.register(modEventBus);
 
         modEventBus.addListener(BeyondZoneRuleInit::registerRegistry);
         BeyondZoneRuleInit.register(modEventBus);

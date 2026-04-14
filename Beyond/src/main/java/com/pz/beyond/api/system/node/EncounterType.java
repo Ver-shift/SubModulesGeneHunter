@@ -20,4 +20,11 @@ public class EncounterType implements IEncounterType {
         this.color = color;
         this.sceneType = sceneType;
     }
+
+    /**
+     * 用于不需要颜色的遭遇类型
+     */
+    public EncounterType(Supplier<SceneType> sceneType) {
+        this.sceneType = sceneType.get();
+    }
 }
