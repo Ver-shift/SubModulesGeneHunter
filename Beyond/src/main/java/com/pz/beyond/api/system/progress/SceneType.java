@@ -1,23 +1,19 @@
 package com.pz.beyond.api.system.progress;
 
-import net.minecraft.resources.ResourceLocation;
-
 /**
- * 进度类型，通过开发者手动指定，与颜色共同组成
+ * 进度事件类型
  */
-public class SceneType {
-    private ResourceLocation identifier;
-
-    public SceneType(ResourceLocation identifier) {
-        this.identifier = identifier;
-    }
-
+public enum SceneType {
     /**
-     * 获取Scene在进度条上面显示的条件
-     * @return
+     * 资源事件：用于获取资源的房间，可能是战斗或小游戏
      */
-    public ResourceLocation getTexture(){
-        return identifier;
-    }
-
+    HARVEST,
+    /**
+     * 修正事件：用于调整对局节奏，恢复状态或强化自身
+     */
+    REPOSE,
+    /**
+     * BOSS挑战事件：必定出现的boss节点，包含商店
+     */
+    CLIMAX
 }
