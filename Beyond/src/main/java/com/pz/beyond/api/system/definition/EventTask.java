@@ -21,11 +21,13 @@ import java.util.List;
 @AllArgsConstructor
 public class EventTask {
 
+    public static final String EVENTS = "events";
+
     private List<NodeEventType> events = new ArrayList<>();
 
     public static final Codec<EventTask> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            NodeEventType.CODEC.listOf().fieldOf("events").forGetter(EventTask::getEvents)
+            NodeEventType.CODEC.listOf().fieldOf(EVENTS).forGetter(EventTask::getEvents)
         ).apply(instance, EventTask::new)
     );
 

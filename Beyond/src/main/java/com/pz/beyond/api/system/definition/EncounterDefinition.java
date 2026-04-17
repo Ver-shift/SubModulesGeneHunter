@@ -22,31 +22,30 @@ import java.util.List;
 @AllArgsConstructor
 public class EncounterDefinition {
 
+    public static final String EVENT_TASKS = "event_tasks";
+    public static final String ENCOUNTER_TYPE = "encounter_type";
+    public static final String EVENT_TASK = "event_task";
+    public static final String WEIGHT = "weight";
+
     /**
      * 普通的任务列表
      */
     private List<Entry> eventTasks = new ArrayList<>();
-    private EncounterType encounterType;
+
 
     public static final Codec<EncounterDefinition> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            Entry.CODEC.listOf().fieldOf("event_tasks").forGetter(EncounterDefinition::getEventTasks),
-            EncounterType.CODEC.optionalFieldOf("encounter_type", null).forGetter(EncounterDefinition::getEncounterType)
+            Entry.CODEC.listOf().fieldOf(EVENT_TASKS).forGetter(EncounterDefinition::getEventTasks)
         ).apply(instance, EncounterDefinition::new)
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, EncounterDefinition> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.collection(ArrayList::new, Entry.STREAM_CODEC),
         EncounterDefinition::getEventTasks,
-        ByteBufCodecs.optional(EncounterType.STREAM_CODEC),
-        def -> java.util.Optional.ofNullable(def.getEncounterType()),
-        (tasks, typeOpt) -> {
-            EncounterDefinition def = new EncounterDefinition();
-            def.setEventTasks(tasks);
-            def.setEncounterType(typeOpt.orElse(null));
-            return def;
-        }
+        EncounterDefinition::new
     );
+
+
 
     /**
      * 根据权重随机抽取一个 EventTask
@@ -87,8 +86,8 @@ public class EncounterDefinition {
 
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                EventTask.CODEC.fieldOf("event_task").forGetter(Entry::getEventTask),
-                Codec.INT.fieldOf("weight").forGetter(Entry::getWeight)
+                EventTask.CODEC.fieldOf(EVENT_TASK).forGetter(Entry::getEventTask),
+                Codec.INT.fieldOf(WEIGHT).forGetter(Entry::getWeight)
             ).apply(instance, Entry::new)
         );
 

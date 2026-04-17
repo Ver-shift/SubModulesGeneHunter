@@ -1,8 +1,7 @@
-package com.pz.beyond.node;
+package com.pz.beyond.nodeTask;
 
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.system.node.NodeEventType;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class BossEvent extends NodeEventType {

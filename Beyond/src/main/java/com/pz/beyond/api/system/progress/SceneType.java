@@ -19,7 +19,12 @@ public enum SceneType {
     /**
      * BOSS挑战事件：必定出现的boss节点，包含商店
      */
-    CLIMAX;
+    CLIMAX,
+
+    /**
+     * 空类型
+     */
+    EMPTY;
 
     public static final Codec<SceneType> CODEC = Codec.STRING.xmap(SceneType::valueOf, SceneType::name);
 

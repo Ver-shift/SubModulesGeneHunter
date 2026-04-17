@@ -1,64 +1,65 @@
 {
   "identifier": "beyond:chapter1",
-  
   "scenes": [
     {
-      "priority": 0,
-      "sceneTypes": [
-        { "sceneType": "beyond:safe_zone", "weight": 100 }
-      ]
+      "scene_types": [
+        { "scene_type": "beyond:repose", "weight": 100 }
+      ],
+      "priority": 0
     },
     {
-      "priority": 1,
-      "sceneTypes": [
-        { "sceneType": "beyond:forest", "weight": 100 }
-      ]
+      "scene_types": [
+        { "scene_type": "beyond:harvest", "weight": 100 }
+      ],
+      "priority": 1
     },
     {
-      "priority": 2,
-      "sceneTypes": [
-        { "sceneType": "beyond:castle", "weight": 70 },
-        { "sceneType": "beyond:ruins", "weight": 30 }
-      ]
+      "scene_types": [
+        { "scene_type": "beyond:climax", "weight": 100 }
+      ],
+      "priority": 2
     }
   ],
-  
   "encounters": [
     {
-      "encounterType": "beyond:normal_monster",
-      "encounterDefinition": {
-        "eventTasks": [
-          { "eventTask": { "events": ["beyond:spawn_zombies"] }, "weight": 60 },
-          { "eventTask": { "events": ["beyond:spawn_skeletons"] }, "weight": 40 }
+      "encounter_type": "beyond:harvest_orange",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:boss_event"] }, "weight": 60 },
+          { "event_task": { "events": ["beyond:boss_event"] }, "weight": 40 }
         ]
       }
     },
     {
-      "encounterType": "beyond:elite_monster",
-      "encounterDefinition": {
-        "eventTasks": [
-          { "eventTask": { "events": ["beyond:spawn_mini_boss"] }, "weight": 100 }
+      "encounter_type": "beyond:harvest_red",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:boss_event"] }, "weight": 100 }
         ]
       }
     },
     {
-      "encounterType": "beyond:boss",
-      "encounterDefinition": {
-        "eventTasks": [
-          { "eventTask": { "events": ["beyond:spawn_final_boss", "beyond:play_boss_music", "beyond:set_win_condition"] }, "weight": 100 }
+      "encounter_type": "beyond:climax_red",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:boss_event", "beyond:shop", "beyond:boss_event"] }, "weight": 100 }
         ]
       }
     },
     {
-      "encounterType": "beyond:bonfire",
-      "encounterDefinition": {
-        "eventTasks": []
+      "encounter_type": "beyond:repose_green",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:shop"] }, "weight": 100 }
+        ]
       }
     },
     {
-      "encounterType": "beyond:shop",
-      "encounterDefinition": {
-        "eventTasks": []
+      "encounter_type": "beyond:repose_orange",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:shop"] }, "weight": 100 }
+        ]
       }
     }
   ]

@@ -1,7 +1,7 @@
 package com.pz.beyond.api.system.node.core;
 
 import com.pz.beyond.api.system.node.EncounterType;
-import com.pz.beyond.api.system.progress.ProgressType;
+import net.neoforged.neoforge.event.entity.player.AdvancementEvent;
 
 public interface INodeEventManger {
 
@@ -10,5 +10,4 @@ public interface INodeEventManger {
      */
     void rollNodeEvent();
 
-    void addNodeEvent(ProgressType progressType, EncounterType encounterType);
 }

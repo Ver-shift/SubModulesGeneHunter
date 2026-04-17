@@ -42,15 +42,26 @@
 - [BossEvent.java](file://Beyond/src/main/java/com/pz/beyond/node/BossEvent.java)
 - [ServerConfig.java](file://Beyond/src/main/java/com/pz/beyond/api/config/ServerConfig.java)
 - [README.md](file://Beyond/README.md)
+- [BeyondLevelData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java)
+- [BeyondPackInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java)
+- [ProgressDefinition.java](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java)
+- [SceneDefinition.java](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java)
+- [EncounterDefinition.java](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java)
+- [EventTask.java](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EventTask.java)
+- [chapter1.json](file://Beyond/src/main/resources/data/beyond/progress/chapter1.json)
+- [build.gradle](file://Beyond/build.gradle)
+- [neoforge.mods.toml](file://Beyond/src/main/templates/META-INF/neoforge.mods.toml)
+- [en_us.json](file://Beyond/src/main/resources/assets/beyond/lang/en_us.json)
+- [zh_cn.json](file://Beyond/src/main/resources/assets/beyond/lang/zh_cn.json)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增ServerConfig服务器配置系统，提供安全区引导配置选项
-- 增强ZoneEventHandle事件处理能力，改进区域事件处理机制
-- 引入PlayerZoneData玩家区域数据类，提供玩家区域状态管理
-- 新增PlayerChangeZoneEvent自定义事件，支持区域变更监听
-- 更新BeyondData数据模型，集成PlayerZoneData管理
+- 新增数据定义系统，引入配置驱动的关卡管理架构
+- 新增Pack初始化系统，支持数据包驱动的内容加载
+- 新增本地化支持，提供多语言文本资源
+- 更新构建配置，从本地依赖管理迁移到GalaxyLib集成架构
+- 新增BeyondLevelData维度级数据管理，支持关卡定义存储
 
 ## 目录
 1. [简介](#简介)
@@ -73,10 +84,13 @@ Beyond安全区模块现已演变为完整的区域管理系统，从简单的�
 - 进度追踪：完整的游戏进程管理，支持多场景、多节点的进度控制
 - 规则系统：可扩展的区域规则容器，支持动态规则绑定
 - 与Biotech模块深度集成：通过区域系统支持基因相关的特殊区域
-- **新增**：服务器配置管理，支持安全区引导和初始化行为控制
+- **新增**：配置驱动的关卡管理，支持数据包定义的游戏内容
+- **新增**：Pack初始化系统，提供标准化的数据包加载机制
+- **新增**：本地化支持，确保多语言环境下的用户体验
+- **新增**：GalaxyLib集成，实现模块间的共享基础设施
 
 ## 项目结构
-Beyond模块采用全新的三层架构设计，分为系统层、数据层和事件层：
+Beyond模块采用全新的三层架构设计，分为系统层、数据层和事件层，并新增数据定义和Pack管理：
 
 ```mermaid
 graph TB
@@ -96,6 +110,11 @@ L["api/system/zone/zones/<br/>区域数据类"]
 M["api/system/zone/LevelZoneData<br/>维度区域数据"]
 N["api/system/BeyondData<br/>玩家数据聚合"]
 O["api/init/BeyondAttachInit<br/>数据挂载管理"]
+P["api/system/definition/<br/>数据定义系统"]
+Q["api/system/BeyondLevelData<br/>维度级数据管理"]
+R["api/init/BeyondPackInit<br/>Pack初始化系统"]
+S["assets/beyond/lang/<br/>本地化资源"]
+T["data/beyond/progress/<br/>配置数据包"]
 end
 A --> B
 A --> C
@@ -110,6 +129,11 @@ A --> L
 A --> M
 A --> N
 A --> O
+A --> P
+P --> Q
+P --> R
+P --> S
+P --> T
 ```
 
 **图表来源**
@@ -120,6 +144,8 @@ A --> O
 - [ServerConfig.java:10-121](file://Beyond/src/main/java/com/pz/beyond/api/config/ServerConfig.java#L10-L121)
 - [ZoneEventHandle.java:19-142](file://Beyond/src/main/java/com/pz/beyond/api/event/handle/ZoneEventHandle.java#L19-L142)
 - [PlayerZoneData.java:25-166](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/PlayerZoneData.java#L25-L166)
+- [BeyondLevelData.java:12-36](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java#L12-L36)
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
 
 ## 核心组件
 
@@ -159,7 +185,24 @@ A --> O
 ### 数据管理（Data Management）
 - **BeyondData**：玩家数据聚合，管理所有Beyond相关数据
 - **PlayerZoneData**：玩家区域数据，跟踪玩家当前所在区域
+- **BeyondLevelData**：维度级数据管理，存储关卡定义和运行时数据
 - **数据挂载**：通过NeoForge附件系统管理数据生命周期
+
+### 数据定义系统（Data Definition System）
+- **ProgressDefinition**：关卡数据定义，支持配置驱动的内容管理
+- **SceneDefinition**：场景数据定义，支持权重随机选择机制
+- **EncounterDefinition**：遭遇数据定义，管理事件任务列表
+- **EventTask**：事件任务定义，支持节点事件组合
+
+### Pack初始化系统（Pack Initialization System）
+- **BeyondPackInit**：Pack初始化入口，提供标准化的数据包加载机制
+- **配置数据包**：通过JSON文件定义游戏内容和规则
+- **数据序列化**：支持Mojang序列化框架的Codec和StreamCodec
+
+### 本地化系统（Localization System）
+- **多语言支持**：提供英文和中文的文本资源
+- **配置文本**：支持安全区传送等用户界面文本
+- **资源管理**：通过assets目录管理本地化资源
 
 **章节来源**
 - [ZoneData.java:22-124](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/ZoneData.java#L22-L124)
@@ -171,22 +214,29 @@ A --> O
 - [ZoneEventHandle.java:19-142](file://Beyond/src/main/java/com/pz/beyond/api/event/handle/ZoneEventHandle.java#L19-L142)
 - [PlayerZoneData.java:25-166](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/PlayerZoneData.java#L25-L166)
 - [BeyondData.java:21-152](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondData.java#L21-L152)
+- [BeyondLevelData.java:12-36](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java#L12-L36)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [SceneDefinition.java:17-129](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java#L17-L129)
+- [EncounterDefinition.java:17-104](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java#L17-L104)
+- [EventTask.java:16-38](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EventTask.java#L16-L38)
 
 ## 架构总览
-区域管理系统采用"模板-实例-数据"的三层架构模式，新增配置管理和事件处理层：
+区域管理系统采用"模板-实例-数据"的三层架构模式，新增配置管理和事件处理层，并集成了GalaxyLib基础设施：
 
 ```mermaid
 sequenceDiagram
 participant Config as "配置系统"
 participant Init as "初始化系统"
+participant Pack as "Pack系统"
 participant Zone as "区域系统"
 participant Data as "数据管理"
 participant Event as "事件处理"
 participant Player as "玩家系统"
 Config->>Init : "加载服务器配置"
-Init->>Zone : "注册区域类型"
-Init->>Data : "注册数据挂载"
-Init->>Event : "注册事件处理器"
+Init->>Pack : "注册数据包定义"
+Pack->>Zone : "注册区域类型"
+Pack->>Data : "注册数据挂载"
+Pack->>Event : "注册事件处理器"
 Zone->>Data : "创建LevelZoneData"
 Data->>Player : "创建BeyondData"
 Event->>Player : "监听玩家移动"
@@ -198,6 +248,7 @@ Data->>Event : "触发区域变更事件"
 **图表来源**
 - [ServerConfig.java:34-85](file://Beyond/src/main/java/com/pz/beyond/api/config/ServerConfig.java#L34-L85)
 - [BeyondAttachInit.java:23-186](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondAttachInit.java#L23-L186)
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
 - [LevelZoneData.java:73-100](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/LevelZoneData.java#L73-L100)
 - [BeyondData.java:74-91](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondData.java#L74-L91)
 - [ZoneEventHandle.java:46-103](file://Beyond/src/main/java/com/pz/beyond/api/event/handle/ZoneEventHandle.java#L46-L103)
@@ -526,8 +577,225 @@ AbstractRule --> RuleData : "使用"
 - [AbstractRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/AbstractRule.java)
 - [RuleData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/RuleData.java)
 
+### 数据定义系统（Data Definition System）
+数据定义系统提供配置驱动的内容管理，支持关卡、场景和遭遇的定义：
+
+**核心组件**：
+- **ProgressDefinition**：关卡定义，包含场景列表和遭遇映射
+- **SceneDefinition**：场景定义，支持权重随机选择机制
+- **EncounterDefinition**：遭遇定义，管理事件任务列表
+- **EventTask**：事件任务定义，支持节点事件组合
+
+```mermaid
+classDiagram
+class ProgressDefinition {
++identifier : ResourceLocation
++scenes : SceneDefinition[]
++encounters : EncounterMapping[]
++getEncountersAsMap() Map~EncounterType,EncounterDefinition~
+}
+class SceneDefinition {
++sceneTypes : SceneEntry[]
++realScene : SceneType
++priority : int
++getRealScene(random) SceneType
++roll(random) SceneType
+}
+class EncounterDefinition {
++eventTasks : Entry[]
++encounterType : EncounterType
++getEventTask(randomSource) EventTask
+}
+class EventTask {
++events : NodeEventType[]
+}
+ProgressDefinition --> SceneDefinition : "包含"
+ProgressDefinition --> EncounterDefinition : "包含"
+SceneDefinition --> SceneEntry : "包含"
+EncounterDefinition --> Entry : "包含"
+```
+
+**图表来源**
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [SceneDefinition.java:17-129](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java#L17-L129)
+- [EncounterDefinition.java:17-104](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java#L17-L104)
+- [EventTask.java:16-38](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EventTask.java#L16-L38)
+
+**章节来源**
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [SceneDefinition.java:17-129](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java#L17-L129)
+- [EncounterDefinition.java:17-104](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java#L17-L104)
+- [EventTask.java:16-38](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EventTask.java#L16-L38)
+
+### Pack初始化系统（Pack Initialization System）
+Pack初始化系统提供标准化的数据包加载机制，支持配置驱动的内容管理：
+
+**核心功能**：
+- **BeyondPackInit**：Pack初始化入口，提供统一的初始化接口
+- **数据包注册**：支持关卡定义、场景配置和遭遇数据的注册
+- **序列化支持**：提供Codec和StreamCodec支持数据包的序列化和传输
+- **配置驱动**：通过JSON文件定义游戏内容，支持热重载
+
+```mermaid
+classDiagram
+class BeyondPackInit {
+<<static>>
+}
+class ProgressDefinition {
++CODEC : Codec~ProgressDefinition~
++STREAM_CODEC : StreamCodec~
+}
+class SceneDefinition {
++CODEC : Codec~SceneDefinition~
++STREAM_CODEC : StreamCodec~
+}
+class EncounterDefinition {
++CODEC : Codec~EncounterDefinition~
++STREAM_CODEC : StreamCodec~
+}
+class EventTask {
++CODEC : Codec~EventTask~
++STREAM_CODEC : StreamCodec~
+}
+BeyondPackInit --> ProgressDefinition : "注册"
+BeyondPackInit --> SceneDefinition : "注册"
+BeyondPackInit --> EncounterDefinition : "注册"
+BeyondPackInit --> EventTask : "注册"
+```
+
+**图表来源**
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
+- [ProgressDefinition.java:36-52](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L36-L52)
+- [SceneDefinition.java:33-55](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java#L33-L55)
+- [EncounterDefinition.java:31-49](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java#L31-L49)
+- [EventTask.java:26-36](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EventTask.java#L26-L36)
+
+**章节来源**
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
+- [ProgressDefinition.java:36-52](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L36-L52)
+- [SceneDefinition.java:33-55](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java#L33-L55)
+- [EncounterDefinition.java:31-49](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java#L31-L49)
+- [EventTask.java:26-36](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EventTask.java#L26-L36)
+
+### 本地化系统（Localization System）
+本地化系统提供多语言支持，确保不同语言环境下的用户体验：
+
+**支持的语言**：
+- **英文（en_us）**：标准英文界面文本
+- **中文（zh_cn）**：简体中文界面文本
+- **配置文本**：支持安全区传送等用户界面文本
+
+```mermaid
+classDiagram
+class LocalizationSystem {
++en_us : Map~String,String~
++zh_cn : Map~String,String~
++getText(key) String
++getLocalizedText(key, locale) String
+}
+class en_us_json {
++"beyond.safe_zone.teleporting" : "§eTeleporting to village spawn point..."
+}
+class zh_cn_json {
++"beyond.safe_zone.teleporting" : "§e正在传送到村庄出生点..."
+}
+LocalizationSystem --> en_us_json : "加载"
+LocalizationSystem --> zh_cn_json : "加载"
+```
+
+**图表来源**
+- [en_us.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/en_us.json#L1-L7)
+- [zh_cn.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/zh_cn.json#L1-L7)
+
+**章节来源**
+- [en_us.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/en_us.json#L1-L7)
+- [zh_cn.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/zh_cn.json#L1-L7)
+
+### 构建配置系统（Build Configuration System）
+构建配置系统从本地依赖管理迁移到GalaxyLib集成架构：
+
+**构建变更**：
+- **依赖管理**：从本地依赖改为GalaxyLib集成
+- **模块结构**：支持多模块开发和依赖管理
+- **版本控制**：通过settings.gradle管理模块版本
+- **打包配置**：支持Maven发布和本地仓库
+
+```mermaid
+classDiagram
+class BuildGradle {
++dependencies : String[]
++neoForge : NeoForgeConfig
++publishing : PublishingConfig
++generateModMetadata() Task
+}
+class GalaxyLibDependency {
++implementation(project(" : GalaxyLib"))
++version : "1.0.0"
+}
+class NeoForgeConfig {
++version : "21.1.0"
++parchment : ParchmentConfig
++runs : RunConfigs
+}
+class SettingsGradle {
++include(" : GalaxyLib")
++include(" : GeneHunter")
++include(" : Biotech")
++include(" : Beyond")
+}
+BuildGradle --> GalaxyLibDependency : "使用"
+BuildGradle --> NeoForgeConfig : "配置"
+SettingsGradle --> BuildGradle : "影响"
+```
+
+**图表来源**
+- [build.gradle:64-67](file://Beyond/build.gradle#L64-L67)
+- [build.gradle:19-57](file://Beyond/build.gradle#L19-L57)
+- [settings.gradle:13-18](file://settings.gradle#L13-L18)
+
+**章节来源**
+- [build.gradle:64-67](file://Beyond/build.gradle#L64-L67)
+- [build.gradle:19-57](file://Beyond/build.gradle#L19-L57)
+- [settings.gradle:13-18](file://settings.gradle#L13-L18)
+
+### 维度级数据管理（BeyondLevelData）
+BeyondLevelData提供维度级的数据管理，支持关卡定义的存储和访问：
+
+**核心功能**：
+- **维度标识**：存储当前维度的ResourceKey
+- **关卡定义**：管理ProgressDefinition的Map存储
+- **运行时数据**：支持关卡运行时状态的存储
+- **数据持久化**：通过维度数据实现数据持久化
+
+```mermaid
+classDiagram
+class BeyondLevelData {
++dimension : ResourceKey~Level~
++progressDefinitions : Map~ResourceLocation,ProgressDefinition~
++runtimeProgressData : Map~ResourceLocation,Object~
++getDimension() ResourceKey~Level~
++getProgressDefinition(id) ProgressDefinition
++setProgressDefinition(id, definition)
++hasProgressDefinition(id) boolean
+}
+class ProgressDefinition {
++identifier : ResourceLocation
++scenes : SceneDefinition[]
++encounters : EncounterMapping[]
+}
+BeyondLevelData --> ProgressDefinition : "存储"
+```
+
+**图表来源**
+- [BeyondLevelData.java:12-36](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java#L12-L36)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+
+**章节来源**
+- [BeyondLevelData.java:12-36](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java#L12-L36)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+
 ## 依赖关系分析
-区域管理系统具有清晰的层次依赖关系，新增配置管理和事件处理层：
+区域管理系统具有清晰的层次依赖关系，新增配置管理和事件处理层，并集成了GalaxyLib基础设施：
 
 ```mermaid
 graph LR
@@ -537,14 +805,21 @@ Init --> ZoneInit["BeyondZoneInit"]
 Init --> NodeInit["BeyondNodeEventTypes"]
 Init --> Encounters["BeyondEncounters"]
 Init --> ZoneRule["BeyondZoneRuleInit"]
+Init --> PackInit["BeyondPackInit"]
 Attach --> Config["ServerConfig"]
 Attach --> Data["BeyondData"]
 Attach --> LevelData["LevelZoneData"]
 Attach --> PlayerData["PlayerZoneData"]
+Attach --> LevelDef["BeyondLevelData"]
 ZoneInit --> ZoneSystem["区域系统"]
 NodeInit --> NodeSystem
 Encounters --> NodeSystem
 ZoneRule --> RuleSystem
+PackInit --> DataDef["数据定义系统"]
+DataDef --> ProgressDef["ProgressDefinition"]
+DataDef --> SceneDef["SceneDefinition"]
+DataDef --> EncounterDef["EncounterDefinition"]
+DataDef --> EventTask["EventTask"]
 ZoneSystem --> NodeSystem
 NodeSystem --> ProgressSystem
 RuleSystem --> ZoneSystem
@@ -552,6 +827,9 @@ Config --> ZoneSystem
 Data --> PlayerData
 LevelData --> ZoneSystem
 PlayerData --> ZoneSystem
+LevelDef --> DataDef
+Beyond --> GalaxyLib["GalaxyLib依赖"]
+GalaxyLib --> ModSystem["NeoForge模组系统"]
 ```
 
 **图表来源**
@@ -561,24 +839,30 @@ PlayerData --> ZoneSystem
 - [BeyondData.java:27-152](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondData.java#L27-L152)
 - [LevelZoneData.java:31-309](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/LevelZoneData.java#L31-L309)
 - [PlayerZoneData.java:30-166](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/PlayerZoneData.java#L30-L166)
+- [BeyondLevelData.java:12-36](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java#L12-L36)
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [build.gradle:64-67](file://Beyond/build.gradle#L64-L67)
 
 **章节来源**
 - [Beyond.java:32-44](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L32-L44)
 
 ## 性能考虑
-区域管理系统在设计时充分考虑了性能优化，新增配置管理和事件处理优化：
+区域管理系统在设计时充分考虑了性能优化，新增配置管理和事件处理优化，并集成了GalaxyLib基础设施：
 
 **内存优化**：
 - 使用LongOpenHashSet存储区块键值，提供高效的查找性能
 - 节点数据采用不可变设计，减少内存占用
 - 规则数据支持延迟加载，避免不必要的初始化
 - **新增**：PlayerZoneData使用延迟初始化，减少内存占用
+- **新增**：数据定义采用Codec序列化，减少反射开销
 
 **网络优化**：
 - 提供StreamCodec支持高效网络传输
 - 区域数据按需传输，避免全量同步
 - 支持增量更新，只传输变更的数据
-- **新增**：PlayerZoneData仅序列化区域ID，减少网络负载
+- **新增**：数据定义支持流式编码，减少网络负载
+- **新增**：维度数据按维度隔离，避免跨维度数据传输
 
 **计算优化**：
 - 区域检测使用空间索引优化
@@ -586,10 +870,17 @@ PlayerData --> ZoneSystem
 - 规则执行采用事件驱动，避免轮询
 - **新增**：玩家移动检测间隔优化，每4tick检测一次
 - **新增**：安全区初始化延迟，避免早期结构查询不稳定
+- **新增**：数据定义缓存，避免重复解析配置文件
 
 **配置优化**：
 - **新增**：ServerConfig提供配置项范围验证，防止无效配置
 - **新增**：支持配置热更新，动态调整安全区行为
+- **新增**：Pack初始化系统支持配置文件的热重载
+
+**模块化优化**：
+- **新增**：GalaxyLib集成提供共享基础设施，减少重复实现
+- **新增**：模块间依赖管理，支持独立开发和测试
+- **新增**：构建系统优化，支持并行编译和增量构建
 
 ## 故障排除指南
 **区域系统常见问题**：
@@ -629,6 +920,31 @@ PlayerData --> ZoneSystem
    - **新增**：验证PlayerZoneData序列化
    - **新增**：确认数据生命周期管理
 
+8. **数据定义问题**
+   - **新增**：检查ProgressDefinition配置格式
+   - **新增**：验证SceneDefinition权重总和
+   - **新增**：确认EncounterDefinition事件任务
+
+9. **Pack初始化问题**
+   - **新增**：检查BeyondPackInit初始化顺序
+   - **新增**：验证数据包注册完整性
+   - **新增**：确认序列化Codec正确性
+
+10. **本地化问题**
+    - **新增**：检查JSON文件格式正确性
+    - **新增**：验证语言包完整性
+    - **新增**：确认文本键值存在
+
+11. **构建配置问题**
+    - **新增**：检查GalaxyLib依赖版本
+    - **新增**：验证模块包含关系
+    - **新增**：确认构建脚本语法
+
+12. **维度数据问题**
+    - **新增**：检查BeyondLevelData维度标识
+    - **新增**：验证关卡定义存储
+    - **新增**：确认运行时数据同步
+
 **章节来源**
 - [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
 - [NodeData.java:13-89](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeData.java#L13-L89)
@@ -637,6 +953,12 @@ PlayerData --> ZoneSystem
 - [ZoneEventHandle.java:46-103](file://Beyond/src/main/java/com/pz/beyond/api/event/handle/ZoneEventHandle.java#L46-L103)
 - [BeyondData.java:74-91](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondData.java#L74-L91)
 - [PlayerZoneData.java:94-112](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/PlayerZoneData.java#L94-L112)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
+- [en_us.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/en_us.json#L1-L7)
+- [zh_cn.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/zh_cn.json#L1-L7)
+- [build.gradle:64-67](file://Beyond/build.gradle#L64-L67)
+- [BeyondLevelData.java:12-36](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondLevelData.java#L12-L36)
 
 ## 结论
 Beyond安全区模块的重构标志着从简单安全区功能向完整区域管理系统的重大升级。新的三层架构设计提供了强大的扩展性和灵活性，支持复杂的区域类型、节点管理和进度追踪功能。
@@ -649,14 +971,23 @@ Beyond安全区模块的重构标志着从简单安全区功能向完整区域�
 - **配置管理**：提供灵活的服务器配置选项
 - **事件处理**：增强的事件处理机制，支持多种场景
 - **数据管理**：完善的玩家数据管理，支持区域状态跟踪
+- **数据定义系统**：配置驱动的内容管理，支持关卡定义
+- **Pack初始化系统**：标准化的数据包加载机制
+- **本地化支持**：多语言文本资源管理
+- **GalaxyLib集成**：共享基础设施，减少重复实现
 
 **新增特性**：
 - **ServerConfig配置系统**：提供安全区引导和初始化行为控制
 - **增强的事件处理**：优化的区域事件处理机制
 - **PlayerZoneData数据类**：完整的玩家区域状态管理
 - **PlayerChangeZoneEvent事件**：支持区域变更监听
+- **数据定义系统**：配置驱动的关卡管理架构
+- **Pack初始化系统**：标准化的数据包加载机制
+- **本地化系统**：多语言文本资源管理
+- **构建配置系统**：GalaxyLib集成架构
+- **维度级数据管理**：BeyondLevelData支持关卡定义存储
 
-这一重构为后续的功能扩展奠定了坚实基础，特别是在与Biotech模块的深度集成方面展现了巨大的潜力。
+这一重构为后续的功能扩展奠定了坚实基础，特别是在与Biotech模块的深度集成方面展现了巨大的潜力。GalaxyLib的集成进一步提升了模块间的协作效率，为未来的功能扩展提供了更加稳固的技术基础。
 
 ## 附录
 
@@ -672,12 +1003,34 @@ Beyond安全区模块的重构标志着从简单安全区功能向完整区域�
 - **新增**：设置村庄搜索半径和安全区大小
 - **新增**：配置玩家传送和出生点设置
 
+**数据定义配置**：
+- **新增**：通过ProgressDefinition定义关卡内容
+- **新增**：使用SceneDefinition配置场景权重
+- **新增**：通过EncounterDefinition配置遭遇事件
+- **新增**：在chapter1.json中定义具体配置
+
+**Pack初始化配置**：
+- **新增**：通过BeyondPackInit注册数据包定义
+- **新增**：配置数据包的序列化Codec
+- **新增**：设置数据包的加载优先级
+
+**本地化配置**：
+- **新增**：在assets/beyond/lang目录添加语言文件
+- **新增**：定义多语言文本键值对
+- **新增**：验证文本资源的完整性
+
 **章节来源**
 - [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
 - [BeyondNodeEventTypes.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondNodeEventTypes.java)
 - [BeyondEncounters.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondEncounters.java)
 - [BeyondZoneRuleInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneRuleInit.java)
 - [ServerConfig.java:34-85](file://Beyond/src/main/java/com/pz/beyond/api/config/ServerConfig.java#L34-L85)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [SceneDefinition.java:17-129](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/SceneDefinition.java#L17-L129)
+- [EncounterDefinition.java:17-104](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/EncounterDefinition.java#L17-L104)
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
+- [en_us.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/en_us.json#L1-L7)
+- [zh_cn.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/zh_cn.json#L1-L7)
 
 ### 扩展指南
 **添加新的区域类型**：
@@ -704,9 +1057,37 @@ Beyond安全区模块的重构标志着从简单安全区功能向完整区域�
 3. **新增**：实现事件处理逻辑
 4. **新增**：测试事件响应
 
+**新增数据定义**：
+1. **新增**：创建新的数据定义类继承自RecordCodecBuilder
+2. **新增**：实现Codec和StreamCodec序列化
+3. **新增**：在JSON配置文件中添加对应定义
+4. **新增**：测试数据加载和序列化
+
+**新增Pack初始化**：
+1. **新增**：在BeyondPackInit中注册新的数据包
+2. **新增**：实现Pack初始化逻辑
+3. **新增**：配置数据包的加载顺序
+4. **新增**：测试Pack初始化流程
+
+**新增本地化支持**：
+1. **新增**：在assets/beyond/lang目录添加新语言文件
+2. **新增**：定义缺失的文本键值
+3. **新增**：验证本地化资源的完整性
+4. **新增**：测试多语言切换功能
+
+**新增构建配置**：
+1. **新增**：在build.gradle中添加新的依赖
+2. **新增**：配置模块间的依赖关系
+3. **新增**：设置版本号和发布配置
+4. **新增**：测试构建流程
+
 **章节来源**
 - [AbstractZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/AbstractZone.java)
 - [NodeEventType.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeEventType.java)
 - [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
 - [ServerConfig.java:10-121](file://Beyond/src/main/java/com/pz/beyond/api/config/ServerConfig.java#L10-L121)
 - [ZoneEventHandle.java:19-142](file://Beyond/src/main/java/com/pz/beyond/api/event/handle/ZoneEventHandle.java#L19-L142)
+- [ProgressDefinition.java:20-89](file://Beyond/src/main/java/com/pz/beyond/api/system/definition/ProgressDefinition.java#L20-L89)
+- [BeyondPackInit.java:1-5](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondPackInit.java#L1-L5)
+- [en_us.json:1-7](file://Beyond/src/main/resources/assets/beyond/lang/en_us.json#L1-L7)
+- [build.gradle:64-67](file://Beyond/build.gradle#L64-L67)

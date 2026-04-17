@@ -25,6 +25,12 @@ import java.util.Map;
 @AllArgsConstructor
 public class ProgressDefinition {
 
+    public static final String IDENTIFIER = "identifier";
+    public static final String SCENES = "scenes";
+    public static final String ENCOUNTERS = "encounters";
+    public static final String ENCOUNTER_TYPE = "encounter_type";
+    public static final String ENCOUNTER_DEFINITION = "encounter_definition";
+
     private ResourceLocation identifier;
     private List<SceneDefinition> scenes = new ArrayList<>();
 
@@ -35,9 +41,9 @@ public class ProgressDefinition {
 
     public static final Codec<ProgressDefinition> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            ResourceLocation.CODEC.fieldOf("identifier").forGetter(ProgressDefinition::getIdentifier),
-            SceneDefinition.CODEC.listOf().fieldOf("scenes").forGetter(ProgressDefinition::getScenes),
-            EncounterMapping.CODEC.listOf().fieldOf("encounters").forGetter(ProgressDefinition::getEncounters)
+            ResourceLocation.CODEC.fieldOf(IDENTIFIER).forGetter(ProgressDefinition::getIdentifier),
+            SceneDefinition.CODEC.listOf().fieldOf(SCENES).forGetter(ProgressDefinition::getScenes),
+            EncounterMapping.CODEC.listOf().fieldOf(ENCOUNTERS).forGetter(ProgressDefinition::getEncounters)
         ).apply(instance, ProgressDefinition::new)
     );
 
@@ -51,16 +57,6 @@ public class ProgressDefinition {
         ProgressDefinition::new
     );
 
-    /**
-     * 获取 encounters 作为 Map（便利方法）
-     */
-    public Map<EncounterType, EncounterDefinition> getEncountersAsMap() {
-        Map<EncounterType, EncounterDefinition> map = new HashMap<>();
-        for (EncounterMapping mapping : encounters) {
-            map.put(mapping.getEncounterType(), mapping.getEncounterDefinition());
-        }
-        return map;
-    }
 
     @Data
     @NoArgsConstructor
@@ -71,8 +67,8 @@ public class ProgressDefinition {
 
         public static final Codec<EncounterMapping> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                EncounterType.CODEC.fieldOf("encounter_type").forGetter(EncounterMapping::getEncounterType),
-                EncounterDefinition.CODEC.fieldOf("encounter_definition").forGetter(EncounterMapping::getEncounterDefinition)
+                EncounterType.CODEC.fieldOf(ENCOUNTER_TYPE).forGetter(EncounterMapping::getEncounterType),
+                EncounterDefinition.CODEC.fieldOf(ENCOUNTER_DEFINITION).forGetter(EncounterMapping::getEncounterDefinition)
             ).apply(instance, EncounterMapping::new)
         );
 

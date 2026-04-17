@@ -1,6 +1,11 @@
 package com.pz.beyond.api.system.zone;
 
+import com.mojang.serialization.Codec;
+import com.pz.beyond.api.init.BeyondZoneInit;
 import com.pz.beyond.api.system.rule.RuleData;
+import lombok.Getter;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -8,30 +13,20 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 
-public abstract class AbstractZone<M> {
+public abstract class ZoneType {
 
     /**
      * 标识符
      */
+    @Getter
     protected final ResourceLocation identifier;
 
-    /**
-     * 在地图上面的颜色
-     */
-    private int mapChunkColor = 0xFFFFE6FF;
-
-
-    public AbstractZone(ResourceLocation identifier) {
+    public ZoneType(ResourceLocation identifier) {
         this.identifier = identifier;
     }
 
-    public ResourceLocation getIdentifier() {
-        return identifier;
-    }
 
-    protected M getAttachData(Level level){
-        return null;
-    }
+
 
     /**
      * 初始化区域数据
@@ -63,4 +58,18 @@ public abstract class AbstractZone<M> {
             }
         }
     }
+
+    public static final Codec<ZoneType> CODEC =
+            ResourceLocation.CODEC.xmap(
+                    BeyondZoneInit::getZoneById,
+                    ZoneType::getIdentifier
+            );
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ZoneType> STREAM_CODEC =
+            StreamCodec.composite(
+                    ResourceLocation.STREAM_CODEC,
+                    ZoneType::getIdentifier,
+                    BeyondZoneInit::getZoneById
+            );
+
 }

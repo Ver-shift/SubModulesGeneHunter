@@ -30,30 +30,30 @@ public class BeyondEncounters {
 
     // ==================== 资源类型（Harvest）====================
     // 绿色：有趣的事件或者解密
-    public static final Supplier<EncounterType> PUZZLE = ENCOUNTERS.register("puzzle", PuzzleEncounter::new);
+    public static final Supplier<EncounterType> PUZZLE = ENCOUNTERS.register(PuzzleEncounter.ID.getPath(), PuzzleEncounter::new);
     // 橙色：普通的怪物
-    public static final Supplier<EncounterType> NORMAL_MONSTER = ENCOUNTERS.register("normal_monster", NormalMonsterEncounter::new);
+    public static final Supplier<EncounterType> NORMAL_MONSTER = ENCOUNTERS.register(NormalMonsterEncounter.ID.getPath(), NormalMonsterEncounter::new);
     // 红色：精英怪挑战
-    public static final Supplier<EncounterType> ELITE_MONSTER = ENCOUNTERS.register("elite_monster", EliteMonsterEncounter::new);
+    public static final Supplier<EncounterType> ELITE_MONSTER = ENCOUNTERS.register(EliteMonsterEncounter.ID.getPath(), EliteMonsterEncounter::new);
 
     // ==================== 休息类型（Repose）====================
     // 绿色：篝火，纯粹的回复血量
-    public static final Supplier<EncounterType> BONFIRE = ENCOUNTERS.register("bonfire", BonfireEncounter::new);
+    public static final Supplier<EncounterType> BONFIRE = ENCOUNTERS.register(BonfireEncounter.ID.getPath(), BonfireEncounter::new);
     // 橙色：普通商店
-    public static final Supplier<EncounterType> NORMAL_SHOP = ENCOUNTERS.register("normal_shop", NormalShopEncounter::new);
+    public static final Supplier<EncounterType> NORMAL_SHOP = ENCOUNTERS.register(NormalShopEncounter.ID.getPath(), NormalShopEncounter::new);
     // 红色：诅咒商店
-    public static final Supplier<EncounterType> CURSED_SHOP = ENCOUNTERS.register("cursed_shop", CursedShopEncounter::new);
+    public static final Supplier<EncounterType> CURSED_SHOP = ENCOUNTERS.register(CursedShopEncounter.ID.getPath(), CursedShopEncounter::new);
 
     // ==================== Boss类型（Climax）====================
     // Boss 类型使用颜色参数（都是商店+Boss）
     // 绿色
-    public static final Supplier<EncounterType> BOSS_GREEN = ENCOUNTERS.register("boss_green",
+    public static final Supplier<EncounterType> BOSS_GREEN = ENCOUNTERS.register(BossEncounter.ID.getPath() + "_green",
         () -> new BossEncounter(NodeColor.GREEN));
     // 橙色
-    public static final Supplier<EncounterType> BOSS_ORANGE = ENCOUNTERS.register("boss_orange",
+    public static final Supplier<EncounterType> BOSS_ORANGE = ENCOUNTERS.register(BossEncounter.ID.getPath() + "_orange",
         () -> new BossEncounter(NodeColor.ORANGE));
     // 红色
-    public static final Supplier<EncounterType> BOSS_RED = ENCOUNTERS.register("boss_red",
+    public static final Supplier<EncounterType> BOSS_RED = ENCOUNTERS.register(BossEncounter.ID.getPath() + "_red",
         () -> new BossEncounter(NodeColor.RED));
 
     public static void registerRegistry(NewRegistryEvent event) {

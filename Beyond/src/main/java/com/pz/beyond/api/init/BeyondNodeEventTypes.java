@@ -2,7 +2,8 @@ package com.pz.beyond.api.init;
 
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.system.node.NodeEventType;
-import com.pz.beyond.node.BossEvent;
+import com.pz.beyond.nodeTask.BossEvent;
+import com.pz.beyond.nodeTask.ShopEvent;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -34,6 +35,9 @@ public class BeyondNodeEventTypes {
     };
     // Boss 事件
     public static final Supplier<NodeEventType> BOSS_EVENT = NODE_EVENT_TYPES.register("boss_event", BossEvent::new);
+    public static final Supplier<NodeEventType> SHOP_EVENT = NODE_EVENT_TYPES.register("shop_event", ShopEvent::new);
+
+
 
     public static void registerRegistry(NewRegistryEvent event) {
         event.register(NODE_EVENT_TYPE_REGISTRY);

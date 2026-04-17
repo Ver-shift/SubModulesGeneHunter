@@ -1,6 +1,5 @@
 package com.pz.beyond.api.system.progress.core;
 
-import com.pz.beyond.api.system.progress.ProgressType;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Consumer;
@@ -18,7 +17,6 @@ public interface IProgressManager {
      * @param id
      * @param consumer
      */
-    void createProgress(ResourceLocation id, Consumer<ProgressType.Builder> consumer);
 
     /**
      * 开启一把游戏

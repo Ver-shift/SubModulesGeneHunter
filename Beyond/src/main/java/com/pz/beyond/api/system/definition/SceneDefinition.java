@@ -19,39 +19,44 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class SceneDefinition {
 
+    public static final String SCENE_TYPES = "scene_types";
+    public static final String REAL_SCENE = "real_scene";
+    public static final String PRIORITY = "priority";
+    public static final String SCENE_TYPE = "scene_type";
+    public static final String WEIGHT = "weight";
 
     /**
      * 关卡数据，可能有多个，实际只会抽取一个
      */
     private List<SceneEntry> sceneTypes = new ArrayList<>();
-    private SceneType realScene;
+    private SceneType realScene = SceneType.EMPTY;
     private int priority = 0; //用于调整先后顺，数值越小，放在关卡的越前面
 
     public static final Codec<SceneDefinition> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            SceneEntry.CODEC.listOf().fieldOf("scene_types").forGetter(SceneDefinition::getSceneTypes),
-            SceneType.CODEC.optionalFieldOf("real_scene", null).forGetter(SceneDefinition::getRealScene),
-            Codec.INT.optionalFieldOf("priority", 0).forGetter(SceneDefinition::getPriority)
+            SceneEntry.CODEC.listOf().fieldOf(SCENE_TYPES).forGetter(SceneDefinition::getSceneTypes),
+            SceneType.CODEC.optionalFieldOf(REAL_SCENE, SceneType.EMPTY).forGetter(SceneDefinition::getRealScene),
+            Codec.INT.optionalFieldOf(PRIORITY, 0).forGetter(SceneDefinition::getPriority)
         ).apply(instance, SceneDefinition::new)
     );
+
+    // 工厂方法专用构造
+    private SceneDefinition(List<SceneEntry> sceneTypes, SceneType realScene, int priority) {
+        this.sceneTypes = sceneTypes;
+        this.realScene = realScene;
+        this.priority = priority;
+    }
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SceneDefinition> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.collection(ArrayList::new, SceneEntry.STREAM_CODEC),
         SceneDefinition::getSceneTypes,
-        ByteBufCodecs.optional(SceneType.STREAM_CODEC),
-        def -> java.util.Optional.ofNullable(def.getRealScene()),
+        SceneType.STREAM_CODEC,
+        SceneDefinition::getRealScene,
         ByteBufCodecs.VAR_INT,
         SceneDefinition::getPriority,
-        (types, realOpt, priority) -> {
-            SceneDefinition def = new SceneDefinition();
-            def.setSceneTypes(types);
-            def.setRealScene(realOpt.orElse(null));
-            def.setPriority(priority);
-            return def;
-        }
+        SceneDefinition::new
     );
 
     /**
@@ -60,8 +65,7 @@ public class SceneDefinition {
      * @return 选中的 SceneType，如果列表为空返回 null
      */
     public SceneType getRealScene(SingleThreadedRandomSource random) {
-        if (realScene == null) {
-
+        if (realScene == SceneType.EMPTY) {
             realScene = roll(random);
         }
         return realScene;
@@ -111,8 +115,8 @@ public class SceneDefinition {
 
         public static final Codec<SceneEntry> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                SceneType.CODEC.fieldOf("scene_type").forGetter(SceneEntry::getSceneType),
-                Codec.INT.fieldOf("weight").forGetter(SceneEntry::getWeight)
+                SceneType.CODEC.fieldOf(SCENE_TYPE).forGetter(SceneEntry::getSceneType),
+                Codec.INT.fieldOf(WEIGHT).forGetter(SceneEntry::getWeight)
             ).apply(instance, SceneEntry::new)
         );
 

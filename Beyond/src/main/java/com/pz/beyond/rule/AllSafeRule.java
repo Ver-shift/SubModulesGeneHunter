@@ -1,8 +1,7 @@
 package com.pz.beyond.rule;
 
 import com.pz.beyond.api.system.rule.AbstractRule;
-import com.pz.beyond.api.system.zone.AbstractZone;
-import com.pz.beyond.api.system.zone.ZoneData;
+import com.pz.beyond.api.system.zone.ZoneType;
 import com.pz.beyond.api.system.zone.zones.SafeZone;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -31,12 +30,12 @@ public class AllSafeRule extends AbstractRule {
     }
 
     @Override
-    public void playerTick(ServerPlayer player, AbstractZone<?> zoneType) {
+    public void playerTick(ServerPlayer player, ZoneType zoneType) {
         super.playerTick(player, zoneType);
     }
 
     @Override
-    public void playerChangeZone(ServerPlayer player, AbstractZone<?> from, AbstractZone<?> to) {
+    public void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to) {
         if (from instanceof SafeZone fromZone){
             player.sendSystemMessage(Component.literal("你出去了安全区，所有规则都将被禁用"));
         }

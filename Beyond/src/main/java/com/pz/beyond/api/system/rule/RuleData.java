@@ -24,18 +24,6 @@ public class RuleData {
     private int ruleLevel;
     private final AbstractRule rule;
 
-    public static final Codec<RuleData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-        ResourceLocation.CODEC.fieldOf(RULE_ID).forGetter(RuleData::getRuleId),
-        Codec.INT.fieldOf(RULE_LEVEL).forGetter(RuleData::getRuleLevel)
-    ).apply(builder, RuleData::new));
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, RuleData> STREAM_CODEC = StreamCodec.composite(
-        ResourceLocation.STREAM_CODEC,
-        RuleData::getRuleId,
-        ByteBufCodecs.VAR_INT,
-        RuleData::getRuleLevel,
-        RuleData::new
-    );
 
     public RuleData(AbstractRule rule) {
         this(rule, 1);
@@ -62,7 +50,21 @@ public class RuleData {
     public void addLevel(int level) {
         setRuleLevel(getRuleLevel() + level);
     }
+
     public void setLevel(int level) {
         this.ruleLevel = level;
     }
+
+    public static final Codec<RuleData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            ResourceLocation.CODEC.fieldOf(RULE_ID).forGetter(RuleData::getRuleId),
+            Codec.INT.fieldOf(RULE_LEVEL).forGetter(RuleData::getRuleLevel)
+    ).apply(builder, RuleData::new));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, RuleData> STREAM_CODEC = StreamCodec.composite(
+            ResourceLocation.STREAM_CODEC,
+            RuleData::getRuleId,
+            ByteBufCodecs.VAR_INT,
+            RuleData::getRuleLevel,
+            RuleData::new
+    );
 }
