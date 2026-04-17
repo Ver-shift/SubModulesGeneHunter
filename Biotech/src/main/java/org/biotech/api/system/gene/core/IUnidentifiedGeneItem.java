@@ -21,9 +21,9 @@ import org.galaxylib.api.GalaxyLibAPI;
 import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.core.ILootTableManager;
 import org.biotech.loot.GeneTraitLootType;
+import org.galaxylib.api.system.random.RandomManager;
 
 public interface IUnidentifiedGeneItem {
-
 
     /**
      * 抽出一个词条基因，并且消耗自身
@@ -37,7 +37,7 @@ public interface IUnidentifiedGeneItem {
                 instance.setBaseValue(getCountFromRarity(rarity));
             }
 
-            ILootTableManager.LootResult result = manager.rollWithReplacement(BiotechLootTypeInit.GENE_TRAIT_LOOT_TYPE);
+            ILootTableManager.LootResult result = manager.rollWithReplacement(BiotechLootTypeInit.GENE_TRAIT_LOOT_TYPE.get(), RandomManager.PROGRESS_RANDOM_ID);
             if (result.lootType() instanceof GeneTraitLootType geneTraitLootType) {
                 GeneTraitLootType.ClaimResult claimResult = geneTraitLootType.claimResultsToPlayerAndReturn(serverPlayer, result);
                 sendGeneTraitObtainMessage(serverPlayer, rarity, claimResult);

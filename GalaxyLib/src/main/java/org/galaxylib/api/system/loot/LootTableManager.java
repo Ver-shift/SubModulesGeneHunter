@@ -3,8 +3,10 @@ package org.galaxylib.api.system.loot;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
+import org.galaxylib.api.init.GalaxyLibAttachInit;
 import org.galaxylib.api.system.loot.core.ILootTableManager;
+import org.galaxylib.api.system.random.RandomManager;
 import org.galaxylib.api.system.loot.core.ILootType;
 import org.galaxylib.api.system.loot.data.GeneLootTableData;
 import org.galaxylib.api.system.loot.data.LootPoolData;
@@ -22,11 +24,12 @@ public class LootTableManager implements ILootTableManager {
 
     private final PlayerLootTableData playerLootTableData;
     private final ServerPlayer player;
+    private final RandomManager randomManager;
 
     public LootTableManager(PlayerLootTableData data) {
         this.playerLootTableData = data;
         this.player = data.getPlayer();
-
+        this.randomManager = player != null ? GalaxyLibAttachInit.getRandomManager(player.level()) : null;
     }
 
     @Override
@@ -53,12 +56,16 @@ public class LootTableManager implements ILootTableManager {
 
     @Override
     public LootResult roolWithoutReplacement(ILootType<?> lootType) {
+        return roolWithoutReplacement(lootType, RandomManager.PROGRESS_RANDOM_ID);
+    }
+
+    public LootResult roolWithoutReplacement(ILootType<?> lootType, String randomId) {
         int count = lootType.getPoolCount(player);
         LootTableGroup group = getLootTableGroup(lootType);
         if (group == null) return new LootResult(List.of(), lootType);
 
         List<LootPoolData.Entry> results = new ArrayList<>();
-        RandomSource random = player.getRandom();
+        SingleThreadedRandomSource random = randomManager.getSeed(randomId);
 
         // 获取 globeChance 作为概率池
         Map<ResourceLocation, Float> chancePool = new HashMap<>(group.getGlobeChance());
@@ -88,12 +95,16 @@ public class LootTableManager implements ILootTableManager {
 
     @Override
     public LootResult rollWithReplacement(ILootType<?> lootType) {
+        return rollWithReplacement(lootType, RandomManager.PROGRESS_RANDOM_ID);
+    }
+
+    public LootResult rollWithReplacement(ILootType<?> lootType, String randomId) {
         int count = lootType.getPoolCount(player);
         LootTableGroup group = getLootTableGroup(lootType);
         if (group == null) return new LootResult(List.of(), lootType);
 
         List<LootPoolData.Entry> results = new ArrayList<>();
-        RandomSource random = player.getRandom();
+        SingleThreadedRandomSource random = randomManager.getSeed(randomId);
 
         // 获取 globeChance 作为概率池
         Map<ResourceLocation, Float> chancePool = group.getGlobeChance();

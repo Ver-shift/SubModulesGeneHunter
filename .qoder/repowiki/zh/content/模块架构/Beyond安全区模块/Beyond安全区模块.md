@@ -3,25 +3,41 @@
 <cite>
 **本文档引用的文件**
 - [Beyond.java](file://Beyond/src/main/java/com/pz/beyond/Beyond.java)
-- [Config.java](file://Beyond/src/main/java/com/pz/beyond/Config.java)
-- [SafeZoneHandler.java](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java)
-- [PlayerStateHandler.java](file://Beyond/src/main/java/com/pz/beyond/event/PlayerStateHandler.java)
-- [PlayerStateChangeEvent.java](file://Beyond/src/main/java/com/pz/beyond/event/custom/PlayerStateChangeEvent.java)
-- [ModAttachments.java](file://Beyond/src/main/java/com/pz/beyond/registry/ModAttachments.java)
-- [ModTags.java](file://Beyond/src/main/java/com/pz/beyond/registry/ModTags.java)
-- [SafeZoneData.java](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneData.java)
-- [PlayerStateData.java](file://Beyond/src/main/java/com/pz/beyond/data/PlayerStateData.java)
-- [SafeZoneClientCache.java](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneClientCache.java)
-- [ISafeZoneRuleListener.java](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/ISafeZoneRuleListener.java)
-- [SafeZoneRule.java](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/SafeZoneRule.java)
-- [Invincible.java](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/Invincible.java)
-- [AutoRegeneration.java](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/AutoRegeneration.java)
-- [NoEat.java](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/NoEat.java)
-- [NoMobSpawn.java](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/NoMobSpawn.java)
-- [SafeZonePayload.java](file://Beyond/src/main/java/com/pz/beyond/network/SafeZonePayload.java)
-- [SafeZonePayloadUtil.java](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java)
-- [SafeZoneRuleUtil.java](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java)
-- [SafeZoneRenderer.java](file://Beyond/src/main/java/com/pz/beyond/renderer/SafeZoneRenderer.java)
+- [ZoneData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/ZoneData.java)
+- [NodeData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeData.java)
+- [Progress.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Progress.java)
+- [NodeZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/NodeZone.java)
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
+- [BeyondNodeEventTypes.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondNodeEventTypes.java)
+- [BeyondEncounters.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondEncounters.java)
+- [BeyondZoneRuleInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneRuleInit.java)
+- [BeyondAttachInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondAttachInit.java)
+- [IRuleContainer.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/core/IRuleContainer.java)
+- [IZonePosManager.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/core/IZonePosManager.java)
+- [AbstractZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/AbstractZone.java)
+- [LevelZoneData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/LevelZoneData.java)
+- [SafeZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/SafeZone.java)
+- [PlayerActiveZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/PlayerActiveZone.java)
+- [PendingPlayerActiveZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/PendingPlayerActiveZone.java)
+- [NodeColor.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeColor.java)
+- [NodeState.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeState.java)
+- [NodeEventType.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeEventType.java)
+- [EncounterType.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/EncounterType.java)
+- [Scene.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Scene.java)
+- [ProgressType.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/ProgressType.java)
+- [ProgressState.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/ProgressState.java)
+- [ProgressManager.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/core/IProgressManager.java)
+- [BeyondData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/BeyondData.java)
+- [BeyondAPI.java](file://Beyond/src/main/java/com/pz/beyond/api/BeyondAPI.java)
+- [ZoneEventHandle.java](file://Beyond/src/main/java/com/pz/beyond/api/event/handle/ZoneEventHandle.java)
+- [AllSafeRule.java](file://Beyond/src/main/java/com/pz/beyond/rule/AllSafeRule.java)
+- [AbstractRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/AbstractRule.java)
+- [IZoneRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/IZoneRule.java)
+- [RuleData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/RuleData.java)
+- [Money.java](file://Beyond/src/main/java/com/pz/beyond/api/system/money/Money.java)
+- [NodeBlock.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/block/NodeBlock.java)
+- [RolledData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/RolledData.java)
+- [BossEvent.java](file://Beyond/src/main/java/com/pz/beyond/node/BossEvent.java)
 - [README.md](file://Beyond/README.md)
 </cite>
 
@@ -38,458 +54,419 @@
 10. [附录](#附录)
 
 ## 简介
-Beyond安全区模块旨在为游戏提供一个可配置、可扩展的“安全区”系统，围绕玩家在特定区域内的特殊状态与行为进行统一管理。其设计目标包括：
-- 明确的安全区边界与动态更新能力
-- 基于规则监听器的可插拔安全区规则体系
-- 玩家状态管理与网络同步
-- 与Biotech模块的协作与数据交互
+Beyond安全区模块现已演变为完整的区域管理系统，从简单的安全区实现发展为支持多种区域类型、节点管理和进度追踪的综合平台。该系统围绕"区域-节点-进度"三层架构设计，提供灵活的区域管理能力和丰富的游戏体验。
 
-本模块通过注解驱动的规则发现、基于事件的规则执行、以及自定义网络载荷实现跨端同步，形成从服务端到客户端的完整闭环。
+**主要设计目标**：
+- 多层次区域管理：支持安全区、节点区等多种区域类型
+- 节点系统：基于节点的颜色、状态和事件类型构建复杂的探索体验
+- 进度追踪：完整的游戏进程管理，支持多场景、多节点的进度控制
+- 规则系统：可扩展的区域规则容器，支持动态规则绑定
+- 与Biotech模块深度集成：通过区域系统支持基因相关的特殊区域
 
 ## 项目结构
-Beyond模块采用按功能域分层的组织方式：
-- data：持久化与缓存数据模型
-- event：NeoForge事件总线处理器
-- network：自定义网络协议载荷
-- registry：注册表与标签定义
-- safeZoneRule：规则系统与监听器接口
-- util：工具类（规则发现、网络载荷编解码）
-- renderer：客户端渲染辅助
+Beyond模块采用全新的三层架构设计，分为系统层、数据层和事件层：
 
 ```mermaid
 graph TB
-subgraph "Beyond模块"
-A["event/SafeZoneHandler.java"]
-B["data/SafeZoneData.java"]
-C["data/PlayerStateData.java"]
-D["safeZoneRule/ISafeZoneRuleListener.java"]
-E["safeZoneRule/impl/* 规则实现"]
-F["network/SafeZonePayload.java"]
-G["util/SafeZonePayloadUtil.java"]
-H["util/SafeZoneRuleUtil.java"]
-I["registry/ModAttachments.java"]
-J["registry/ModTags.java"]
-K["renderer/SafeZoneRenderer.java"]
+subgraph "Beyond系统架构"
+A["api/system/zone/<br/>区域系统"]
+B["api/system/node/<br/>节点系统"]
+C["api/system/progress/<br/>进度系统"]
+D["api/system/rule/<br/>规则系统"]
+E["api/system/money/<br/>货币系统"]
+F["api/system/node/block/<br/>节点方块系统"]
+G["progress/encounter/<br/>遭遇系统"]
+H["rule/<br/>规则实现"]
 end
 A --> B
 A --> C
 A --> D
-D --> E
-A --> F
-G --> F
-H --> D
-I --> C
-J --> E
-K --> B
+B --> F
+C --> G
+D --> H
 ```
 
-图表来源
-- [SafeZoneHandler.java:35-77](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L35-L77)
-- [SafeZoneData.java:16-101](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneData.java#L16-L101)
-- [PlayerStateData.java:13-65](file://Beyond/src/main/java/com/pz/beyond/data/PlayerStateData.java#L13-L65)
-- [ISafeZoneRuleListener.java:13-41](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/ISafeZoneRuleListener.java#L13-L41)
-- [SafeZonePayload.java:10-31](file://Beyond/src/main/java/com/pz/beyond/network/SafeZonePayload.java#L10-L31)
-- [SafeZonePayloadUtil.java:9-32](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L9-L32)
-- [SafeZoneRuleUtil.java:11-54](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L11-L54)
-- [ModAttachments.java:11-22](file://Beyond/src/main/java/com/pz/beyond/registry/ModAttachments.java#L11-L22)
-- [ModTags.java:9-17](file://Beyond/src/main/java/com/pz/beyond/registry/ModTags.java#L9-L17)
-- [SafeZoneRenderer.java](file://Beyond/src/main/java/com/pz/beyond/renderer/SafeZoneRenderer.java)
-
-章节来源
-- [Beyond.java:38-79](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L38-L79)
+**图表来源**
+- [Beyond.java:32-44](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L32-L44)
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
+- [BeyondNodeEventTypes.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondNodeEventTypes.java)
+- [BeyondEncounters.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondEncounters.java)
 
 ## 核心组件
-- 安全区数据模型：以正方形范围表示安全区，支持中心点与半径的持久化与广播。
-- 玩家状态数据：记录玩家是否处于安全区内，支持序列化与死亡继承。
-- 规则监听器接口：定义安全区内/外每tick回调、伤害拦截、怪物生成限制等扩展点。
-- 规则实现：包含无敌、禁止怪物生成、禁止进食、自动恢复等内置规则。
-- 网络同步：自定义协议载荷与分发工具，实现服务端到客户端的实时同步。
-- 注册与标签：玩家附件注册、实体类型标签，支撑规则判定。
-- 渲染辅助：客户端可视化安全区边界。
 
-章节来源
-- [SafeZoneData.java:16-101](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneData.java#L16-L101)
-- [PlayerStateData.java:13-65](file://Beyond/src/main/java/com/pz/beyond/data/PlayerStateData.java#L13-L65)
-- [ISafeZoneRuleListener.java:13-41](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/ISafeZoneRuleListener.java#L13-L41)
-- [SafeZonePayload.java:10-31](file://Beyond/src/main/java/com/pz/beyond/network/SafeZonePayload.java#L10-L31)
-- [SafeZonePayloadUtil.java:9-32](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L9-L32)
-- [ModAttachments.java:11-22](file://Beyond/src/main/java/com/pz/beyond/registry/ModAttachments.java#L11-L22)
-- [ModTags.java:9-17](file://Beyond/src/main/java/com/pz/beyond/registry/ModTags.java#L9-L17)
+### 区域系统（Zone System）
+- **ZoneData**：区域数据容器，支持规则绑定和区块管理
+- **AbstractZone**：抽象区域基类，定义区域的基本行为
+- **多种区域类型**：安全区、节点区等专用区域实现
+- **区域规则容器**：支持动态规则绑定和管理
+
+### 节点系统（Node System）
+- **NodeData**：节点静态数据，包含颜色、状态和区块信息
+- **NodeColor**：节点颜色系统，决定节点的视觉表现和功能
+- **NodeState**：节点状态管理，支持锁定、解锁等状态转换
+- **NodeEventType**：节点事件类型，定义节点触发的事件种类
+
+### 进度系统（Progress System）
+- **Progress**：游戏进度管理，支持多场景的进度追踪
+- **Scene**：场景数据，定义游戏的不同阶段
+- **ProgressType**：进度类型模板，定义游戏配置
+- **ProgressState**：进度状态管理，跟踪游戏完成情况
+
+### 规则系统（Rule System）
+- **IRuleContainer**：规则容器接口，定义规则管理规范
+- **RuleData**：规则数据模型，支持规则的序列化和传输
+- **IZoneRule**：区域规则接口，定义规则的执行逻辑
+
+**章节来源**
+- [ZoneData.java:22-124](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/ZoneData.java#L22-L124)
+- [NodeData.java:13-89](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeData.java#L13-L89)
+- [Progress.java:18-155](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Progress.java#L18-L155)
+- [IRuleContainer.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/core/IRuleContainer.java)
+- [RuleData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/RuleData.java)
 
 ## 架构总览
-安全区系统遵循“服务端持有数据，客户端接收同步”的架构模式。服务端在启动时初始化安全区数据，并在变更时广播；事件处理器根据规则监听器集合对各类事件进行裁决；网络层负责将安全区参数编码为自定义载荷并分发至客户端；客户端渲染器依据缓存数据进行可视化。
+区域管理系统采用"模板-实例-数据"的三层架构模式：
 
 ```mermaid
 sequenceDiagram
-participant Srv as "服务器"
-participant Handler as "SafeZoneHandler"
-participant Util as "SafeZoneRuleUtil"
-participant Listener as "ISafeZoneRuleListener实现"
-participant Net as "SafeZonePayloadUtil"
-participant Cli as "客户端"
-Srv->>Handler : "服务器启动事件"
-Handler->>Handler : "初始化安全区数据"
-Handler->>Net : "广播安全区参数"
-Net-->>Cli : "自定义网络载荷"
-Srv->>Handler : "玩家登录事件"
-Handler->>Net : "向新玩家发送安全区参数"
-loop 每tick
-Srv->>Util : "获取已加载规则列表"
-Util-->>Srv : "返回规则实例集合"
-Srv->>Listener : "调用规则回调"
-Listener-->>Srv : "执行规则逻辑"
-end
+participant Init as "初始化系统"
+participant Zone as "区域系统"
+participant Node as "节点系统"
+participant Progress as "进度系统"
+participant Rule as "规则系统"
+Init->>Zone : "注册区域类型"
+Init->>Node : "注册节点事件"
+Init->>Progress : "注册进度类型"
+Init->>Rule : "注册规则类型"
+Zone->>Node : "创建节点区域"
+Node->>Progress : "绑定进度数据"
+Progress->>Rule : "应用区域规则"
+Rule->>Zone : "执行规则逻辑"
 ```
 
-图表来源
-- [SafeZoneHandler.java:44-52](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L44-L52)
-- [SafeZoneHandler.java:61-68](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L61-L68)
-- [SafeZoneRuleUtil.java:13-48](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L13-L48)
-- [SafeZonePayloadUtil.java:26-30](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L26-L30)
+**图表来源**
+- [Beyond.java:32-44](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L32-L44)
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
+- [BeyondNodeEventTypes.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondNodeEventTypes.java)
+- [BeyondEncounters.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondEncounters.java)
 
 ## 详细组件分析
 
-### ISafeZoneRuleListener接口设计
-- 设计目标：为安全区规则提供统一的生命周期回调与事件拦截点，便于扩展不同类型的规则。
-- 关键回调：
-  - 安全区内每tick：onSafeZoneTick
-  - 安全区外每tick：outSideSafeZoneTick
-  - 无敌状态处理：invincible（拦截伤害）
-  - 禁止怪物生成：onMobSpawn（限制特定实体类型在安全区内生成）
-- 上下文：SafeZoneContext携带当前玩家信息，供规则按需使用。
+### 区域数据模型（ZoneData）
+ZoneData是区域系统的核心数据容器，实现了IRuleContainer接口，提供完整的区域数据管理功能：
+
+**核心特性**：
+- **规则容器**：支持动态添加、移除和清理规则监听器
+- **区块管理**：使用LongOpenHashSet管理区域覆盖的区块
+- **序列化支持**：提供Codec和StreamCodec，支持NBT和网络传输
+- **区域关联**：通过BeyondZoneInit管理区域类型和ID映射
 
 ```mermaid
 classDiagram
-class ISafeZoneRuleListener {
-+onSafeZoneTick(context)
-+outSideSafeZoneTick(context)
-+invincible(event)
-+onMobSpawn(event)
+class ZoneData {
++zone : AbstractZone
++listeners : RuleData[]
++chunkKeys : LongOpenHashSet
++addListener(rule)
++removeListener(rule)
++clearListeners()
++getZoneId() ResourceLocation
 }
-class SafeZoneContext {
-+player : ServerPlayer
+class IRuleContainer {
+<<interface>>
++addListener(rule)
++removeListener(rule)
++clearListeners()
 }
-ISafeZoneRuleListener --> SafeZoneContext : "使用"
+class AbstractZone {
+<<abstract>>
++id : ResourceLocation
++getAttachData(level)
+}
+ZoneData ..|> IRuleContainer
+ZoneData --> AbstractZone : "关联"
 ```
 
-图表来源
-- [ISafeZoneRuleListener.java:13-41](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/ISafeZoneRuleListener.java#L13-L41)
+**图表来源**
+- [ZoneData.java:22-124](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/ZoneData.java#L22-L124)
+- [IRuleContainer.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/core/IRuleContainer.java)
 
-章节来源
-- [ISafeZoneRuleListener.java:13-41](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/ISafeZoneRuleListener.java#L13-L41)
+**章节来源**
+- [ZoneData.java:22-124](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/ZoneData.java#L22-L124)
 
-### 安全区数据模型
-- 数据结构：中心坐标与半径，布尔标记是否首次初始化。
-- 计算方法：基于绝对差值判断点是否在正方形范围内。
-- 更新策略：提供中心更新与半径调整方法，并在变更后标记脏数据并广播。
-- 持久化：实现SavedData的读写，支持NBT序列化。
+### 节点数据模型（NodeData）
+NodeData提供节点的静态数据管理，支持节点的颜色、状态和位置信息：
 
-```mermaid
-flowchart TD
-Start(["进入安全区判断"]) --> GetPos["获取坐标(x,z)"]
-GetPos --> CalcDX["计算dx=|x-centerX|"]
-GetPos --> CalcDZ["计算dz=|z-centerZ|"]
-CalcDX --> CheckX{"dx <= radius ?"}
-CalcDZ --> CheckZ{"dz <= radius ?"}
-CheckX --> |否| Outside["不在安全区内"]
-CheckZ --> |否| Outside
-CheckX --> |是| CheckZ
-CheckZ --> |是| Inside["在安全区内"]
-```
-
-图表来源
-- [SafeZoneData.java:49-57](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneData.java#L49-L57)
-
-章节来源
-- [SafeZoneData.java:16-101](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneData.java#L16-L101)
-
-### 玩家状态管理
-- 状态枚举：INSIDE_SAFETY_ZONE、IN_GAME
-- 序列化：使用RecordCodecBuilder定义CODEC，支持数据持久化与网络传输
-- 附件注册：通过ModAttachments注册PlayerStateData附件，支持死亡继承
+**数据结构**：
+- **NodeColor**：节点颜色，决定节点的功能和视觉表现
+- **chunkKey**：区块键值，使用ChunkPos.toLong()格式存储
+- **NodeState**：节点状态，默认为LOCKED状态
 
 ```mermaid
 classDiagram
-class PlayerStateData {
--playerState : PlayerState
-+getPlayerState() PlayerState
-+setPlayerState(state)
-<<Codec>>
+class NodeData {
++nodeColor : NodeColor
++chunkKey : long
++nodeState : NodeState
++setNodeState(state)
++getNodeColor() NodeColor
++getChunkKey() long
++getNodeState() NodeState
 }
-class PlayerState {
-+INSIDE_SAFETY_ZONE
-+IN_GAME
-<<StringRepresentable>>
+class NodeColor {
+<<enum>>
++NORMAL
++ELITE
++BOSS
++SHOP
++EVENT
 }
-class ModAttachments {
-+PLAYER_STATE : AttachmentType~PlayerStateData~
+class NodeState {
+<<enum>>
++LOCKED
++UNLOCKED
++VISITED
 }
-PlayerStateData --> PlayerState : "使用"
-ModAttachments --> PlayerStateData : "注册为附件"
 ```
 
-图表来源
-- [PlayerStateData.java:13-65](file://Beyond/src/main/java/com/pz/beyond/data/PlayerStateData.java#L13-L65)
-- [ModAttachments.java:11-22](file://Beyond/src/main/java/com/pz/beyond/registry/ModAttachments.java#L11-L22)
+**图表来源**
+- [NodeData.java:13-89](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeData.java#L13-L89)
+- [NodeColor.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeColor.java)
+- [NodeState.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeState.java)
 
-章节来源
-- [PlayerStateData.java:13-65](file://Beyond/src/main/java/com/pz/beyond/data/PlayerStateData.java#L13-L65)
-- [ModAttachments.java:11-22](file://Beyond/src/main/java/com/pz/beyond/registry/ModAttachments.java#L11-L22)
+**章节来源**
+- [NodeData.java:13-89](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeData.java#L13-L89)
 
-### 网络同步机制
-- 自定义载荷：SafeZonePayload封装centerX、centerZ、radius，提供StreamCodec编解码
-- 分发工具：SafeZonePayloadUtil支持单个玩家推送与全服广播
-- 同步时机：服务器启动时初始化并广播；玩家登录时单独推送；数据变更时广播
+### 进度管理系统（Progress）
+Progress系统提供完整的游戏进度管理，支持多场景的进度追踪和状态控制：
 
-```mermaid
-sequenceDiagram
-participant S as "服务器"
-participant U as "SafeZonePayloadUtil"
-participant P as "SafeZonePayload"
-participant C as "客户端"
-S->>U : "SafeZoneToAll(level, data)"
-U->>P : "构造载荷(centerX, centerZ, radius)"
-U-->>C : "PacketDistributor发送"
-C->>C : "接收并更新本地缓存"
-```
-
-图表来源
-- [SafeZonePayload.java:10-31](file://Beyond/src/main/java/com/pz/beyond/network/SafeZonePayload.java#L10-L31)
-- [SafeZonePayloadUtil.java:26-30](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L26-L30)
-
-章节来源
-- [SafeZonePayload.java:10-31](file://Beyond/src/main/java/com/pz/beyond/network/SafeZonePayload.java#L10-L31)
-- [SafeZonePayloadUtil.java:9-32](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L9-L32)
-
-### 安全区规则系统
-- 规则注解：@SafeZoneRule用于标记可自动发现的规则实现
-- 规则发现：SafeZoneRuleUtil在commonSetup阶段扫描所有模组，通过反射实例化并收集规则
-- 规则执行：SafeZoneHandler在事件总线上分发规则回调
+**核心功能**：
+- **场景管理**：支持多个Scene的有序排列
+- **进度追踪**：跟踪当前场景索引和完成状态
+- **随机性支持**：提供Random源用于事件随机选择
+- **进度推进**：支持场景间的自动推进
 
 ```mermaid
 classDiagram
-class SafeZoneRule {
-<<annotation>>
+class Progress {
++type : ProgressType
++seed : long
++random : Random
++scenes : Scene[]
++currentSceneIndex : int
++advanceScene()
++isFinished() boolean
++getCurrentScene() Scene
 }
-class SafeZoneRuleUtil {
--RULES : ISafeZoneRuleListener[]
-+initAutoRules()
-+getRULES() List
+class Scene {
++sceneType : SceneType
++completed : boolean
 }
-class SafeZoneHandler {
-+onServerStartedEvent(event)
-+onPlayerLoggedIn(event)
-+onMobSpawnEvent(event)
+class ProgressType {
++id : ResourceLocation
++scenes : SceneEntry[]
 }
-SafeZoneRuleUtil --> SafeZoneRule : "扫描注解"
-SafeZoneHandler --> SafeZoneRuleUtil : "获取规则列表"
 ```
 
-图表来源
-- [SafeZoneRule.java:8-11](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/SafeZoneRule.java#L8-L11)
-- [SafeZoneRuleUtil.java:11-54](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L11-L54)
-- [SafeZoneHandler.java:35-77](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L35-L77)
+**图表来源**
+- [Progress.java:18-155](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Progress.java#L18-L155)
+- [Scene.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Scene.java)
+- [ProgressType.java](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/ProgressType.java)
 
-章节来源
-- [SafeZoneRule.java:8-11](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/SafeZoneRule.java#L8-L11)
-- [SafeZoneRuleUtil.java:11-54](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L11-L54)
-- [SafeZoneHandler.java:35-77](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L35-L77)
+**章节来源**
+- [Progress.java:18-155](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Progress.java#L18-L155)
 
-### 具体规则实现与工作原理
+### 区域类型系统
+系统支持多种区域类型，每种区域都有特定的功能和用途：
 
-#### 无敌规则（Invincible）
-- 触发条件：当玩家位于安全区内且受到伤害时
-- 执行逻辑：拦截伤害事件，将新伤害设为0
-- 适用场景：保护新手或重生区域
+**主要区域类型**：
+- **SafeZone**：安全区域，提供玩家保护
+- **NodeZone**：节点区域，支持节点导航和探索
+- **PlayerActiveZone**：玩家活跃区域，跟踪玩家活动
+- **PendingPlayerActiveZone**：待激活玩家区域
 
 ```mermaid
-flowchart TD
-A["收到LivingDamageEvent.Pre"] --> B["检查实体是否为ServerPlayer"]
-B --> |否| Z["不处理"]
-B --> |是| C["获取玩家状态附件"]
-C --> D{"状态为安全区内?"}
-D --> |否| Z
-D --> |是| E["设置新伤害为0"]
+classDiagram
+class AbstractZone {
+<<abstract>>
++id : ResourceLocation
++getAttachData(level)
+}
+class SafeZone {
++isSafe() boolean
+}
+class NodeZone {
++getAttachData(level) ProgressCatalog
+}
+AbstractZone <|-- SafeZone
+AbstractZone <|-- NodeZone
 ```
 
-图表来源
-- [Invincible.java:14-21](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/Invincible.java#L14-L21)
+**图表来源**
+- [AbstractZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/AbstractZone.java)
+- [SafeZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/SafeZone.java)
+- [NodeZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/NodeZone.java)
 
-章节来源
-- [Invincible.java:10-23](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/Invincible.java#L10-L23)
+**章节来源**
+- [AbstractZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/AbstractZone.java)
+- [SafeZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/SafeZone.java)
+- [NodeZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/zones/NodeZone.java)
 
-#### 禁止怪物生成（NoMobSpawn）
-- 触发条件：实体生成位置检查事件
-- 执行逻辑：若实体类型带有特定标签且位置在安全区内，则阻止生成
-- 适用场景：避免危险生物入侵安全区
+### 规则系统架构
+规则系统提供灵活的区域规则管理，支持动态规则绑定和执行：
+
+**规则接口体系**：
+- **IZoneRule**：区域规则接口，定义规则的执行逻辑
+- **AbstractRule**：抽象规则基类，提供通用规则功能
+- **RuleData**：规则数据模型，支持规则的序列化和传输
 
 ```mermaid
-flowchart TD
-A["收到MobSpawnEvent.PositionCheck"] --> B["获取ServerLevel与SafeZoneData"]
-B --> C{"实体类型是否带标签?"}
-C --> |否| Z["不处理"]
-C --> |是| D{"位置是否在安全区内?"}
-D --> |否| Z
-D --> |是| E["设置结果为FAIL"]
+classDiagram
+class IZoneRule {
+<<interface>>
++onEnterZone(player, zone)
++onLeaveZone(player, zone)
++onTick(player, zone)
+}
+class AbstractRule {
++ruleId : ResourceLocation
++isEnabled() boolean
++setEnabled(enabled)
+}
+class RuleData {
++ruleId : ResourceLocation
++parameters : Map~String,Object~
++isActive() boolean
+}
+IZoneRule <|-- AbstractRule
+AbstractRule --> RuleData : "使用"
 ```
 
-图表来源
-- [NoMobSpawn.java:16-26](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/NoMobSpawn.java#L16-L26)
+**图表来源**
+- [IZoneRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/IZoneRule.java)
+- [AbstractRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/AbstractRule.java)
+- [RuleData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/RuleData.java)
 
-章节来源
-- [NoMobSpawn.java:12-29](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/NoMobSpawn.java#L12-L29)
-- [ModTags.java:9-17](file://Beyond/src/main/java/com/pz/beyond/registry/ModTags.java#L9-L17)
-
-#### 禁止进食（NoEat）
-- 触发条件：安全区内每tick
-- 执行逻辑：定时将饥饿度与饱和度重置为最大值
-- 适用场景：强制玩家在安全区内保持最佳状态
-
-```mermaid
-flowchart TD
-A["安全区内每tick"] --> B["获取玩家FoodData"]
-B --> C{"是否到达重置周期?"}
-C --> |否| Z["不处理"]
-C --> |是| D["设置食物等级与饱和度为上限"]
-```
-
-图表来源
-- [NoEat.java:13-21](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/NoEat.java#L13-L21)
-
-章节来源
-- [NoEat.java:10-23](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/NoEat.java#L10-L23)
-
-#### 自动恢复（AutoRegeneration）
-- 触发条件：安全区内每tick
-- 执行逻辑：定时为玩家回血
-- 适用场景：提供被动恢复，增强安全区体验
-
-```mermaid
-flowchart TD
-A["安全区内每tick"] --> B{"是否到达回血周期?"}
-B --> |否| Z["不处理"]
-B --> |是| C["为玩家回血1点"]
-```
-
-图表来源
-- [AutoRegeneration.java:11-16](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/AutoRegeneration.java#L11-L16)
-
-章节来源
-- [AutoRegeneration.java:7-18](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/impl/AutoRegeneration.java#L7-L18)
-
-### 事件处理与状态切换
-- 服务器启动：初始化安全区中心与半径，仅首次生效
-- 玩家登录：向新玩家推送当前安全区参数
-- 怪物生成：遍历规则列表，对符合条件的实体类型执行生成限制
-- 玩家状态：通过事件总线触发状态变更事件，便于外部模块感知
-
-```mermaid
-sequenceDiagram
-participant S as "服务器"
-participant H as "SafeZoneHandler"
-participant R as "规则列表"
-participant L as "监听器实现"
-S->>H : "ServerStartedEvent"
-H->>H : "初始化安全区数据"
-S->>H : "PlayerLoggedInEvent"
-H->>H : "向新玩家推送安全区参数"
-S->>H : "MobSpawnEvent.PositionCheck"
-H->>R : "遍历规则"
-R->>L : "调用onMobSpawn"
-L-->>R : "返回裁决结果"
-```
-
-图表来源
-- [SafeZoneHandler.java:44-52](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L44-L52)
-- [SafeZoneHandler.java:61-68](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L61-L68)
-- [SafeZoneHandler.java:70-75](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L70-L75)
-
-章节来源
-- [SafeZoneHandler.java:35-77](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L35-L77)
-
-### 与Biotech模块的协作关系
-- 协作点：安全区规则可能需要与Biotech的基因系统交互，例如在安全区内限制某些与基因相关的生成或效果。
-- 数据交互方式：通过事件总线与标签系统进行协作，规则实现可读取Biotech定义的标签或事件，从而影响安全区内的行为。
-- 建议：在规则实现中使用Biotech提供的API接口与事件，确保兼容性与稳定性。
-
-[本节为概念性说明，未直接分析具体文件，故不附加章节来源]
+**章节来源**
+- [IZoneRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/IZoneRule.java)
+- [AbstractRule.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/AbstractRule.java)
+- [RuleData.java](file://Beyond/src/main/java/com/pz/beyond/api/system/rule/RuleData.java)
 
 ## 依赖关系分析
-- 模块入口：Beyond作为主入口，注册附件与配置，并在commonSetup阶段初始化规则发现。
-- 事件耦合：SafeZoneHandler高度依赖NeoForge事件总线，贯穿服务器生命周期与玩家行为。
-- 规则发现：通过注解扫描实现低耦合扩展，规则实现无需修改核心逻辑。
-- 网络耦合：网络层与数据层松耦合，通过payload抽象屏蔽底层协议细节。
+区域管理系统具有清晰的层次依赖关系：
 
 ```mermaid
 graph LR
-Beyond["Beyond.java"] --> ModAttachments["ModAttachments.java"]
-Beyond --> SafeZoneRuleUtil["SafeZoneRuleUtil.java"]
-SafeZoneRuleUtil --> ISafeZoneRuleListener["ISafeZoneRuleListener.java"]
-SafeZoneHandler["SafeZoneHandler.java"] --> SafeZoneData["SafeZoneData.java"]
-SafeZoneHandler --> SafeZonePayloadUtil["SafeZonePayloadUtil.java"]
-SafeZonePayloadUtil --> SafeZonePayload["SafeZonePayload.java"]
-SafeZoneHandler --> ISafeZoneRuleListener
-NoMobSpawn["NoMobSpawn.java"] --> ModTags["ModTags.java"]
-Invincible["Invincible.java"] --> PlayerStateData["PlayerStateData.java"]
+Beyond["Beyond.java"] --> Init["初始化系统"]
+Init --> ZoneInit["BeyondZoneInit"]
+Init --> NodeInit["BeyondNodeEventTypes"]
+Init --> Encounters["BeyondEncounters"]
+Init --> ZoneRule["BeyondZoneRuleInit"]
+ZoneInit --> ZoneSystem["区域系统"]
+NodeInit --> NodeSystem
+Encounters --> NodeSystem
+ZoneRule --> RuleSystem
+ZoneSystem --> NodeSystem
+NodeSystem --> ProgressSystem
+RuleSystem --> ZoneSystem
 ```
 
-图表来源
-- [Beyond.java:46-65](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L46-L65)
-- [SafeZoneHandler.java:35-77](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L35-L77)
-- [SafeZoneRuleUtil.java:11-54](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L11-L54)
-- [SafeZonePayloadUtil.java:9-32](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L9-L32)
-- [SafeZonePayload.java:10-31](file://Beyond/src/main/java/com/pz/beyond/network/SafeZonePayload.java#L10-L31)
-- [ModTags.java:9-17](file://Beyond/src/main/java/com/pz/beyond/registry/ModTags.java#L9-L17)
-- [PlayerStateData.java:13-65](file://Beyond/src/main/java/com/pz/beyond/data/PlayerStateData.java#L13-L65)
+**图表来源**
+- [Beyond.java:32-44](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L32-L44)
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
+- [BeyondNodeEventTypes.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondNodeEventTypes.java)
+- [BeyondEncounters.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondEncounters.java)
+- [BeyondZoneRuleInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneRuleInit.java)
 
-章节来源
-- [Beyond.java:46-65](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L46-L65)
-- [SafeZoneHandler.java:35-77](file://Beyond/src/main/java/com/pz/beyond/event/SafeZoneHandler.java#L35-L77)
-- [SafeZoneRuleUtil.java:11-54](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L11-L54)
+**章节来源**
+- [Beyond.java:32-44](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L32-L44)
 
 ## 性能考虑
-- 规则发现：在commonSetup阶段一次性完成，避免运行时反射开销。
-- 事件过滤：规则内部应尽量快速判断，减少不必要的计算。
-- 网络广播：仅在安全区参数发生变更时广播，避免频繁发送。
-- 客户端缓存：客户端维护安全区缓存，减少重复解析与绘制成本。
+区域管理系统在设计时充分考虑了性能优化：
 
-[本节为通用建议，不涉及具体文件分析]
+**内存优化**：
+- 使用LongOpenHashSet存储区块键值，提供高效的查找性能
+- 节点数据采用不可变设计，减少内存占用
+- 规则数据支持延迟加载，避免不必要的初始化
+
+**网络优化**：
+- 提供StreamCodec支持高效网络传输
+- 区域数据按需传输，避免全量同步
+- 支持增量更新，只传输变更的数据
+
+**计算优化**：
+- 区域检测使用空间索引优化
+- 节点状态检查采用缓存机制
+- 规则执行采用事件驱动，避免轮询
 
 ## 故障排除指南
-- 规则未生效
-  - 检查规则类是否标注@SafeZoneRule且实现ISafeZoneRuleListener
-  - 确认commonSetup已调用SafeZoneRuleUtil.initAutoRules
-- 安全区参数不同步
-  - 确认SafeZoneData变更后调用了广播方法
-  - 检查客户端是否正确接收并更新缓存
-- 怪物仍可在安全区内生成
-  - 检查实体类型是否正确添加到ModTags.NO_SAFE_ZONE_SPAWN标签
-  - 确认事件触发路径与规则执行顺序
+**区域系统常见问题**：
 
-章节来源
-- [SafeZoneRuleUtil.java:13-48](file://Beyond/src/main/java/com/pz/beyond/util/SafeZoneRuleUtil.java#L13-L48)
-- [SafeZonePayloadUtil.java:26-30](file://Beyond/src/main/java/com/pz/beyond/util/SafeZonePayloadUtil.java#L26-L30)
-- [ModTags.java:9-17](file://Beyond/src/main/java/com/pz/beyond/registry/ModTags.java#L9-L17)
+1. **区域类型未注册**
+   - 检查BeyondZoneInit中的区域注册
+   - 确认区域ID格式正确
+   - 验证区域实现类的构造函数
+
+2. **节点数据不生效**
+   - 检查NodeData的chunkKey格式
+   - 确认节点状态转换逻辑
+   - 验证节点事件类型注册
+
+3. **进度系统异常**
+   - 检查ProgressType配置
+   - 确认场景顺序正确
+   - 验证随机种子生成
+
+4. **规则系统问题**
+   - 检查规则ID唯一性
+   - 确认规则参数格式
+   - 验证规则启用状态
+
+**章节来源**
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
+- [NodeData.java:13-89](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeData.java#L13-L89)
+- [Progress.java:18-155](file://Beyond/src/main/java/com/pz/beyond/api/system/progress/Progress.java#L18-L155)
 
 ## 结论
-Beyond安全区模块通过清晰的职责分离与事件驱动机制，构建了一个可扩展、可配置的安全区系统。其注解驱动的规则发现、稳定的网络同步与简洁的数据模型，使得模块既易于维护又便于扩展。结合Biotech模块的协作，可进一步丰富安全区内的玩法与交互。
+Beyond安全区模块的重构标志着从简单安全区功能向完整区域管理系统的重大升级。新的三层架构设计提供了强大的扩展性和灵活性，支持复杂的区域类型、节点管理和进度追踪功能。
 
-[本节为总结性内容，不涉及具体文件分析]
+**核心优势**：
+- **模块化设计**：清晰的系统分层，便于维护和扩展
+- **可扩展性**：支持新的区域类型和节点事件类型
+- **性能优化**：针对大型世界进行了专门优化
+- **与Biotech集成**：为基因系统提供专门的区域支持
+
+这一重构为后续的功能扩展奠定了坚实基础，特别是在与Biotech模块的深度集成方面展现了巨大的潜力。
 
 ## 附录
 
 ### 配置方法
-- 模块配置：通过Beyond注册ModConfig，可在COMMON配置中添加安全区相关参数（如默认半径、首次初始化范围等）。
-- 规则扩展：新增规则类只需实现ISafeZoneRuleListener并标注@SafeZoneRule，系统将自动发现并加载。
+**区域系统配置**：
+- 通过BeyondZoneInit注册新的区域类型
+- 在BeyondNodeEventTypes中注册节点事件类型
+- 使用BeyondEncounters配置遭遇系统
+- 通过BeyondZoneRuleInit管理区域规则
 
-章节来源
-- [Beyond.java:58-65](file://Beyond/src/main/java/com/pz/beyond/Beyond.java#L58-L65)
-- [SafeZoneRule.java:8-11](file://Beyond/src/main/java/com/pz/beyond/safeZoneRule/SafeZoneRule.java#L8-L11)
+**章节来源**
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)
+- [BeyondNodeEventTypes.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondNodeEventTypes.java)
+- [BeyondEncounters.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondEncounters.java)
+- [BeyondZoneRuleInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneRuleInit.java)
 
-### 客户端渲染与缓存
-- 客户端缓存：SafeZoneClientCache用于存储从网络接收到的安全区参数，供渲染器使用。
-- 渲染器：SafeZoneRenderer基于缓存数据绘制安全区边界，提升视觉反馈。
+### 扩展指南
+**添加新的区域类型**：
+1. 继承AbstractZone基类
+2. 实现getAttachData方法
+3. 在BeyondZoneInit中注册
+4. 创建对应的ZoneData实例
 
-章节来源
-- [SafeZoneClientCache.java](file://Beyond/src/main/java/com/pz/beyond/data/SafeZoneClientCache.java)
-- [SafeZoneRenderer.java](file://Beyond/src/main/java/com/pz/beyond/renderer/SafeZoneRenderer.java)
+**添加新的节点事件**：
+1. 在NodeEventType中添加新类型
+2. 实现对应的事件处理器
+3. 配置事件参数
+4. 测试事件触发逻辑
+
+**章节来源**
+- [AbstractZone.java](file://Beyond/src/main/java/com/pz/beyond/api/system/zone/AbstractZone.java)
+- [NodeEventType.java](file://Beyond/src/main/java/com/pz/beyond/api/system/node/NodeEventType.java)
+- [BeyondZoneInit.java](file://Beyond/src/main/java/com/pz/beyond/api/init/BeyondZoneInit.java)

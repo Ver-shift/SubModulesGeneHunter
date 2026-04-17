@@ -9,8 +9,10 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.minecraft.world.level.Level;
 import org.galaxylib.GalaxyLib;
 import org.galaxylib.api.system.loot.PlayerLootTableData;
+import org.galaxylib.api.system.random.RandomManager;
 
 @EventBusSubscriber
 public class GalaxyLibAttachInit {
@@ -29,6 +31,18 @@ public class GalaxyLibAttachInit {
                     .build()
     );
 
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<RandomManager>> RANDOM_MANAGER = ATTACHMENT_TYPES.register(
+            "random_manager",
+            () -> AttachmentType.builder((holder) -> new RandomManager())
+                    .serialize(RandomManager.CODEC)
+                    .sync(RandomManager.STREAM_CODEC)
+                    .build()
+    );
+
+    public static RandomManager getRandomManager(Level level) {
+        return level.getData(RANDOM_MANAGER);
+    }
+
     // ==================== Player Event Handlers ====================
 
     @SubscribeEvent
@@ -41,7 +55,7 @@ public class GalaxyLibAttachInit {
                 serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
             }
 
-            lootTableData.setPlayer(serverPlayer);
+            lootTableData.setPlayer(serverPlayer);  
             lootTableData.setPlayerId(serverPlayer.getId());
             serverPlayer.setData(PLAYER_LOOT_TABLE_DATA, lootTableData);
         }

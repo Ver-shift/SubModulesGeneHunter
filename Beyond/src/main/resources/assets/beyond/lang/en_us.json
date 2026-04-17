@@ -1,5 +1,6 @@
 {
   "itemGroup.beyond": "Example Mod Tab",
   "block.beyond.example_block": "Example Block",
-  "item.beyond.example_item": "Example Item"
+  "item.beyond.example_item": "Example Item",
+  "beyond.safe_zone.teleporting": "\u00A7eTeleporting to village spawn point..."
 }

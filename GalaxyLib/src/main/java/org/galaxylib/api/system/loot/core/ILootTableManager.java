@@ -40,6 +40,12 @@ public interface ILootTableManager {
     LootResult roolWithoutReplacement(Supplier<ILootType<?>> lootType);
     LootResult roolWithoutReplacement(ILootType<?> lootType);
 
+    /**
+     * 不放回抽取（指定随机源）
+     */
+    default LootResult roolWithoutReplacement(ILootType<?> lootType, String randomId) {
+        return roolWithoutReplacement(lootType);
+    }
 
     /**
      * 放回抽取
@@ -51,6 +57,13 @@ public interface ILootTableManager {
      */
     LootResult rollWithReplacement(Supplier<ILootType<?>> lootType);
     LootResult rollWithReplacement(ILootType<?> lootType);
+
+    /**
+     * 放回抽取（指定随机源）
+     */
+    default LootResult rollWithReplacement(ILootType<?> lootType, String randomId) {
+        return rollWithReplacement(lootType);
+    }
     /**
      * 批量设置指定名称的所有 pool 的 weight
      * <p>

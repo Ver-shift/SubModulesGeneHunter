@@ -134,4 +134,23 @@ public class ProgressCatalog {
     private Optional<RolledData> getActiveRolledDataOptional() {
         return Optional.ofNullable(activeRolledData);
     }
+
+    // --- 进度管理方法 ---
+
+    public void addProgress(Progress progressData) {
+        if (progressData != null && progressData.getType() != null) {
+            progress.put(progressData.getType().getId(), progressData);
+        }
+    }
+
+    public void setCurrentProgressById(ResourceLocation id) {
+        this.currentProgress = progress.get(id);
+    }
+
+    public void startGame() {
+        // TODO: 实现游戏开始逻辑，预生成节点事件等
+        if (currentProgress != null) {
+            currentProgress.initialize();
+        }
+    }
 }

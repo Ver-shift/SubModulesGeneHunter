@@ -151,4 +151,15 @@ public class Progress {
     public int getNodesCount() {
         return scenes.size();
     }
+
+    /**
+     * 初始化游戏，预生成数据
+     */
+    public void initialize() {
+        // TODO: 实现游戏初始化逻辑，预生成节点事件等
+        this.currentSceneIndex = 0;
+        for (Scene scene : scenes) {
+            scene.setCompleted(false);
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.pz.beyond;
 
 import com.mojang.logging.LogUtils;
+import com.pz.beyond.api.config.ServerConfig;
 import com.pz.beyond.api.init.BeyondAttachInit;
 import com.pz.beyond.api.init.BeyondEncounters;
 import com.pz.beyond.api.init.BeyondNodeEventTypes;
@@ -11,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
 
 @Mod(Beyond.MODID)
@@ -25,6 +27,8 @@ public class Beyond
         BeyondAttachInit.register(modEventBus);
 
         newRegister(modEventBus);
+
+        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
 
 
     }

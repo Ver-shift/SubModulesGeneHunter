@@ -2,7 +2,14 @@
 
 <cite>
 **本文档引用的文件**
-- [Common.java](file://GalaxyLib/src/main/java/org/galaxy/gene_hunter/Common.java)
+- [GalaxyLib.java](file://GalaxyLib/src/main/java/org/galaxylib/GalaxyLib.java)
+- [GalaxyLibAPI.java](file://GalaxyLib/src/main/java/org/galaxylib/api/GalaxyLibAPI.java)
+- [GalaxyLibAttachInit.java](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibAttachInit.java)
+- [GalaxyLibAttributeInit.java](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibAttributeInit.java)
+- [GalaxyLibLootTypeInit.java](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibLootTypeInit.java)
+- [GalaxyLibPackInit.java](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibPackInit.java)
+- [ILootTableManager.java](file://GalaxyLib/src/main/java/org/galaxylib/api/system/loot/core/ILootTableManager.java)
+- [LootTableManager.java](file://GalaxyLib/src/main/java/org/galaxylib/api/system/loot/LootTableManager.java)
 - [README.md](file://GalaxyLib/README.md)
 - [build.gradle](file://GalaxyLib/build.gradle)
 - [build.gradle](file://Biotech/build.gradle)
@@ -11,7 +18,6 @@
 - [build.gradle](file://ModFix/build.gradle)
 - [settings.gradle](file://settings.gradle)
 - [gradle.properties](file://gradle.properties)
-- [GeneHunter.java](file://GeneHunter/src/main/java/org/galaxy/genehunter/GeneHunter.java)
 </cite>
 
 ## 目录
@@ -91,29 +97,43 @@ GalaxyLib --> ModFix
 
 ## 核心组件
 
-### Common类分析
+### GalaxyLib主类分析
 
-当前GalaxyLib模块的核心组件是位于`org.galaxy.gene_hunter`包下的Common类。该类目前包含一个静态方法，用于演示公共库的基本使用方式。
+GalaxyLib模块的核心是位于`org.galaxylib`包下的GalaxyLib主类。该类作为模组入口，负责初始化各种系统组件。
 
 ```mermaid
 classDiagram
-class Common {
-+static void gogogog()
+class GalaxyLib {
++String MODID
++Logger LOGGER
++GalaxyLib(IEventBus, ModContainer)
++ResourceLocation asResource(String)
 }
-note for Common "当前版本仅包含演示方法\n实际项目中应包含更多实用工具"
+note for GalaxyLib "模组主入口类，负责初始化\n战利品系统、属性系统等"
 ```
 
 **图表来源**
-- [Common.java:3-8](file://GalaxyLib/src/main/java/org/galaxy/gene_hunter/Common.java#L3-L8)
+- [GalaxyLib.java:14-32](file://GalaxyLib/src/main/java/org/galaxylib/GalaxyLib.java#L14-L32)
 
-### 当前实现特点
+### GalaxyLibAPI分析
 
-- **简单设计**: 仅包含一个演示方法，便于理解模块结构
-- **静态方法**: 使用静态方法便于直接调用，无需实例化
-- **命名规范**: 遵循Java类命名约定
+GalaxyLibAPI提供了对外的统一访问接口，封装了对内部系统的访问方法。
+
+```mermaid
+classDiagram
+class GalaxyLibAPI {
++getPlayerLootTableData(ServerPlayer) PlayerLootTableData
++getLootTableManager(ServerPlayer) ILootTableManager
+}
+note for GalaxyLibAPI "对外API接口，提供统一访问入口"
+```
+
+**图表来源**
+- [GalaxyLibAPI.java:9-18](file://GalaxyLib/src/main/java/org/galaxylib/api/GalaxyLibAPI.java#L9-L18)
 
 **章节来源**
-- [Common.java:1-9](file://GalaxyLib/src/main/java/org/galaxy/gene_hunter/Common.java#L1-L9)
+- [GalaxyLib.java:1-33](file://GalaxyLib/src/main/java/org/galaxylib/GalaxyLib.java#L1-L33)
+- [GalaxyLibAPI.java:1-19](file://GalaxyLib/src/main/java/org/galaxylib/api/GalaxyLibAPI.java#L1-L19)
 
 ## 架构概览
 
@@ -122,10 +142,20 @@ GalaxyLib在整个项目架构中扮演着基础设施的角色，为其他模�
 ```mermaid
 graph TD
 subgraph "GalaxyLib公共库"
-CommonClass[Common类]
-Utils[工具方法]
-Interfaces[接口定义]
-Constants[共享常量]
+GalaxyLibMain[GalaxyLib主类]
+GalaxyLibAPI[GalaxyLibAPI接口]
+subgraph "初始化系统"
+AttachInit[附件初始化]
+AttributeInit[属性初始化]
+LootTypeInit[战利品类型初始化]
+PackInit[数据包初始化]
+end
+subgraph "战利品管理系统"
+ILootTableManager[ILootTableManager接口]
+LootTableManager[LootTableManager实现]
+PlayerLootTableData[玩家战利品数据]
+LootPack[战利品包管理]
+end
 end
 subgraph "依赖模组"
 GeneHunter[GeneHunter]
@@ -139,19 +169,27 @@ Minecraft[Minecraft 1.21.1]
 NeoForge[NeoForge 21.1.x]
 Loader[Loader ≥ 4]
 end
-CommonClass --> GeneHunter
-CommonClass --> Biotech
-CommonClass --> Beyond
-CommonClass --> GameText
-CommonClass --> ModFix
-Minecraft --> GalaxyLib
-NeoForge --> GalaxyLib
-Loader --> GalaxyLib
+GalaxyLibMain --> AttachInit
+GalaxyLibMain --> AttributeInit
+GalaxyLibMain --> LootTypeInit
+GalaxyLibMain --> PackInit
+GalaxyLibAPI --> ILootTableManager
+ILootTableManager --> LootTableManager
+LootTableManager --> PlayerLootTableData
+LootTableManager --> LootPack
+GalaxyLibMain --> GeneHunter
+GalaxyLibMain --> Biotech
+GalaxyLibMain --> Beyond
+GalaxyLibMain --> GameText
+GalaxyLibMain --> ModFix
+Minecraft --> GalaxyLibMain
+NeoForge --> GalaxyLibMain
+Loader --> GalaxyLibMain
 ```
 
 **图表来源**
-- [build.gradle:7-12](file://GalaxyLib/build.gradle#L7-L12)
-- [gradle.properties:9-15](file://gradle.properties#L9-L15)
+- [GalaxyLib.java:19-26](file://GalaxyLib/src/main/java/org/galaxylib/GalaxyLib.java#L19-L26)
+- [GalaxyLibAPI.java:9-18](file://GalaxyLib/src/main/java/org/galaxylib/api/GalaxyLibAPI.java#L9-L18)
 
 ### 版本兼容性
 
@@ -166,60 +204,93 @@ Loader --> GalaxyLib
 
 ## 详细组件分析
 
-### 依赖注入流程
+### 初始化框架
 
-GalaxyLib通过Gradle的子项目机制被其他模组引用：
-
-```mermaid
-sequenceDiagram
-participant Build as Gradle构建系统
-participant GalaxyLib as GalaxyLib模块
-participant Biotech as Biotech模块
-participant Beyond as Beyond模块
-participant GameText as GameText模块
-participant ModFix as ModFix模块
-Build->>GalaxyLib : 解析模块依赖
-Build->>Biotech : 添加GalaxyLib依赖
-Build->>Beyond : 添加GalaxyLib依赖
-Build->>GameText : 添加GalaxyLib依赖
-Build->>ModFix : 添加GalaxyLib依赖
-Biotech->>GalaxyLib : implementation(project(" : GalaxyLib"))
-Beyond->>GalaxyLib : implementation(project(" : GalaxyLib"))
-GameText->>GalaxyLib : implementation(project(" : GalaxyLib"))
-ModFix->>GalaxyLib : implementation(project(" : GalaxyLib"))
-GalaxyLib-->>Biotech : 提供公共功能
-GalaxyLib-->>Beyond : 提供公共功能
-GalaxyLib-->>GameText : 提供公共功能
-GalaxyLib-->>ModFix : 提供公共功能
-```
-
-**图表来源**
-- [build.gradle:11](file://Biotech/build.gradle#L11)
-- [build.gradle:69](file://ModFix/build.gradle#L69)
-- [build.gradle:35](file://GameText/build.gradle#L35)
-
-### 实际使用示例
-
-在GeneHunter主模组中，可以直接调用GalaxyLib提供的功能：
+GalaxyLib采用了模块化的初始化框架，每个功能模块都有专门的初始化类：
 
 ```mermaid
 sequenceDiagram
-participant GeneHunter as GeneHunter主模组
-participant Common as GalaxyLib.Common类
-participant System as 系统输出
-GeneHunter->>Common : 调用gogogog()静态方法
-Common->>System : 输出调试信息
-System-->>Common : 显示"GalaxyLib : gogogog"
-Common-->>GeneHunter : 方法执行完成
+participant GalaxyLib as GalaxyLib主类
+participant EventBus as 事件总线
+participant AttachInit as 附件初始化
+participant AttributeInit as 属性初始化
+participant LootTypeInit as 战利品类型初始化
+participant PackInit as 数据包初始化
+GalaxyLib->>EventBus : 获取模组事件总线
+GalaxyLib->>AttributeInit : register(modEventBus)
+AttributeInit->>EventBus : 注册属性
+GalaxyLib->>LootTypeInit : registerRegistry(event)
+LootTypeInit->>EventBus : 注册战利品类型注册表
+GalaxyLib->>LootTypeInit : register(modEventBus)
+LootTypeInit->>EventBus : 注册战利品类型
+GalaxyLib->>AttachInit : register(modEventBus)
+AttachInit->>EventBus : 注册附件类型
+GalaxyLib->>PackInit : 订阅数据包事件
 ```
 
 **图表来源**
-- [GeneHunter.java:14](file://GeneHunter/src/main/java/org/galaxy/genehunter/GeneHunter.java#L14)
+- [GalaxyLib.java:19-26](file://GalaxyLib/src/main/java/org/galaxylib/GalaxyLib.java#L19-L26)
+- [GalaxyLibAttributeInit.java:21-23](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibAttributeInit.java#L21-L23)
+- [GalaxyLibLootTypeInit.java:28-34](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibLootTypeInit.java#L28-L34)
+- [GalaxyLibAttachInit.java:19-21](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibAttachInit.java#L19-L21)
+
+### 战利品管理系统
+
+GalaxyLib实现了完整的战利品管理系统，包括战利品类型注册、玩家数据管理和抽取算法：
+
+```mermaid
+classDiagram
+class ILootTableManager {
+<<interface>>
++modify(Supplier~ILootType~~, Consumer~LootTableGroupBuilder~) ILootTableManager
++roolWithoutReplacement(Supplier~ILootType~) LootResult
++rollWithReplacement(Supplier~ILootType~) LootResult
++setWeightByName(String, int) void
++merge(Supplier~ILootType~~, ResourceLocation...) void
++claimResults(LootResult) void
++init() void
+}
+class LootTableManager {
++LootTableManager(PlayerLootTableData)
++modify(Supplier~ILootType~~, Consumer~LootTableGroupBuilder~) ILootTableManager
++roolWithoutReplacement(ILootType~) LootResult
++rollWithReplacement(ILootType~) LootResult
++setWeightByName(String, int) void
++merge(Supplier~ILootType~~, ResourceLocation...) void
++claimResults(LootResult) void
+}
+ILootTableManager <|-- LootTableManager
+```
+
+**图表来源**
+- [ILootTableManager.java:22-118](file://GalaxyLib/src/main/java/org/galaxylib/api/system/loot/core/ILootTableManager.java#L22-L118)
+- [LootTableManager.java:21-200](file://GalaxyLib/src/main/java/org/galaxylib/api/system/loot/LootTableManager.java#L21-L200)
+
+### 玩家数据管理
+
+GalaxyLib通过附件系统为玩家提供持久化的战利品数据：
+
+```mermaid
+sequenceDiagram
+participant Player as 玩家实体
+participant AttachInit as 附件初始化
+participant PlayerData as 玩家数据
+participant LootTableData as 战利品数据
+Player->>AttachInit : 登录事件
+AttachInit->>PlayerData : 创建玩家数据
+PlayerData->>LootTableData : 初始化战利品数据
+Player->>AttachInit : 重生事件
+AttachInit->>PlayerData : 复制玩家数据
+Player->>AttachInit : 克隆事件
+AttachInit->>PlayerData : 确保数据有效性
+```
+
+**图表来源**
+- [GalaxyLibAttachInit.java:34-78](file://GalaxyLib/src/main/java/org/galaxylib/api/init/GalaxyLibAttachInit.java#L34-L78)
 
 **章节来源**
-- [build.gradle:75-79](file://Biotech/build.gradle#L75-L79)
-- [build.gradle:68-72](file://ModFix/build.gradle#L68-L72)
-- [build.gradle:34-41](file://GameText/build.gradle#L34-L41)
+- [GalaxyLib.java:19-32](file://GalaxyLib/src/main/java/org/galaxylib/GalaxyLib.java#L19-L32)
+- [GalaxyLibAPI.java:9-18](file://GalaxyLib/src/main/java/org/galaxylib/api/GalaxyLibAPI.java#L9-L18)
 
 ## 依赖关系分析
 
@@ -316,18 +387,19 @@ end
 
 ## 结论
 
-GalaxyLib作为VerShift项目的核心公共库模块，成功实现了跨模组共享功能的目标。虽然当前版本的功能相对简单，但其架构设计为未来的功能扩展奠定了良好的基础。
+GalaxyLib作为VerShift项目的核心公共库模块，成功实现了跨模组共享功能的目标。经过重构，GalaxyLib已经从简单的演示模块发展为功能完整的公共库，包含了战利品管理系统、初始化框架等核心功能。
 
 ### 主要优势
 
 1. **模块化设计**: 清晰的模块分离，便于维护和扩展
-2. **版本控制**: 严格的版本约束确保了兼容性
-3. **依赖管理**: 灵活的依赖注入机制适应不同使用场景
-4. **开发规范**: 明确的开发指导原则保证了代码质量
+2. **功能完整性**: 包含了完整的战利品管理系统
+3. **版本控制**: 严格的版本约束确保了兼容性
+4. **依赖管理**: 灵活的依赖注入机制适应不同使用场景
+5. **开发规范**: 明确的开发指导原则保证了代码质量
 
 ### 发展方向
 
-随着项目的发展，GalaxyLib应该逐步增加更多实用的工具方法、接口定义和共享常量，同时保持向后兼容性和简洁性。
+GalaxyLib将继续作为VerShift项目的基础库，为各个业务模组提供稳定可靠的公共功能支持。随着项目的演进，GalaxyLib将不断完善其功能和接口设计，更好地服务于整个项目生态系统。
 
 ## 附录
 
