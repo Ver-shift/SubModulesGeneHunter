@@ -62,8 +62,8 @@ configurations {
 }
 
 dependencies {
-    // Beyond 目前无需额外三方依赖，保持模块内独立管理
-    // 后续若新增依赖，直接加在本模块，不放到 GalaxyLib 统一管理
+    // Beyond 依赖项目内公共库 GalaxyLib
+    implementation(project(":GalaxyLib"))
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

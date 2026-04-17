@@ -2,6 +2,7 @@ package com.pz.beyond.api.system.progress;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pz.beyond.api.system.definition.SceneDefinition;
 import lombok.Data;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -26,7 +27,7 @@ public class Progress {
     public static final Codec<Progress> CODEC = RecordCodecBuilder.create(builder -> builder.group(
         ResourceLocation.CODEC.fieldOf(TYPE_ID).forGetter(Progress::getTypeId),
         Codec.LONG.optionalFieldOf(SEED, 0L).forGetter(Progress::getSeed),
-        Scene.CODEC.listOf().optionalFieldOf(SCENES, List.of()).forGetter(Progress::getScenes),
+        SceneDefinition.CODEC.listOf().optionalFieldOf(SCENES, List.of()).forGetter(Progress::getScenes),
         Codec.INT.optionalFieldOf(CURRENT_SCENE_INDEX, 0).forGetter(Progress::getCurrentSceneIndex)
     ).apply(builder, Progress::new));
 
@@ -42,8 +43,8 @@ public class Progress {
         }
     };
 
-    private static final StreamCodec<RegistryFriendlyByteBuf, List<Scene>> SCENE_LIST_STREAM_CODEC =
-        ByteBufCodecs.collection(ArrayList::new, Scene.STREAM_CODEC);
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<SceneDefinition>> SCENE_LIST_STREAM_CODEC =
+        ByteBufCodecs.collection(ArrayList::new, SceneDefinition.STREAM_CODEC);
 
     public static final StreamCodec<RegistryFriendlyByteBuf, Progress> STREAM_CODEC = StreamCodec.composite(
         ResourceLocation.STREAM_CODEC,
@@ -78,7 +79,7 @@ public class Progress {
     /**
      * 进度条，多个 Scene 组成
      */
-    private List<Scene> scenes = new ArrayList<>();
+    private List<SceneDefinition> scenes = new ArrayList<>();
 
     /**
      * 当前进度索引
@@ -100,12 +101,12 @@ public class Progress {
 
         // 根据模板生成进度条
         for (ProgressType.SceneEntry entry : type.getScenes()) {
-            progress.scenes.add(new Scene(entry.sceneType()));
+            progress.scenes.add(new SceneDefinition(entry.sceneType()));
         }
         return progress;
     }
 
-    public Progress(ResourceLocation typeId, long seed, List<Scene> scenes, int currentSceneIndex) {
+    public Progress(ResourceLocation typeId, long seed, List<SceneDefinition> scenes, int currentSceneIndex) {
         this.typeId = typeId == null ? EMPTY_TYPE_ID : typeId;
         this.seed = seed;
         this.random = new Random(seed);
@@ -123,7 +124,7 @@ public class Progress {
     /**
      * 获取当前 Scene
      */
-    public Scene getCurrentScene() {
+    public SceneDefinition getCurrentScene() {
         if (currentSceneIndex >= scenes.size()) {
             return null;
         }
@@ -134,7 +135,7 @@ public class Progress {
      * 完成当前节点，检查是否需要步进 Scene
      */
     public void advanceScene() {
-        Scene current = getCurrentScene();
+        SceneDefinition current = getCurrentScene();
         if (current != null) {
             current.setCompleted(true);
             currentSceneIndex++;
@@ -158,7 +159,7 @@ public class Progress {
     public void initialize() {
         // TODO: 实现游戏初始化逻辑，预生成节点事件等
         this.currentSceneIndex = 0;
-        for (Scene scene : scenes) {
+        for (SceneDefinition scene : scenes) {
             scene.setCompleted(false);
         }
     }
