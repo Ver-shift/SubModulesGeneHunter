@@ -2,6 +2,7 @@ package com.pz.beyond.api.system.zone;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pz.beyond.api.init.BeyondZoneInit;
 import lombok.Data;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -40,14 +41,23 @@ public class LevelZoneData {
         var key = chunkPos.toLong();
         if (zonePos.containsKey(key)){
             var type = zonePos.get(key);
-            return zoneData.get(type);
+            return getZoneData(type);
         }
-        return null;
+        return emptyZoneData();
     }
 
     public ZoneData getZoneData(BlockPos pos){
         ChunkPos chunkPos = new ChunkPos(pos);
         return getZoneData(chunkPos);
+    }
+
+    public ZoneData getZoneData(ZoneType zoneType){
+        ZoneType safeZone = zoneType == null ? BeyondZoneInit.EMPTY : zoneType;
+        return zoneData.getOrDefault(safeZone, emptyZoneData());
+    }
+
+    private static ZoneData emptyZoneData() {
+        return new ZoneData(BeyondZoneInit.EMPTY, new ArrayList<>());
     }
 
 

@@ -10,8 +10,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
-public class BorderRenderUtil {
-    public static void render(int centerX, int centerZ , int radius, int r, int g, int b, int bottomAlpha, int topAlpha, ResourceLocation tex, Camera camera, PoseStack poseStack) {
+public class RenderUtil {
+
+    /**
+     * 渲染一个以 (centerX, centerZ) 为中心，边长为 radius 的方形边界。==============================================================
+     */
+    public static void renderBorder(int centerX, int centerZ , int radius, int r, int g, int b, int bottomAlpha, int topAlpha, ResourceLocation tex, Camera camera, PoseStack poseStack) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -20,9 +24,9 @@ public class BorderRenderUtil {
         double minZ = centerZ - radius;
         double maxZ = centerZ + radius;
 
-        render(minX,minZ,maxX,maxZ,r,g,b,bottomAlpha,topAlpha,tex,camera,poseStack);
+        renderBorder(minX,minZ,maxX,maxZ,r,g,b,bottomAlpha,topAlpha,tex,camera,poseStack);
     }
-    public static void render(double minX,double minZ,double maxX, double maxZ,int r,int g,int b,int bottomAlpha,int topAlpha, ResourceLocation tex,Camera camera,PoseStack poseStack){
+    public static void renderBorder(double minX, double minZ, double maxX, double maxZ, int r, int g, int b, int bottomAlpha, int topAlpha, ResourceLocation tex, Camera camera, PoseStack poseStack){
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -105,5 +109,8 @@ public class BorderRenderUtil {
         builder.addVertex(matrix, (float) x2, (float) y2, (float) z2).setColor(r, g, b, topAlpha).setUv(uMax + uOffset, vOffset);
         builder.addVertex(matrix, (float) x1, (float) y2, (float) z1).setColor(r, g, b, topAlpha).setUv(uOffset, vOffset);
     }
+
+    //渲染一个box===================================
+
 }
 

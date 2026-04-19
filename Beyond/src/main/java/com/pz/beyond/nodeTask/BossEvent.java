@@ -23,7 +23,7 @@ public class BossEvent extends NodeEventType {
     /**
      * 怪物都死完了
      * @param context
-     * @return
+     * @return 
      */
     @Override
     public Result canNextEvent(Context context) {

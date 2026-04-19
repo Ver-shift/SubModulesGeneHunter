@@ -1,5 +1,6 @@
 package com.pz.beyond.api.system.rule;
 
+import com.pz.beyond.api.init.BeyondZoneInit;
 import com.pz.beyond.api.init.BeyondZoneRuleInit;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -24,13 +25,19 @@ public class RuleData {
     private int ruleLevel;
     private final AbstractRule rule;
 
+    public static RuleData create(ResourceLocation id){
+        return new RuleData(BeyondZoneRuleInit.getRuleById(id));
+    }
+    public static RuleData create(AbstractRule rule){
+        return new RuleData(rule);
+    }
 
     public RuleData(AbstractRule rule) {
         this(rule, 1);
     }
 
     public RuleData(AbstractRule rule, int level) {
-        this.rule = rule;
+        this.rule = rule == null ? BeyondZoneRuleInit.EMPTY : rule;
         this.ruleLevel = level;
     }
 
@@ -43,7 +50,7 @@ public class RuleData {
     }
 
     public ResourceLocation getRuleId() {
-        return rule.getIdentifier();
+        return BeyondZoneRuleInit.getRuleId(rule);
     }
 
     //TODO : 事件支持

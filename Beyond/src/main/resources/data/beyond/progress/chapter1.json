@@ -22,7 +22,7 @@
   ],
   "encounters": [
     {
-      "encounter_type": "beyond:harvest_orange",
+      "encounter_type": "beyond:puzzle",
       "encounter_definition": {
         "event_tasks": [
           { "event_task": { "events": ["beyond:boss_event"] }, "weight": 60 },
@@ -31,7 +31,7 @@
       }
     },
     {
-      "encounter_type": "beyond:harvest_red",
+      "encounter_type": "beyond:normal_monster",
       "encounter_definition": {
         "event_tasks": [
           { "event_task": { "events": ["beyond:boss_event"] }, "weight": 100 }
@@ -39,7 +39,7 @@
       }
     },
     {
-      "encounter_type": "beyond:climax_red",
+      "encounter_type": "beyond:elite_monster",
       "encounter_definition": {
         "event_tasks": [
           { "event_task": { "events": ["beyond:boss_event", "beyond:shop", "beyond:boss_event"] }, "weight": 100 }
@@ -47,7 +47,7 @@
       }
     },
     {
-      "encounter_type": "beyond:repose_green",
+      "encounter_type": "beyond:bonfire",
       "encounter_definition": {
         "event_tasks": [
           { "event_task": { "events": ["beyond:shop"] }, "weight": 100 }
@@ -55,10 +55,42 @@
       }
     },
     {
-      "encounter_type": "beyond:repose_orange",
+      "encounter_type": "beyond:normal_shop",
       "encounter_definition": {
         "event_tasks": [
           { "event_task": { "events": ["beyond:shop"] }, "weight": 100 }
+        ]
+      }
+    },
+    {
+      "encounter_type": "beyond:cursed_shop",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:shop"] }, "weight": 100 }
+        ]
+      }
+    },
+    {
+      "encounter_type": "beyond:boss_green",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:shop", "beyond:boss_event", "beyond:heal_event"] }, "weight": 100 }
+        ]
+      }
+    },
+    {
+      "encounter_type": "beyond:boss_orange",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:shop", "beyond:boss_event", "beyond:heal_event"] }, "weight": 100 }
+        ]
+      }
+    },
+    {
+      "encounter_type": "beyond:boss_red",
+      "encounter_definition": {
+        "event_tasks": [
+          { "event_task": { "events": ["beyond:shop", "beyond:boss_event", "beyond:heal_event"] }, "weight": 100 }
         ]
       }
     }

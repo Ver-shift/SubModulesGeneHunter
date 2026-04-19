@@ -1,18 +1,15 @@
 package com.pz.beyond.api.init;
 
 import com.pz.beyond.Beyond;
+import com.pz.beyond.api.system.BeyondManager;
 import com.pz.beyond.api.system.BeyondLevelData;
 import com.pz.beyond.api.system.BeyondPlayerData;
-import com.pz.beyond.api.system.zone.LevelZoneData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -82,6 +79,7 @@ public class BeyondAttachInit {
                             .sync(BeyondLevelData.STREAM_CODEC)
                             .build()
             );
+
 
 
 

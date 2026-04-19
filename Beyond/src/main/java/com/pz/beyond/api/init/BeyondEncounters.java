@@ -3,6 +3,7 @@ package com.pz.beyond.api.init;
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.system.node.EncounterType;
 import com.pz.beyond.api.system.node.NodeColor;
+import com.pz.beyond.api.system.progress.SceneType;
 import com.pz.beyond.progress.encounter.*;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -20,6 +21,8 @@ import java.util.function.Supplier;
  */
 public class BeyondEncounters {
 
+    private static final ResourceLocation EMPTY_ENCOUNTER_ID = Beyond.asResource("empty");
+
     public static final ResourceKey<Registry<EncounterType>> ENCOUNTER_REGISTRY_KEY =
         ResourceKey.createRegistryKey(Beyond.asResource("encounters"));
 
@@ -27,6 +30,8 @@ public class BeyondEncounters {
 
     public static final DeferredRegister<EncounterType> ENCOUNTERS =
         DeferredRegister.create(ENCOUNTER_REGISTRY_KEY, Beyond.MODID);
+
+    public static final EncounterType EMPTY = new EncounterType(EMPTY_ENCOUNTER_ID, SceneType.EMPTY, NodeColor.EMPTY);
 
     // ==================== 资源类型（Harvest）====================
     // 绿色：有趣的事件或者解密
@@ -65,6 +70,14 @@ public class BeyondEncounters {
     }
 
     public static EncounterType getById(ResourceLocation id) {
-        return ENCOUNTER_REGISTRY.get(id);
+        if (id == null) {
+            return EMPTY;
+        }
+        EncounterType encounterType = ENCOUNTER_REGISTRY.get(id);
+        return encounterType == null ? EMPTY : encounterType;
+    }
+
+    public static ResourceLocation getId(EncounterType encounterType) {
+        return encounterType == null ? EMPTY.getIdentifier() : encounterType.getIdentifier();
     }
 }

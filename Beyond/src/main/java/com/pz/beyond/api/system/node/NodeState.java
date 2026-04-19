@@ -1,44 +1,40 @@
 package com.pz.beyond.api.system.node;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 
-public enum NodeState {
+public enum NodeState implements StringRepresentable {
     /**
      * 锁定中，未进入
      */
-    LOCKED,
+    LOCKED("locked"),
     /**
      * 玩家进入节点，已 roll 出事件，等待触发
      */
-    READY,
+    READY("ready"),
     /**
      * 正在执行事件列表中
      */
-    ON_EVENT,
+    ON_EVENT("on_event"),
     /**
      * 事件全部完成，节点显示为蓝色
      */
-    COMPLETED;
+    COMPLETED("completed");
 
-    public static final Codec<NodeState> CODEC = Codec.STRING.xmap(NodeState::valueOf, NodeState::name);
+    private final String name;
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, NodeState> STREAM_CODEC = new StreamCodec<>() {
-        @Override
-        public NodeState decode(RegistryFriendlyByteBuf buf) {
-            int stateId = buf.readVarInt();
-            NodeState[] states = NodeState.values();
-            if (stateId < 0 || stateId >= states.length) {
-                return LOCKED;
-            }
-            return states[stateId];
-        }
+    NodeState(String name) {
+        this.name = name;
+    }
 
-        @Override
-        public void encode(RegistryFriendlyByteBuf buf, NodeState nodeState) {
-            NodeState safeState = nodeState == null ? LOCKED : nodeState;
-            buf.writeVarInt(safeState.ordinal());
-        }
-    };
+    @Override
+    public String getSerializedName() {
+        return name;
+    }
+
+    public static final Codec<NodeState> CODEC = StringRepresentable.fromEnum(NodeState::values);
+    public static final StreamCodec<ByteBuf, NodeState> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 }

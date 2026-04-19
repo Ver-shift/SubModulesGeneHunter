@@ -2,6 +2,8 @@ package com.pz.beyond.api.system.node;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pz.beyond.api.init.BeyondEncounters;
+import com.pz.beyond.api.init.BeyondNodeEventTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -22,48 +24,14 @@ public class RolledData {
     public static final String EVENTS = "events";
     public static final String CURRENT_EVENT_INDEX = "current_event_index";
 
-    public static final Codec<RolledData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-        NodeData.CODEC.fieldOf(NODE_DATA).forGetter(RolledData::getNodeData),
-        EncounterType.CODEC.optionalFieldOf(ENCOUNTER_TYPE).forGetter(RolledData::getEncounterTypeOptional),
-        NodeEventType.CODEC.listOf().optionalFieldOf(EVENTS, List.of()).forGetter(RolledData::getEvents),
-        Codec.INT.optionalFieldOf(CURRENT_EVENT_INDEX, 0).forGetter(RolledData::getCurrentEventIndex)
-    ).apply(builder, (nodeData, encounterType, events, currentEventIndex) ->
-        new RolledData(nodeData, encounterType.orElse(null), events, currentEventIndex)
-    ));
 
-    private static final StreamCodec<RegistryFriendlyByteBuf, List<NodeEventType>> EVENT_LIST_STREAM_CODEC =
-        ByteBufCodecs.collection(ArrayList::new, NodeEventType.STREAM_CODEC);
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, RolledData> STREAM_CODEC = StreamCodec.composite(
-        NodeData.STREAM_CODEC,
-        RolledData::getNodeData,
-        ByteBufCodecs.optional(EncounterType.STREAM_CODEC),
-        RolledData::getEncounterTypeOptional,
-        EVENT_LIST_STREAM_CODEC,
-        RolledData::getEvents,
-        ByteBufCodecs.VAR_INT,
-        RolledData::getCurrentEventIndex,
-        RolledData::new
-    );
-
-    /**
-     * 关联的静态节点数据
-     */
     private final NodeData nodeData;
 
-    /**
-     * 遭遇类型，玩家进入节点时确定
-     */
-    private EncounterType encounterType;
-    
-    /**
-     * roll 出来的事件列表，玩家需要依次触发
-     */
-    private List<NodeEventType> events = Collections.emptyList();
 
-    /**
-     * 当前执行到第几个事件
-     */
+    private EncounterType encounterType = BeyondEncounters.EMPTY;
+
+    private List<NodeEventType> events = Collections.emptyList();
+    
     private int currentEventIndex = 0;
 
     public RolledData(NodeData nodeData) {
@@ -72,7 +40,7 @@ public class RolledData {
 
     public RolledData(NodeData nodeData, EncounterType encounterType, List<NodeEventType> events, int currentEventIndex) {
         this.nodeData = nodeData;
-        this.encounterType = encounterType;
+        this.encounterType = encounterType == null ? BeyondEncounters.EMPTY : encounterType;
         this.events = events == null ? new ArrayList<>() : new ArrayList<>(events);
         this.currentEventIndex = Math.max(0, currentEventIndex);
     }
@@ -86,7 +54,7 @@ public class RolledData {
      */
     public NodeEventType getCurrentEvent() {
         if (events.isEmpty() || currentEventIndex >= events.size()) {
-            return null;
+            return BeyondNodeEventTypes.EMPTY;
         }
         return events.get(currentEventIndex);
     }
@@ -127,7 +95,7 @@ public class RolledData {
     }
 
     public void setEncounterType(EncounterType encounterType) {
-        this.encounterType = encounterType;
+        this.encounterType = encounterType == null ? BeyondEncounters.EMPTY : encounterType;
     }
 
     public NodeState getNodeState() {
@@ -143,7 +111,7 @@ public class RolledData {
     }
 
     public void setEvents(List<NodeEventType> events) {
-        this.events = events;
+        this.events = events == null ? new ArrayList<>() : events;
         this.currentEventIndex = 0;
     }
 

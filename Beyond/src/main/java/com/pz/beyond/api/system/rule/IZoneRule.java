@@ -12,7 +12,7 @@ public interface IZoneRule {
      * 玩家区域内的行为
      * @param level
      */
-    default void levelTick(ServerLevel level, ZoneType zoneType) {
+    default void levelTick(ServerLevel level,ZoneType zoneType) {
 
     }
 

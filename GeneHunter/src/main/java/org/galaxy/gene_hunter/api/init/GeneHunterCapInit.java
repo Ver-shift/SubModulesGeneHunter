@@ -33,8 +33,5 @@ public class GeneHunterCapInit {
                 EntityType.PLAYER,
                 (player, context) -> new ChoiceManager(GeneHunterAPI.getGeneHunterData(player))
         );
-
-
-
     }
 }

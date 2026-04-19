@@ -2,6 +2,7 @@ package com.pz.beyond.api.system.zone;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pz.beyond.api.init.BeyondZoneInit;
 import com.pz.beyond.api.system.rule.RuleData;
 import com.pz.beyond.api.system.zone.core.IRuleContainer;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class ZoneData implements IRuleContainer {
     public static final String ZONE_TYPE = "zone_type";
     public static final String LISTENERS = "listeners";
 
-    private ZoneType zone;
+    private ZoneType zone = BeyondZoneInit.EMPTY;
     private List<RuleData> listeners = new CopyOnWriteArrayList<>();
 
 
@@ -47,9 +48,9 @@ public class ZoneData implements IRuleContainer {
     }
 
     // 工厂方法专用构造
-    private ZoneData(ZoneType zone, List<RuleData> listeners) {
-        this.zone = zone;
-        this.listeners = new CopyOnWriteArrayList<>(listeners);
+    public ZoneData(ZoneType zone, List<RuleData> listeners) {
+        this.zone = zone == null ? BeyondZoneInit.EMPTY : zone;
+        this.listeners = listeners == null ? new CopyOnWriteArrayList<>() : new CopyOnWriteArrayList<>(listeners);
     }
 
     public static final Codec<ZoneData> CODEC = RecordCodecBuilder.create(builder -> builder.group(

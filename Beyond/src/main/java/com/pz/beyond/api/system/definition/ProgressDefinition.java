@@ -2,6 +2,8 @@ package com.pz.beyond.api.system.definition;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pz.beyond.Beyond;
+import com.pz.beyond.api.init.BeyondEncounters;
 import com.pz.beyond.api.system.node.EncounterType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,7 +33,7 @@ public class ProgressDefinition {
     public static final String ENCOUNTER_TYPE = "encounter_type";
     public static final String ENCOUNTER_DEFINITION = "encounter_definition";
 
-    private ResourceLocation identifier;
+    private ResourceLocation identifier = Beyond.asResource("empty");
     private List<SceneDefinition> scenes = new ArrayList<>();
 
     /**
@@ -62,8 +64,8 @@ public class ProgressDefinition {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class EncounterMapping {
-        private EncounterType encounterType;
-        private EncounterDefinition encounterDefinition;
+        private EncounterType encounterType = BeyondEncounters.EMPTY;
+        private EncounterDefinition encounterDefinition = new EncounterDefinition();
 
         public static final Codec<EncounterMapping> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(

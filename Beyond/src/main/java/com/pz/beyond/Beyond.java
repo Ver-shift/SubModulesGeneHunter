@@ -8,6 +8,7 @@ import com.pz.beyond.api.init.BeyondNodeEventTypes;
 import com.pz.beyond.api.init.BeyondZoneInit;
 
 import com.pz.beyond.api.init.BeyondZoneRuleInit;
+import com.pz.beyond.api.system.BeyondManager;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -19,7 +20,9 @@ import org.slf4j.Logger;
 public class Beyond
 {
     public static final String MODID = "beyond";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
+    public static BeyondManager BEYOND_MANAGER;
+
 
     public Beyond(IEventBus modEventBus, ModContainer modContainer)
     {
@@ -28,8 +31,8 @@ public class Beyond
 
         newRegister(modEventBus);
 
-        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
-
+//        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
+        BEYOND_MANAGER = new BeyondManager();
 
     }
 

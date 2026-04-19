@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class SceneDefinition {
     public static final Codec<SceneDefinition> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
             SceneEntry.CODEC.listOf().fieldOf(SCENE_TYPES).forGetter(SceneDefinition::getSceneTypes),
+
             SceneType.CODEC.optionalFieldOf(REAL_SCENE, SceneType.EMPTY).forGetter(SceneDefinition::getRealScene),
             Codec.INT.optionalFieldOf(PRIORITY, 0).forGetter(SceneDefinition::getPriority)
         ).apply(instance, SceneDefinition::new)
@@ -80,13 +82,13 @@ public class SceneDefinition {
      */
     public SceneType roll(SingleThreadedRandomSource random){
         if (sceneTypes == null || sceneTypes.isEmpty()) {
-            return null;
+            return SceneType.EMPTY;
         }
 
         // 计算总权重
         int totalWeight = sceneTypes.stream().mapToInt(SceneEntry::getWeight).sum();
         if (totalWeight <= 0) {
-            return null;
+            return SceneType.EMPTY;
         }
 
         // 加权随机选择

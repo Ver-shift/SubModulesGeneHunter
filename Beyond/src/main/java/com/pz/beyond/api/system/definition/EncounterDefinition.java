@@ -50,17 +50,17 @@ public class EncounterDefinition {
     /**
      * 根据权重随机抽取一个 EventTask
      * @param randomSource 随机源
-     * @return 选中的 EventTask，如果列表为空返回 null
+     * @return 选中的 EventTask，如果列表为空返回 EMPTY
      */
     public EventTask getEventTask(SingleThreadedRandomSource randomSource) {
         if (eventTasks == null || eventTasks.isEmpty()) {
-            return null;
+            return EventTask.EMPTY;
         }
 
         // 计算总权重
         int totalWeight = eventTasks.stream().mapToInt(Entry::getWeight).sum();
         if (totalWeight <= 0) {
-            return null;
+            return EventTask.EMPTY;
         }
 
         // 加权随机选择

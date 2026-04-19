@@ -1,7 +1,6 @@
 package com.pz.beyond.api.system.node;
 
 import com.mojang.serialization.Codec;
-import com.pz.beyond.Beyond;
 import com.pz.beyond.api.init.BeyondNodeEventTypes;
 import com.pz.beyond.api.system.node.core.INodeEventType;
 import lombok.Data;
@@ -17,7 +16,7 @@ public abstract class NodeEventType implements INodeEventType {
 
     public static final Codec<NodeEventType> CODEC = ResourceLocation.CODEC.xmap(
         NodeEventType::fromId,
-        NodeEventType::getIdentifier
+        BeyondNodeEventTypes::getId
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, NodeEventType> STREAM_CODEC = new StreamCodec<>() {
@@ -28,13 +27,12 @@ public abstract class NodeEventType implements INodeEventType {
 
         @Override
         public void encode(RegistryFriendlyByteBuf buf, NodeEventType nodeEventType) {
-            NodeEventType safe = nodeEventType == null ? BeyondNodeEventTypes.EMPTY : nodeEventType;
-            buf.writeResourceLocation(safe.getIdentifier());
+            buf.writeResourceLocation(BeyondNodeEventTypes.getId(nodeEventType));
         }
     };
 
 
-    private ResourceLocation identifier;
+    private final ResourceLocation identifier;
 
     public NodeEventType(ResourceLocation identifier) {
         this.identifier = identifier;

@@ -22,6 +22,7 @@ import java.util.List;
 public class EventTask {
 
     public static final String EVENTS = "events";
+    public static final EventTask EMPTY = new EventTask();
 
     private List<NodeEventType> events = new ArrayList<>();
 

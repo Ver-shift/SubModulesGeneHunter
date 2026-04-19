@@ -2,5 +2,6 @@
   "itemGroup.beyond": "Example Mod Tab",
   "block.beyond.example_block": "Example Block",
   "item.beyond.example_item": "Example Item",
-  "beyond.safe_zone.teleporting": "\u00A7eTeleporting to village spawn point..."
+  "beyond.safe_zone.teleporting": "\u00A7eTeleporting to village spawn point...",
+  "message.beyond.welcome": "\u00A7fWelcome to Gene Hunter modpack! Find a \u00A76%s\u00A7f in the village to initialize the world"
 }

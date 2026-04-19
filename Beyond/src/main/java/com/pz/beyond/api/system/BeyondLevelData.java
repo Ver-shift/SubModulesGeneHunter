@@ -3,8 +3,11 @@ package com.pz.beyond.api.system;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pz.beyond.api.system.definition.ProgressDefinition;
+import com.pz.beyond.api.system.structure.StructureData;
 import com.pz.beyond.api.system.zone.LevelZoneData;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -22,11 +25,14 @@ import java.util.Map;
  * 只存储到主世界的数据
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class BeyondLevelData {
 
     public static final String DIMENSION = "dimension";
     public static final String PROGRESS_DEFINITIONS = "progress_definitions";
     public static final String LEVEL_ZONE_DATA = "level_zone_data";
+    public static final String STRUCTURE_DATA = "structure_data";
 
     private ResourceKey<Level> dimension = Level.OVERWORLD;
 
@@ -36,22 +42,20 @@ public class BeyondLevelData {
     private LevelZoneData levelZoneData = new LevelZoneData();
     //todo 运行时关卡数据
 
-    public BeyondLevelData() {
+    //结构数据
+    private StructureData structureData = new StructureData();
 
-    }
 
 
-    private BeyondLevelData(ResourceKey<Level> dimension, Map<ResourceLocation, ProgressDefinition> progressDefinitions, LevelZoneData levelZoneData) {
-        this.dimension = dimension;
-        this.progressDefinitions = progressDefinitions;
-        this.levelZoneData = levelZoneData;
-    }
+
+
 
     public static final Codec<BeyondLevelData> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
             Level.RESOURCE_KEY_CODEC.fieldOf(DIMENSION).forGetter(BeyondLevelData::getDimension),
             Codec.unboundedMap(ResourceLocation.CODEC, ProgressDefinition.CODEC).fieldOf(PROGRESS_DEFINITIONS).forGetter(BeyondLevelData::getProgressDefinitions),
-            LevelZoneData.CODEC.fieldOf(LEVEL_ZONE_DATA).forGetter(BeyondLevelData::getLevelZoneData)
+            LevelZoneData.CODEC.fieldOf(LEVEL_ZONE_DATA).forGetter(BeyondLevelData::getLevelZoneData),
+            StructureData.CODEC.fieldOf(STRUCTURE_DATA).forGetter(BeyondLevelData::getStructureData)
         ).apply(instance, BeyondLevelData::new)
     );
 
@@ -62,6 +66,8 @@ public class BeyondLevelData {
         BeyondLevelData::getProgressDefinitions,
         LevelZoneData.STREAM_CODEC,
         BeyondLevelData::getLevelZoneData,
+        StructureData.STREAM_CODEC,
+        BeyondLevelData::getStructureData,
         BeyondLevelData::new
     );
 

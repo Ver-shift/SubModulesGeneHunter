@@ -2,6 +2,8 @@ package com.pz.beyond.api.system.zone;
 
 import com.mojang.serialization.Codec;
 import com.pz.beyond.api.init.BeyondZoneInit;
+import com.pz.beyond.api.init.BeyondZoneRuleInit;
+import com.pz.beyond.api.system.rule.AbstractRule;
 import com.pz.beyond.api.system.rule.RuleData;
 import lombok.Getter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -11,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 
 public abstract class ZoneType {
@@ -46,6 +49,18 @@ public abstract class ZoneType {
         if (rule != null && listeners != null) {
             listeners.add(rule);
         }
+    }
+    protected void addRule(List<RuleData> listeners, AbstractRule rule) {
+        addRule(listeners, new RuleData(rule));
+    }
+    protected void addRule(List<RuleData> listeners, ResourceLocation ruleId) {
+        addRule(listeners, new RuleData(BeyondZoneRuleInit.getRuleById(ruleId)));
+    }
+    protected void addRule(List<RuleData> listeners, Supplier<AbstractRule> rule) {
+        addRule(listeners, new RuleData(rule.get()));
+    }
+    protected void addRule(List<RuleData> listeners,Supplier<AbstractRule> rule,int level){
+        addRule(listeners, new RuleData(rule.get(), level));
     }
 
     /**

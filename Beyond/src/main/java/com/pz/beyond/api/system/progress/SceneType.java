@@ -1,48 +1,44 @@
 package com.pz.beyond.api.system.progress;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 
 /**
  * 进度事件类型
  */
-public enum SceneType {
+public enum SceneType implements StringRepresentable {
     /**
      * 资源事件：用于获取资源的房间，可能是战斗或小游戏
      */
-    HARVEST,
+    HARVEST("beyond:harvest"),
     /**
      * 修正事件：用于调整对局节奏，恢复状态或强化自身
      */
-    REPOSE,
+    REPOSE("beyond:repose"),
     /**
      * BOSS挑战事件：必定出现的boss节点，包含商店
      */
-    CLIMAX,
+    CLIMAX("beyond:climax"),
 
     /**
      * 空类型
      */
-    EMPTY;
+    EMPTY("beyond:empty");
 
-    public static final Codec<SceneType> CODEC = Codec.STRING.xmap(SceneType::valueOf, SceneType::name);
+    private final String name;
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, SceneType> STREAM_CODEC = new StreamCodec<>() {
-        @Override
-        public SceneType decode(RegistryFriendlyByteBuf buf) {
-            int typeId = buf.readVarInt();
-            SceneType[] types = SceneType.values();
-            if (typeId < 0 || typeId >= types.length) {
-                return HARVEST;
-            }
-            return types[typeId];
-        }
+    SceneType(String name) {
+        this.name = name;
+    }
 
-        @Override
-        public void encode(RegistryFriendlyByteBuf buf, SceneType sceneType) {
-            SceneType safeType = sceneType == null ? HARVEST : sceneType;
-            buf.writeVarInt(safeType.ordinal());
-        }
-    };
+    @Override
+    public String getSerializedName() {
+        return name;
+    }
+
+    public static final Codec<SceneType> CODEC = StringRepresentable.fromEnum(SceneType::values);
+    public static final StreamCodec<ByteBuf, SceneType> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 }
