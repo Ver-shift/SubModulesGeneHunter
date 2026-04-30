@@ -20,7 +20,7 @@ public class PlayerStructureManager {
 
         // 步骤3: 检查维度是否允许（只处理主世界）
         if (!BeyondAttachInit.isAllowedDimension(serverLevel)) {
-            Beyond.LOGGER.debug("Player {} is not in allowed dimension, skipping spawn setup",
+            Beyond.debugLog("Player {} is not in allowed dimension, skipping spawn setup",
                     serverPlayer.getName().getString());
             return;
         }
@@ -33,14 +33,14 @@ public class PlayerStructureManager {
 
         // 步骤6: 验证 StructureData 是否有有效的出生点
         if (!structureData.hasValidSpawnPos()) {
-            Beyond.LOGGER.warn("StructureData has no valid spawn pos for player first login: {}",
+            Beyond.debugLog("StructureData has no valid spawn pos for player first login: {}",
                     serverPlayer.getName().getString());
             return;
         }
 
         // 步骤7: 获取安全出生点坐标
         BlockPos spawnPos = structureData.getSpawnPos();
-        Beyond.LOGGER.info("Preparing to set spawn for player {} at {}",
+        Beyond.debugLog("Preparing to set spawn for player {} at {}",
                 serverPlayer.getName().getString(), spawnPos);
 
         // 步骤8: 设置玩家的重生点（床/锚点位置）
@@ -52,7 +52,7 @@ public class PlayerStructureManager {
                 true,   // forced: 强制设置，覆盖之前的重生点
                 false   // sendMessage: 不发送消息给玩家
         );
-        Beyond.LOGGER.debug("Set respawn position for player {} to {}",
+        Beyond.debugLog("Set respawn position for player {} to {}",
                 serverPlayer.getName().getString(), spawnPos);
 
         // 步骤9: 传送玩家到安全出生点
@@ -67,7 +67,7 @@ public class PlayerStructureManager {
         );
 
         //步骤10: 记录完成日志
-        Beyond.LOGGER.info("Player {} first login complete: set spawn and teleported to {}",
+        Beyond.debugLog("Player {} first login complete: set spawn and teleported to {}",
                 serverPlayer.getName().getString(), spawnPos);
 
         //欢迎游玩基因猎人整合包，寻找村庄中的传送石碑进行初始化世界

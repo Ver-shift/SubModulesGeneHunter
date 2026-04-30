@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.init.BeyondEncounters;
 import com.pz.beyond.api.system.node.EncounterType;
+import com.pz.beyond.api.system.progress.ProgressData;
+import com.pz.beyond.api.system.progress.SceneType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +28,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProgressDefinition {
+public class ProgressDefinition implements ITranslate<ProgressData, SingleThreadedRandomSource> {
 
     public static final String IDENTIFIER = "identifier";
     public static final String SCENES = "scenes";
@@ -58,6 +61,27 @@ public class ProgressDefinition {
         ProgressDefinition::getEncounters,
         ProgressDefinition::new
     );
+
+    /**
+     * {@link ITranslate} 实现：将当前 ProgressDefinition 转化为一个新的
+     * {@link ProgressData}（已填好 currentProgress / sceneTypes，其他为空默认态）。
+     * <p>仅处理关卡静态配置的初始化，具体的 NodeData 等由 chunk加载时再填充。</p>
+     */
+    @Override
+    public ProgressData translate(SingleThreadedRandomSource input) {
+        ProgressData pd = new ProgressData();
+        pd.setCurrentProgress(this.identifier);
+        pd.setIndex(0);
+
+        List<SceneType> rolledScenes = new ArrayList<>();
+        for (SceneDefinition sd : this.scenes) {
+            if (sd == null) continue;
+            SceneType st = sd.translate(input);
+            rolledScenes.add(st == null ? SceneType.EMPTY : st);
+        }
+        pd.setSceneTypes(rolledScenes);
+        return pd;
+    }
 
 
     @Data

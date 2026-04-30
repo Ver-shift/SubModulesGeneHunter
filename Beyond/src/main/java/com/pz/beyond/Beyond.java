@@ -3,6 +3,7 @@ package com.pz.beyond;
 import com.mojang.logging.LogUtils;
 import com.pz.beyond.api.config.ServerConfig;
 import com.pz.beyond.api.init.BeyondAttachInit;
+import com.pz.beyond.api.init.BeyondEffectInit;
 import com.pz.beyond.api.init.BeyondEncounters;
 import com.pz.beyond.api.init.BeyondNodeEventTypes;
 import com.pz.beyond.api.init.BeyondZoneInit;
@@ -31,9 +32,21 @@ public class Beyond
 
         newRegister(modEventBus);
 
-//        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         BEYOND_MANAGER = new BeyondManager();
 
+    }
+
+    public static void debugLog(String key, Object... args)
+    {
+        try {
+            if (ServerConfig.Generic.DEBUG_MESSAGES.get())
+            {
+                LOGGER.info(key, args);
+            }
+        } catch (IllegalStateException ignored) {
+            // 配置尚未加载完成时静默；极早期调用会命中。
+        }
     }
 
     public static void newRegister(IEventBus modEventBus) {
@@ -48,6 +61,8 @@ public class Beyond
 
         modEventBus.addListener(BeyondZoneInit::registerRegistry);
         BeyondZoneInit.register(modEventBus);
+
+        BeyondEffectInit.register(modEventBus);
     }
 
 

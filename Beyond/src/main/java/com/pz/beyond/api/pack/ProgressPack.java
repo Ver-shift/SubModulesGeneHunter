@@ -3,6 +3,7 @@ package com.pz.beyond.api.pack;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import com.pz.beyond.Beyond;
 import com.pz.beyond.api.BeyondAPI;
 import com.pz.beyond.api.system.definition.ProgressDefinition;
 import net.minecraft.resources.ResourceLocation;
@@ -14,8 +15,6 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +26,6 @@ public class ProgressPack extends SimplePreparableReloadListener<Map<ResourceLoc
 
     public static final String PATH_PREFIX = "progress";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProgressPack.class);
     private static volatile Map<ResourceLocation, ProgressDefinition> latestDefinitions = Map.of();
 
     @Override
@@ -46,22 +44,22 @@ public class ProgressPack extends SimplePreparableReloadListener<Map<ResourceLoc
                 var result = ProgressDefinition.CODEC.parse(JsonOps.INSTANCE, json);
 
                 if (result.error().isPresent()) {
-                    LOGGER.error("Failed to parse progress {}: {}", fileLocation, result.error().get().message());
+                    Beyond.debugLog("Failed to parse progress {}: {}", fileLocation, result.error().get().message());
                     continue;
                 }
 
                 ProgressDefinition definition = result.result().orElse(null);
                 if (definition == null || definition.getIdentifier() == null) {
-                    LOGGER.warn("Skip progress {} because identifier is missing", fileLocation);
+                    Beyond.debugLog("Skip progress {} because identifier is missing", fileLocation);
                     continue;
                 }
 
                 definitions.put(definition.getIdentifier(), definition);
-                LOGGER.info("Loaded progress {} from data pack {}", definition.getIdentifier(), resource.sourcePackId());
+                Beyond.debugLog("Loaded progress {} from data pack {}", definition.getIdentifier(), resource.sourcePackId());
             } catch (IOException e) {
-                LOGGER.error("Failed to read progress {}: {}", fileLocation, e.getMessage());
+                Beyond.debugLog("Failed to read progress {}: {}", fileLocation, e.getMessage());
             } catch (Exception e) {
-                LOGGER.error("Failed to load progress {}", fileLocation, e);
+                Beyond.debugLog("Failed to load progress {}", fileLocation, e);
             }
         }
         profiler.endTick();
@@ -76,7 +74,7 @@ public class ProgressPack extends SimplePreparableReloadListener<Map<ResourceLoc
         if (server != null) {
             applyToServer(server);
         }
-        LOGGER.info("Loaded {} progress definitions from data packs", latestDefinitions.size());
+        Beyond.debugLog("Loaded {} progress definitions from data packs", latestDefinitions.size());
     }
 
     public static Map<ResourceLocation, ProgressDefinition> getLatestDefinitions() {

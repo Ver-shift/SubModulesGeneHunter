@@ -8,11 +8,15 @@ import com.pz.beyond.progress.encounter.*;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
+import net.minecraft.world.level.levelgen.feature.configurations.SimpleRandomFeatureConfiguration;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -79,5 +83,36 @@ public class BeyondEncounters {
 
     public static ResourceLocation getId(EncounterType encounterType) {
         return encounterType == null ? EMPTY.getIdentifier() : encounterType.getIdentifier();
+    }
+
+    /**
+     * 根据 (颜色, 场景) 从注册表中挑选匹配的 {@link EncounterType}。
+     * <ul>
+     *     <li>无匹配项 → 返回 {@link #EMPTY}；</li>
+     *     <li>单个匹配项 → 直接返回；</li>
+     *     <li>多个匹配项 → 使用 {@code random} 等概率随机抽一个。</li>
+     * </ul>
+     */
+    public static EncounterType getTypeByColorAndScene(NodeColor color, SceneType scene, SingleThreadedRandomSource random) {
+        if (color == null || scene == null) {
+            return EMPTY;
+        }
+        List<EncounterType> candidates = new ArrayList<>();
+        for (EncounterType type : ENCOUNTER_REGISTRY) {
+            if (type == null || type == EMPTY) {
+                continue;
+            }
+            if (type.getColor() == color && type.getSceneType() == scene) {
+                candidates.add(type);
+            }
+        }
+        if (candidates.isEmpty()) {
+            return EMPTY;
+        }
+        if (candidates.size() == 1) {
+            return candidates.get(0);
+        }
+        int index = random == null ? 0 : random.nextInt(candidates.size());
+        return candidates.get(index);
     }
 }

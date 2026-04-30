@@ -3,119 +3,95 @@ package com.pz.beyond.api.system.node;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pz.beyond.api.init.BeyondEncounters;
-import com.pz.beyond.api.init.BeyondNodeEventTypes;
+import com.pz.beyond.api.system.definition.EncounterDefinition;
+import com.pz.beyond.api.system.definition.EventTask;
+import com.pz.beyond.api.system.definition.ProgressDefinition;
+import com.pz.beyond.api.system.progress.SceneType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 
 /**
  * 节点的运行时数据，玩家交互节点后产生。
- * 包含对 NodeData 的引用以及 roll 出来的事件等运行时状态。
+ * 方案 C：只持有 structureKey，NodeData 统一从 {@link com.pz.beyond.api.system.progress.ProgressData#getNodes()} 反查，
+ * 避免 Codec 重复序列化导致的引用失效（状态改动无法回写）。
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class RolledData {
 
-    public static final String NODE_DATA = "node_data";
+    public static final String STRUCTURE_KEY = "structure_key";
     public static final String ENCOUNTER_TYPE = "encounter_type";
     public static final String EVENTS = "events";
     public static final String CURRENT_EVENT_INDEX = "current_event_index";
 
 
-    private final NodeData nodeData;
-
-
+    private StructureKey structureKey = StructureKey.EMPTY;
     private EncounterType encounterType = BeyondEncounters.EMPTY;
 
-    private List<NodeEventType> events = Collections.emptyList();
-    
+    private EventTask events = EventTask.EMPTY;
+
     private int currentEventIndex = 0;
 
-    public RolledData(NodeData nodeData) {
-        this.nodeData = nodeData;
-    }
 
-    public RolledData(NodeData nodeData, EncounterType encounterType, List<NodeEventType> events, int currentEventIndex) {
-        this.nodeData = nodeData;
-        this.encounterType = encounterType == null ? BeyondEncounters.EMPTY : encounterType;
-        this.events = events == null ? new ArrayList<>() : new ArrayList<>(events);
-        this.currentEventIndex = Math.max(0, currentEventIndex);
-    }
-
-    public RolledData(NodeData nodeData, Optional<EncounterType> encounterType, List<NodeEventType> events, int currentEventIndex) {
-        this(nodeData, encounterType.orElse(null), events, currentEventIndex);
-    }
-
-    /**
-     * 获取当前正在执行的事件
-     */
-    public NodeEventType getCurrentEvent() {
-        if (events.isEmpty() || currentEventIndex >= events.size()) {
-            return BeyondNodeEventTypes.EMPTY;
+    public static RolledData create(RolledData data, NodeData nodeData, SceneType sceneType,
+                                    ProgressDefinition progressDefinition,
+                                    SingleThreadedRandomSource random){
+        if (data == null) {
+            data = new RolledData();
         }
-        return events.get(currentEventIndex);
-    }
+        // 1. 绑定节点身份（只存 StructureKey，避免 Codec 重复序列化）
+        data.setStructureKey(nodeData == null ? StructureKey.EMPTY : nodeData.getStructureKey());
 
-    /**
-     * 推进到下一个事件
-     * @return true 如果还有下一个事件，false 如果已全部完成
-     */
-    public boolean advanceEvent() {
-        currentEventIndex++;
-        if (currentEventIndex >= events.size()) {
-            nodeData.setNodeState(NodeState.COMPLETED);
-            return false;
+        // 2. 根据 (节点颜色, 场景) 挑选 EncounterType
+        EncounterType encounterType = BeyondEncounters.getTypeByColorAndScene(
+                nodeData == null ? null : nodeData.getNodeColor(), sceneType, random);
+        data.setEncounterType(encounterType);
+
+        // 3. 从 ProgressDefinition 的 encounters 映射中找到对应 EncounterDefinition，再加权抽取一个 EventTask
+        EventTask eventTask = EventTask.EMPTY;
+        if (progressDefinition != null && encounterType != null && encounterType.getIdentifier() != null) {
+            for (ProgressDefinition.EncounterMapping mapping : progressDefinition.getEncounters()) {
+                if (mapping == null) continue;
+                EncounterType mapType = mapping.getEncounterType();
+                if (mapType == null || mapType.getIdentifier() == null) continue;
+                if (!mapType.getIdentifier().equals(encounterType.getIdentifier())) continue;
+
+                EncounterDefinition def = mapping.getEncounterDefinition();
+                if (def != null) {
+                    // 走 ITranslate 通用入口：从 definition roll 出运行时 EventTask
+                    eventTask = def.translate(random);
+                }
+                break;
+            }
         }
-        return true;
+        data.setEvents(eventTask);
+        // 4. 重置进度指针
+        data.setCurrentEventIndex(0);
+
+        return data;
     }
 
-    // --- Getters & Setters ---
 
-    public NodeData getNodeData() {
-        return nodeData;
-    }
+    public static final Codec<RolledData> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    StructureKey.CODEC.optionalFieldOf(STRUCTURE_KEY, StructureKey.EMPTY).forGetter(RolledData::getStructureKey),
+                    EncounterType.CODEC.optionalFieldOf(ENCOUNTER_TYPE, BeyondEncounters.EMPTY).forGetter(RolledData::getEncounterType),
+                    EventTask.CODEC.optionalFieldOf(EVENTS, EventTask.EMPTY).forGetter(RolledData::getEvents),
+                    Codec.INT.optionalFieldOf(CURRENT_EVENT_INDEX, 0).forGetter(RolledData::getCurrentEventIndex)
+            ).apply(instance, RolledData::new)
+    );
 
-    public long getChunkKey() {
-        return nodeData.getChunkKey();
-    }
-
-    public NodeColor getNodeColor() {
-        return nodeData.getNodeColor();
-    }
-
-    public EncounterType getEncounterType() {
-        return encounterType;
-    }
-
-    private Optional<EncounterType> getEncounterTypeOptional() {
-        return Optional.ofNullable(encounterType);
-    }
-
-    public void setEncounterType(EncounterType encounterType) {
-        this.encounterType = encounterType == null ? BeyondEncounters.EMPTY : encounterType;
-    }
-
-    public NodeState getNodeState() {
-        return nodeData.getNodeState();
-    }
-
-    public void setNodeState(NodeState nodeState) {
-        nodeData.setNodeState(nodeState);
-    }
-
-    public List<NodeEventType> getEvents() {
-        return events;
-    }
-
-    public void setEvents(List<NodeEventType> events) {
-        this.events = events == null ? new ArrayList<>() : events;
-        this.currentEventIndex = 0;
-    }
-
-    public int getCurrentEventIndex() {
-        return currentEventIndex;
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, RolledData> STREAM_CODEC = StreamCodec.composite(
+            StructureKey.STREAM_CODEC, RolledData::getStructureKey,
+            EncounterType.STREAM_CODEC, RolledData::getEncounterType,
+            EventTask.STREAM_CODEC, RolledData::getEvents,
+            ByteBufCodecs.VAR_INT, RolledData::getCurrentEventIndex,
+            RolledData::new
+    );
 }

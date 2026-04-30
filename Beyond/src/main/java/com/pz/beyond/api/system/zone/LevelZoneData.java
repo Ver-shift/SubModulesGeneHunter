@@ -1,6 +1,7 @@
 package com.pz.beyond.api.system.zone;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pz.beyond.api.init.BeyondZoneInit;
 import lombok.Data;
@@ -8,13 +9,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,12 +62,24 @@ public class LevelZoneData {
 
     // 工厂方法专用构造
     private LevelZoneData(Map<Long, ZoneType> zonePos, Map<ZoneType, ZoneData> zoneData) {
-        this.zonePos = zonePos;
-        this.zoneData = zoneData;
+        this.zonePos = zonePos == null ? new HashMap<>() : new HashMap<>(zonePos);
+        this.zoneData = zoneData == null ? new HashMap<>() : new HashMap<>(zoneData);
     }
 
     public static final Codec<LevelZoneData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            ExtraCodecs.strictUnboundedMap(Codec.LONG, ZoneType.CODEC).fieldOf(ZONE_POS).forGetter(LevelZoneData::getZonePos),
+            ExtraCodecs.strictUnboundedMap(
+                    Codec.STRING.comapFlatMap(
+                            value -> {
+                                try {
+                                    return DataResult.success(Long.parseLong(value));
+                                } catch (NumberFormatException exception) {
+                                    return DataResult.error(() -> "Invalid long key: " + value);
+                                }
+                            },
+                            String::valueOf
+                    ),
+                    ZoneType.CODEC
+            ).fieldOf(ZONE_POS).forGetter(LevelZoneData::getZonePos),
             ExtraCodecs.strictUnboundedMap(ZoneType.CODEC, ZoneData.CODEC).fieldOf(ZONE_DATA).forGetter(LevelZoneData::getZoneData)
     ).apply(builder, LevelZoneData::new));
 

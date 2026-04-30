@@ -23,7 +23,7 @@ import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 /**
  * 结构管理器 — 在向日葵平原中查找普通村庄并设置安全出生点。
  */
-public class StructureManager {
+public class StructureManager implements IStructureManager{
 
     private static final int BIOME_SEARCH_RADIUS = 6400;
     private static final int STRUCTURE_SEARCH_RADIUS = 256;
@@ -36,13 +36,13 @@ public class StructureManager {
     public void findSafeZone(ServerLevel level) {
         StructureData data = BeyondAPI.getBeyondLevelData(level).getStructureData();
         if (data.hasValidSpawnPos()) {
-            Beyond.LOGGER.info("Spawn already set: {}", data.getSpawnPos());
+            Beyond.debugLog("Spawn already set: {}", data.getSpawnPos());
             return;
         }
 
         BlockPos village = findSunflowerPlainsVillage(level);
         if (village == null) {
-            Beyond.LOGGER.info("No sunflower plains village, trying any village...");
+            Beyond.debugLog("No sunflower plains village, trying any village...");
             village = findAnyNormalVillage(level);
         }
 
@@ -52,7 +52,7 @@ public class StructureManager {
 
         data.setSpawnPos(spawn);
         level.setDefaultSpawnPos(spawn, 0.0f);
-        Beyond.LOGGER.info("World spawn set to: {}", spawn);
+        Beyond.debugLog("World spawn set to: {}", spawn);
     }
 
     // ==================== 向日葵平原村庄搜索 ====================
@@ -90,7 +90,7 @@ public class StructureManager {
                 return pos;
             }
 
-            Beyond.LOGGER.debug("Village at {} rejected (attempt {}), continuing...", pos, i + 1);
+            Beyond.debugLog("Village at {} rejected (attempt {}), continuing...", pos, i + 1);
             search = pos.offset(64, 0, 64);
         }
         return null;

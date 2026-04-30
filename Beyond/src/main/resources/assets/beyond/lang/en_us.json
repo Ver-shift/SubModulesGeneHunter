@@ -3,5 +3,11 @@
   "block.beyond.example_block": "Example Block",
   "item.beyond.example_item": "Example Item",
   "beyond.safe_zone.teleporting": "\u00A7eTeleporting to village spawn point...",
-  "message.beyond.welcome": "\u00A7fWelcome to Gene Hunter modpack! Find a \u00A76%s\u00A7f in the village to initialize the world"
+  "message.beyond.welcome": "\u00A7fWelcome to Gene Hunter modpack! Find a \u00A76%s\u00A7f in the village to initialize the world",
+  "commands.beyond.home.success": "\u00A7e[Beyond] \u00A7fTeleported %s \u00A77home: \u00A7a%s, %s, %s \u00A77(\u00A7e%s\u00A77)",
+  "commands.beyond.home.none": "\u00A7c[Beyond] \u00A7f%s \u00A7chas no home set",
+  "commands.beyond.progress.success": "\u00A7e[Beyond] \u00A7fSwitched progress to: \u00A7a%s",
+  "commands.beyond.progress.not_found": "\u00A7c[Beyond] \u00A7fProgress definition not found: \u00A7e%s",
+  "commands.beyond.reset_node.success": "\u00A7e[Beyond] \u00A7fReset active node to LOCKED: \u00A7a%s",
+  "commands.beyond.reset_node.none": "\u00A7c[Beyond] \u00A7fNo active node to reset"
 }

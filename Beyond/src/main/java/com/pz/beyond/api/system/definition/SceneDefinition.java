@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
-public class SceneDefinition {
+public class SceneDefinition implements ITranslate<SceneType, SingleThreadedRandomSource> {
 
     public static final String SCENE_TYPES = "scene_types";
     public static final String REAL_SCENE = "real_scene";
@@ -105,6 +105,14 @@ public class SceneDefinition {
         return sceneTypes.get(sceneTypes.size() - 1).getSceneType();
     }
 
+    /**
+     * {@link ITranslate} 实现：委托给 {@link #getRealScene(SingleThreadedRandomSource)}，
+     * 从 definition 满权重 roll 出运行时 SceneType。
+     */
+    @Override
+    public SceneType translate(SingleThreadedRandomSource input) {
+        return getRealScene(input);
+    }
 
 
     @Data

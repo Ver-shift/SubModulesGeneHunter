@@ -2,6 +2,7 @@ package com.pz.beyond.api.init;
 
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.system.rule.AbstractRule;
+import com.pz.beyond.rule.AllNodeRule;
 import com.pz.beyond.rule.AllSafeRule;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -45,6 +46,9 @@ public class BeyondZoneRuleInit {
 	// 示例注册：可按这个格式继续扩展更多规则
 	public static final Supplier<AbstractRule> ALL_SAFE_RULE =
 		RULE.register("all_safe", () -> new AllSafeRule(Beyond.asResource("all_safe")));
+
+
+	public static final Supplier<AbstractRule> ALL_NODE_RULE = registerRule(AllNodeRule::new);
 
 	public static void registerRegistry(NewRegistryEvent event) {
 		event.register(RULE_REGISTRY);

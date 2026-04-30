@@ -3,6 +3,8 @@ package com.pz.beyond.api.system.rule;
 import com.pz.beyond.api.system.zone.ZoneType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.Block;
 
 public interface IZoneRule {
 
@@ -13,6 +15,10 @@ public interface IZoneRule {
      * @param level
      */
     default void levelTick(ServerLevel level,ZoneType zoneType) {
+
+    }
+
+    default void mobTick(Mob mob, ZoneType zoneType) {
 
     }
 
@@ -28,6 +34,10 @@ public interface IZoneRule {
      * 切换区域，一定是从其他区域进入这个区域
      */
     default void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to){
+
+    }
+
+    default void playerRightClickBlock(ServerPlayer player,Block block){
 
     }
 

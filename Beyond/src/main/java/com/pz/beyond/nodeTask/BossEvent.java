@@ -2,6 +2,7 @@ package com.pz.beyond.nodeTask;
 
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.system.node.NodeEventType;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class BossEvent extends NodeEventType {
@@ -17,6 +18,7 @@ public class BossEvent extends NodeEventType {
      */
     @Override
     public void cast(Context context) {
+        context.players().stream().forEach(player -> {player.sendSystemMessage(Component.literal("text_boss"));});
 
     }
 
@@ -32,6 +34,6 @@ public class BossEvent extends NodeEventType {
 
 
 
-        return Result.defaulted();
+        return Result.success(Component.literal("text_bossEvent"));
     }
 }

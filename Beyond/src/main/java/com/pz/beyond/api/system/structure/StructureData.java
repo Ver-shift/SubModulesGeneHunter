@@ -39,7 +39,13 @@ public class StructureData {
      */
     private boolean initialized = false;
 
-    
+    //安全区数据
+    private SafeZoneData safeZoneData;
+
+
+
+
+
 
     /**
      * 检查是否已设置有效的出生点
@@ -56,11 +62,11 @@ public class StructureData {
         this.initialized = true;
     }
 
-    // Codec 编解码器
+    // Codec 编解码器（TODO: safeZoneData 字段尚未接入序列化，目前只编码 spawnPos/initialized）
     public static final Codec<StructureData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockPos.CODEC.optionalFieldOf(SPAWN_POS, BlockPos.ZERO).forGetter(StructureData::getSpawnPos),
             Codec.BOOL.optionalFieldOf(INITIALIZED, false).forGetter(StructureData::isInitialized)
-    ).apply(instance, StructureData::new));
+    ).apply(instance, (pos, init) -> new StructureData(pos, init, null)));
 
     // StreamCodec 网络传输编解码器
     public static final StreamCodec<RegistryFriendlyByteBuf, StructureData> STREAM_CODEC = StreamCodec.composite(
@@ -68,6 +74,6 @@ public class StructureData {
             StructureData::getSpawnPos,
             net.minecraft.network.codec.ByteBufCodecs.BOOL,
             StructureData::isInitialized,
-            StructureData::new
+            (pos, init) -> new StructureData(pos, init, null)
     );
 }

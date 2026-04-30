@@ -20,7 +20,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EncounterDefinition {
+public class EncounterDefinition implements ITranslate<EventTask, SingleThreadedRandomSource> {
 
     public static final String EVENT_TASKS = "event_tasks";
     public static final String ENCOUNTER_TYPE = "encounter_type";
@@ -75,6 +75,15 @@ public class EncounterDefinition {
 
         // 默认返回最后一个（防止浮点误差）
         return eventTasks.get(eventTasks.size() - 1).getEventTask();
+    }
+
+    /**
+     * {@link ITranslate} 实现：委托给 {@link #getEventTask(SingleThreadedRandomSource)}，
+     * 从 definition 的 eventTasks 加权抽取运行时 EventTask。
+     */
+    @Override
+    public EventTask translate(SingleThreadedRandomSource input) {
+        return getEventTask(input);
     }
 
     @Data

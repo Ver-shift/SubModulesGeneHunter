@@ -3,5 +3,11 @@
   "block.beyond.example_block": "示例方块",
   "item.beyond.example_item": "示例物品",
   "beyond.safe_zone.teleporting": "\u00A7e正在传送到村庄出生点...",
-  "message.beyond.welcome": "\u00A7f欢迎游玩基因猎人整合包，寻找村庄中的\u00A76%s\u00A7f进行初始化世界"
+  "message.beyond.welcome": "\u00A7f欢迎游玩基因猎人整合包，寻找村庄中的\u00A76%s\u00A7f进行初始化世界",
+  "commands.beyond.home.success": "\u00A7e[Beyond] \u00A7f已将 %s \u00A77传送回出生点: \u00A7a%s, %s, %s \u00A77(\u00A7e%s\u00A77)",
+  "commands.beyond.home.none": "\u00A7c[Beyond] \u00A7f%s \u00A7c还没有设置出生点",
+  "commands.beyond.progress.success": "\u00A7e[Beyond] \u00A7f已切换关卡为: \u00A7a%s",
+  "commands.beyond.progress.not_found": "\u00A7c[Beyond] \u00A7f未找到关卡定义: \u00A7e%s",
+  "commands.beyond.reset_node.success": "\u00A7e[Beyond] \u00A7f\u5df2\u91cd\u7f6e\u8282\u70b9\u4e3a\u9501\u5b9a: \u00A7a%s",
+  "commands.beyond.reset_node.none": "\u00A7c[Beyond] \u00A7f当前没有激活节点可重置"
 }
