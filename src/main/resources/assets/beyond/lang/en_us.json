@@ -1,0 +1,13 @@
+{
+  "itemGroup.beyond": "Example Mod Tab",
+  "block.beyond.example_block": "Example Block",
+  "item.beyond.example_item": "Example Item",
+
+  "beyond.configuration.title": "Beyond Configs",
+  "beyond.configuration.section.beyond.common.toml": "Beyond Configs",
+  "beyond.configuration.section.beyond.common.toml.title": "Beyond Configs",
+  "beyond.configuration.items": "Item List",
+  "beyond.configuration.logDirtBlock": "Log Dirt Block",
+  "beyond.configuration.magicNumberIntroduction": "Magic Number Text",
+  "beyond.configuration.magicNumber": "Magic Number"
+}
