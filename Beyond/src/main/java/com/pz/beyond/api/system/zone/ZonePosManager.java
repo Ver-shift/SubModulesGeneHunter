@@ -2,6 +2,7 @@ package com.pz.beyond.api.system.zone;
 
 import com.pz.beyond.Beyond;
 import com.pz.beyond.api.BeyondAPI;
+import com.pz.beyond.api.init.BeyondAttachInit;
 import com.pz.beyond.api.init.BeyondZoneInit;
 import com.pz.beyond.api.system.BeyondLevelData;
 import com.pz.beyond.api.system.node.NodeColor;
@@ -138,6 +139,8 @@ public class ZonePosManager implements IZonePosManager {
                     }
                 }
             }
+            // 强制同步 LevelZoneData 到客户端，使 debug 模式下的节点区域渲染可见
+            level.setData(BeyondAttachInit.LEVEL_DATA, beyondLevelData);
             return;
         }
 

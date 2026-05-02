@@ -9,5 +9,12 @@
   "commands.beyond.progress.success": "\u00A7e[Beyond] \u00A7fSwitched progress to: \u00A7a%s",
   "commands.beyond.progress.not_found": "\u00A7c[Beyond] \u00A7fProgress definition not found: \u00A7e%s",
   "commands.beyond.reset_node.success": "\u00A7e[Beyond] \u00A7fReset active node to LOCKED: \u00A7a%s",
-  "commands.beyond.reset_node.none": "\u00A7c[Beyond] \u00A7fNo active node to reset"
+  "commands.beyond.reset_node.none": "\u00A7c[Beyond] \u00A7fNo active node to reset",
+  "item.beyond.loot_bag": "Loot Bag",
+  "beyond.game.start": "\u00A7a\u00A7lGame Start!",
+  "beyond.game.complete": "\u00A76\u00A7lExpedition Complete!",
+  "beyond.loot_bag.start": "\u00A7aYou tear open the loot bag... the game begins!",
+  "beyond.loot_bag.already_active": "\u00A7cA game is already in progress!",
+  "beyond.loot_bag.no_progress": "\u00A7cNo progress definition loaded!",
+  "itemGroup.beyond.beyond_tab": "Beyond"
 }

@@ -4,10 +4,17 @@ import com.pz.beyond.Beyond;
 import com.pz.beyond.api.BeyondAPI;
 import com.pz.beyond.api.event.custom.PlayerFirstLoggedInEvent;
 import com.pz.beyond.api.init.BeyondAttachInit;
+import com.pz.beyond.api.init.BeyondItems;
+import com.pz.beyond.api.system.BeyondLevelData;
 import com.pz.beyond.api.system.BeyondManager;
+import com.pz.beyond.api.system.progress.core.ProgressSession;
+import com.pz.beyond.api.system.progress.core.SessionState;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -82,5 +89,49 @@ public class ZoneEventHandle {
             return;
         }
         BeyondAPI.getBeyondManager().getZoneManager().handleMobTick(mob);
+    }
+
+    /** 战利品袋右键：启动一局游戏（INACTIVE → WARMUP → IN_PROGRESS） */
+    @SubscribeEvent
+    public static void onLootBagUse(PlayerInteractEvent.RightClickItem event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (!(player.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        if (!BeyondAttachInit.isAllowedDimension(serverLevel)) {
+            return;
+        }
+
+        ItemStack stack = event.getItemStack();
+        if (!stack.is(BeyondItems.LOOT_BAG.get())) {
+            return;
+        }
+
+        ProgressSession session = BeyondAPI.getBeyondManager().getProgressManager().getSession();
+
+        // 守卫：只能从 INACTIVE 启动
+        if (session.getSessionState() != SessionState.INACTIVE) {
+            player.displayClientMessage(Component.translatable("beyond.loot_bag.already_active"), false);
+            return;
+        }
+
+        // 获取当前选中的 Progress ID（从 progressDefinitions 中取第一个）
+        BeyondLevelData levelData = BeyondAPI.getBeyondLevelData(serverLevel);
+        if (levelData == null || levelData.getProgressDefinitions().isEmpty()) {
+            player.displayClientMessage(Component.translatable("beyond.loot_bag.no_progress"), false);
+            return;
+        }
+        ResourceLocation progressId = levelData.getProgressDefinitions().keySet().iterator().next();
+
+        // 启动 Session
+        boolean started = session.startSession(progressId, serverLevel);
+        if (started) {
+            if (!player.isCreative()) {
+                stack.shrink(1);
+            }
+            player.displayClientMessage(Component.translatable("beyond.loot_bag.start"), false);
+        }
     }
 }

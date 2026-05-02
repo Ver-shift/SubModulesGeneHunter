@@ -11,6 +11,7 @@ import com.pz.beyond.api.system.node.RolledData;
 import com.pz.beyond.api.system.node.StructureKey;
 import com.pz.beyond.api.system.node.core.INodeEventType;
 import com.pz.beyond.api.system.progress.core.IProgressManager;
+import com.pz.beyond.api.system.progress.core.ProgressSession;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +25,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProgressManager implements IProgressManager {
+
+    // 新增：tick 驱动的关卡会话管理器
+    private final ProgressSession session = new ProgressSession(this);
+
+    public ProgressSession getSession() {
+        return session;
+    }
+
+    /** 每 tick 由 BeyondManager.levelTick() 调用 */
+    public void tick(ServerLevel level) {
+        session.tick(level);
+    }
 
     @Override
     public void initProgress(ResourceLocation progressID){
@@ -92,6 +105,10 @@ public class ProgressManager implements IProgressManager {
         if (beyondLevelData == null) {
             return;
         }
+        // 新增：Session 阶段守卫 —— 仅 IN_PROGRESS 可交互节点
+        if (!session.canInteractWithNode()) {
+            return;
+        }
         ProgressData progressData = beyondLevelData.getProgressData();
         long chunkKey = player.chunkPosition().toLong();
         // 方案 C：区块 → 节点 通过 chunkIndex 反查
@@ -143,6 +160,10 @@ public class ProgressManager implements IProgressManager {
 
     public void playerEnterNode(ServerPlayer player) {
         if (player == null) {
+            return;
+        }
+        // 新增：Session 阶段守卫 —— 仅 IN_PROGRESS 可交互节点
+        if (!session.canInteractWithNode()) {
             return;
         }
         ServerLevel level = player.serverLevel();

@@ -37,6 +37,7 @@ public class BeyondManager implements IBeyondManager {
     public void levelTick(Level level) {
         if (level instanceof ServerLevel serverLevel && BeyondAttachInit.isAllowedDimension(serverLevel)) {
             zoneManager.handleZoneRule(serverLevel);
+            progressManager.tick(serverLevel);
 
         }
     }

@@ -3,8 +3,10 @@ package com.pz.beyond;
 import com.mojang.logging.LogUtils;
 import com.pz.beyond.api.config.ServerConfig;
 import com.pz.beyond.api.init.BeyondAttachInit;
+import com.pz.beyond.api.init.BeyondCreativeTab;
 import com.pz.beyond.api.init.BeyondEffectInit;
 import com.pz.beyond.api.init.BeyondEncounters;
+import com.pz.beyond.api.init.BeyondItems;
 import com.pz.beyond.api.init.BeyondNodeEventTypes;
 import com.pz.beyond.api.init.BeyondZoneInit;
 
@@ -63,6 +65,8 @@ public class Beyond
         BeyondZoneInit.register(modEventBus);
 
         BeyondEffectInit.register(modEventBus);
+        BeyondItems.register(modEventBus);
+        BeyondCreativeTab.register(modEventBus);
     }
 
 
