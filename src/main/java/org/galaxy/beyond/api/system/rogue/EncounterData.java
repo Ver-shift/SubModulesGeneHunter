@@ -7,5 +7,5 @@ import java.util.LinkedList;
 @Data
 public class EncounterData {
     private EncounterType type;
-    private LinkedList<RogueEventType> eventTypes = new LinkedList<>();
+    private EventTask events;
 }

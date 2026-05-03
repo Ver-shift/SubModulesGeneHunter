@@ -1,5 +1,7 @@
 package org.galaxy.beyond.api.system;
 
+import net.minecraft.server.level.ServerLevel;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.galaxy.beyond.Beyond;
 
 public class BeyondAPI {
@@ -8,5 +10,11 @@ public class BeyondAPI {
         return Beyond.MANAGER;
     }
 
+    public static ServerLevel getOverWorld(){
+        if (ServerLifecycleHooks.getCurrentServer() != null) {
+            return ServerLifecycleHooks.getCurrentServer().overworld();
+        }
+        return null;
+    }
 
 }

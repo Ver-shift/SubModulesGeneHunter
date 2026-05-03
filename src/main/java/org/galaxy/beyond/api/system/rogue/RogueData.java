@@ -11,4 +11,5 @@ public class RogueData {
     private List<ServerPlayer> inGamePlayers;
     private RogueState rogueState;
 
+
 }

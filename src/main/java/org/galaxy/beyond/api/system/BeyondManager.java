@@ -1,6 +1,9 @@
 package org.galaxy.beyond.api.system;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.galaxy.beyond.api.system.node.NodeManager;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
@@ -17,6 +20,26 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void levelTick(ServerLevel level) {
+
+    }
+
+    @Override
+    public void playerTick(ServerPlayer player) {
+
+    }
+
+    @Override
+    public void entityTick(LivingEntity entity) {
+
+    }
+
+    @Override
+    public void playerLogin(ServerPlayer player) {
+
+    }
+
+    @Override
+    public void onChunkLoad(LevelChunk chunk) {
 
     }
 
