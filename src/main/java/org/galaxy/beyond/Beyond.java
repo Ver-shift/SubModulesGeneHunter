@@ -1,6 +1,7 @@
 package org.galaxy.beyond;
 
 import org.galaxy.beyond.api.config.CommonConfig;
+import org.galaxy.beyond.api.system.BeyondManager;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -17,8 +18,12 @@ public class Beyond {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "beyond";
     private static final Logger LOGGER = LogUtils.getLogger();
+    public static BeyondManager MANAGER;
 
     public Beyond(ModContainer modContainer) {
+        MANAGER = new BeyondManager();
+
+
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
     }
 
