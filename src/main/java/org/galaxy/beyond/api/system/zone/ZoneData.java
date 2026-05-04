@@ -5,18 +5,33 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ZoneData {
 
-    private ZoneType type;
-    private List<ZoneCapData> zoneCaps = new CopyOnWriteArrayList<>();
+    private final List<ZoneCapData> zoneCaps = new CopyOnWriteArrayList<>();
 
     public void addCap(ZoneCapType cap) {
         zoneCaps.add(new ZoneCapData(cap));
     }
 
     public void removeCap(ZoneCapType cap) {
-        zoneCaps.remove(new ZoneCapData(cap));
+        ZoneCapData target = getCapData(cap);
+        if (target != null) {
+            zoneCaps.remove(target);
+        }
     }
 
     public void clearCaps() {
         zoneCaps.clear();
+    }
+
+    public List<ZoneCapData> getZoneCaps() {
+        return zoneCaps;
+    }
+
+    public ZoneCapData getCapData(ZoneCapType cap) {
+        for (ZoneCapData data : zoneCaps) {
+            if (data.getType().equals(cap)) {
+                return data;
+            }
+        }
+        return null;
     }
 }

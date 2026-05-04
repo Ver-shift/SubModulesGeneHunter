@@ -1,6 +1,11 @@
 package org.galaxy.beyond.api.config;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import org.jspecify.annotations.NonNull;
 
 /**
  * 通用模组配置文件（COMMON 类型，客户端和服务端均生效）。
@@ -12,16 +17,55 @@ public class CommonConfig {
     /** 是否输出 Beyond 模块的调试信息 */
     public static final ModConfigSpec.BooleanValue DEBUG_MODE;
 
+    /** 肉鸽玩法生效的维度，格式为 "namespace:path"，如 "minecraft:overworld" */
+    private static final ModConfigSpec.ConfigValue<String> ROGUE_DIMENSION;
+
+    /** 安全区向外最小拓展距离（区块数） */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_EXPAND;
+    /** 初始活动区至少需要覆盖的节点数量 */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_NODES;
+    /** 节点完成后向外拓展的初始半径（区块数） */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_EXPAND_RADIUS;
+    /** 节点拓展后至少需要扫描到的其他未完成节点连接数 */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_CONNECTIONS;
+
     static {
         BUILDER.comment("Beyond 通用调试开关").push("generic");
         DEBUG_MODE = BUILDER
                 .comment("是否输出 Beyond 模块的调试日志。关闭后 debugInfo() 将被静默。")
                 .define("debugMessages", false);
         BUILDER.pop();
+
+        BUILDER.comment("肉鸽玩法维度配置").push("rogue");
+        ROGUE_DIMENSION = BUILDER
+                .comment("肉鸽玩法生效的维度 ID，格式为 \"namespace:path\"")
+                .define("dimension", "minecraft:overworld");
+        BUILDER.pop();
+
+        BUILDER.comment("活动区域配置").push("active_zone");
+        ACTIVE_ZONE_MIN_EXPAND = BUILDER
+                .comment("安全区向外最小拓展距离（区块数），确保初始活动区有足够的空间。")
+                .defineInRange("minExpand", 3, 1, 100);
+        ACTIVE_ZONE_MIN_NODES = BUILDER
+                .comment("初始活动区至少需要覆盖的未完成节点数量。")
+                .defineInRange("minNodes", 10, 1, 1000);
+        ACTIVE_ZONE_NODE_EXPAND_RADIUS = BUILDER
+                .comment("玩家完成节点事件后，以该节点为中心向外扩张的初始半径（区块数）。")
+                .defineInRange("nodeExpandRadius", 2, 1, 100);
+        ACTIVE_ZONE_MIN_CONNECTIONS = BUILDER
+                .comment("节点扩张后至少需要扫描到的其他未完成节点连接数，防止玩家卡关。")
+                .defineInRange("minConnections", 2, 1, 100);
+        BUILDER.pop();
     }
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
+    /**
+     * 获取配置中指定的肉鸽玩法维度。
+     */
+    public static ResourceKey<Level> getRogueDimension() {
+        return ResourceKey.create(Registries.DIMENSION, Identifier.parse(ROGUE_DIMENSION.get()));
+    }
     private CommonConfig() {
     }
 }

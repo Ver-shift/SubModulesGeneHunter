@@ -1,7 +1,16 @@
 package org.galaxy.beyond.api.system;
 
-/**
- * 所有数据都存放在overWorld。在其他维度也能通过服务器获取数据。
- */
+import lombok.Data;
+import lombok.NonNull;
+import org.galaxy.beyond.api.system.rogue.RogueData;
+import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
+import org.galaxy.beyond.api.system.zone.LevelZoneData;
+
+@Data
 public class BeyondLevelData {
+
+    private final RogueData rogueData = new RogueData();
+    private final LevelZoneData levelZoneData = new LevelZoneData();
+
+    private final SafeZoneStructureData safeZoneStructureData = new SafeZoneStructureData();
 }

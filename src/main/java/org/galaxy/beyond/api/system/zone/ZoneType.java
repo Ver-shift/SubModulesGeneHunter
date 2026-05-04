@@ -13,4 +13,6 @@ public enum ZoneType {
      * 玩家可活动区域
      */
     Active_Zone,
+
+    Empty;
 }

@@ -17,5 +17,18 @@ public class LevelZoneData {
         return levelZoneData.get(levelZone.get(chunkPos));
     }
 
+    public ZoneData getZoneData(ZoneType zoneType) {
+        return levelZoneData.get(zoneType);
+    }
+
+    public ZoneData getOrCreateZoneData(ZoneType zoneType) {
+        return levelZoneData.computeIfAbsent(zoneType, k -> new ZoneData());
+    }
+
+    public void addZone(ChunkPos chunkPos, ZoneType zoneType) {
+        levelZone.put(chunkPos, zoneType);
+    }
+
+    
 
 }

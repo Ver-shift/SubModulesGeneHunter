@@ -6,9 +6,25 @@ import org.galaxy.beyond.api.system.zone.ZoneType;
 
 public interface IZoneCapEvent {
 
-    void levelTick(ServerLevel level, ZoneType type);
+    default void levelTick(ServerLevel level, Context context){
 
-    void playerTick(ServerPlayer player,ZoneType type);
+    }
 
-    void changeZone(ServerPlayer player,ZoneType from,ZoneType to);
+    default void playerTick(ServerPlayer player,Context context){
+
+    }
+
+    /**
+     *
+     * @param player
+     * @param from 从哪个区域来的
+     * @param context 往哪个区域去的
+     */
+    default void changeZone(ServerPlayer player,ZoneType from,Context context){
+
+    }
+
+    public record Context(int capLevel,ZoneType zoneType) {
+
+    }
 }

@@ -8,11 +8,16 @@ import org.galaxy.beyond.api.system.zone.core.IZoneCapEvent;
  */
 public abstract class ZoneCapType implements IZoneCapEvent {
 
-    private Identifier id;
+    private final Identifier id;
+
     public ZoneCapType(Identifier id) {
         this.id = id;
     }
 
-    abstract int getMaxLevel();
-    abstract CapType getCapType();
+    public Identifier getId() {
+        return id;
+    }
+
+    public abstract int getMaxLevel();
+    public abstract CapType getCapType();
 }

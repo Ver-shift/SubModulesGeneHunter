@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.system.rogue.RogueState;
 
-public interface IRougeManager {
+public interface IRogueManager {
 
     /**
      * 设置当前肉鸽系统在哪里生效
@@ -29,6 +29,7 @@ public interface IRougeManager {
      * @param level
      */
     void startRogue(ServerLevel level);
+
     /**
      * 尝试启动节点，每个玩家都需要Ready状态。
      * @param level
@@ -41,9 +42,9 @@ public interface IRougeManager {
      * 注册内置扩展（修饰器模式），仅在指定状态下触发。
      * 适用于同模组内部的轻量逻辑组合。
      */
-    void addExtension(RogueState rogueState, IRogueExtension extension);
+    void addExtension(RogueState rogueState, IRogueListener extension);
 
-    void removeExtension(RogueState rogueState, IRogueExtension extension);
+    void removeExtension(RogueState rogueState, IRogueListener extension);
 
     void clearExtensions(RogueState rogueState);
 }

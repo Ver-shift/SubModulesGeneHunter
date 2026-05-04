@@ -1,6 +1,10 @@
 package org.galaxy.beyond;
 
+import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.IEventBus;
 import org.galaxy.beyond.api.config.CommonConfig;
+import org.galaxy.beyond.api.init.BeyondRogueEventTypeInit;
+import org.galaxy.beyond.api.init.BeyondZoneNodeCapInit;
 import org.galaxy.beyond.api.system.BeyondManager;
 import org.slf4j.Logger;
 
@@ -15,16 +19,20 @@ import net.neoforged.fml.ModContainer;
  */
 @Mod(Beyond.MODID)
 public class Beyond {
-    // Define mod id in a common place for everything to reference
     public static final String MODID = "beyond";
     private static final Logger LOGGER = LogUtils.getLogger();
     public static BeyondManager MANAGER;
 
-    public Beyond(ModContainer modContainer) {
+    public static Identifier asResource(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
+    }
+
+    public Beyond(ModContainer modContainer, IEventBus modEventBus) {
         MANAGER = new BeyondManager();
 
-
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+        newRegistry(modEventBus);
+
     }
 
     /**
@@ -34,6 +42,13 @@ public class Beyond {
         if (CommonConfig.DEBUG_MODE.get()) {
             LOGGER.info(key, args);
         }
+    }
+
+    public void newRegistry(IEventBus modEventBus) {
+        modEventBus.addListener(BeyondRogueEventTypeInit::registerRegistry);
+        modEventBus.addListener(BeyondZoneNodeCapInit::registerRegistry);
+        BeyondRogueEventTypeInit.register(modEventBus);
+        BeyondZoneNodeCapInit.register(modEventBus);
     }
 
 
