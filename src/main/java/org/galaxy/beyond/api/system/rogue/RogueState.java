@@ -1,20 +1,38 @@
 package org.galaxy.beyond.api.system.rogue;
 
 public enum RogueState {
-    /** 局外养成时间，游戏未开始 */
+    /**
+     * 局外养成时间，所有玩家在安全区
+     */
     LOBBY,
 
-    /** 游戏准备时间，至少有一名玩家处于安全区外部 */
+    /**
+     * 至少一个玩家跨出安全区边界，等待全部ready
+     */
     READY,
 
     /**
-     * 游戏正在运行，但是玩家不在节点
+     * 游戏正在运行，所有玩家在大世界
      */
     IN_PROGRESS,
 
-    /** 游戏正在运行，并且正在节点里面 */
+    /**
+     * 至少一个玩家在节点内部
+     */
     IN_NODE,
 
-    /** 游戏的结束时间，对玩家进行一些操作 */
-    POST_GAME
+    /**
+     * 完成胜利条件（可自定义）
+     */
+    POST_GAME,
+
+    EMPTY;
+
+    public boolean isGameActive() {
+        return this == IN_PROGRESS || this == IN_NODE;
+    }
+
+    public boolean isGameEnding() {
+        return this == POST_GAME;
+    }
 }

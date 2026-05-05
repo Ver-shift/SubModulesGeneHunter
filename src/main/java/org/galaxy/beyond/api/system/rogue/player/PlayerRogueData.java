@@ -5,8 +5,9 @@ import lombok.Data;
 @Data
 public class PlayerRogueData {
 
-    private PlayerRogueState state;
-    private int lifeCount; //生命数量
-    private int deathCount;//死亡次数，达到死亡次数就会死。
-
+    private PlayerRogueState state = PlayerRogueState.IN_SAFE_ZONE;
+    private int lifeCount;          // 剩余复活次数
+    private int maxLifeCount;       // 最大复活次数（属性驱动）
+    private int deathCount;         // 累计死亡次数
+    private long readyTimestamp;    // ready的时间戳，用于超时检测
 }

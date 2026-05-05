@@ -5,7 +5,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ZoneData {
 
+    private final ZoneType zoneType;
     private final List<ZoneCapData> zoneCaps = new CopyOnWriteArrayList<>();
+
+    public ZoneData(ZoneType zoneType) {
+        this.zoneType = zoneType;
+    }
+
+    public ZoneType getZone() {
+        return zoneType;
+    }
 
     public void addCap(ZoneCapType cap) {
         zoneCaps.add(new ZoneCapData(cap));

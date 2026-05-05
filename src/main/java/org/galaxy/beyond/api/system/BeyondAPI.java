@@ -21,7 +21,6 @@ public class BeyondAPI {
 
     public static BeyondGlobalData getGlobalData(MinecraftServer server) {
         return null;
-
     }
     public static BeyondLevelData getBeyondLevelData(ServerLevel level) {
         return null;

@@ -2,19 +2,26 @@ package org.galaxy.beyond.api.system.zone;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.StructureTags;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
+import org.galaxy.beyond.api.event.custom.PlayerChangeZoneEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondPlayerData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ZoneManager implements IZoneManager {
@@ -359,6 +366,62 @@ public class ZoneManager implements IZoneManager {
         ZoneCapData capData = zoneData.getCapData(zoneCapType);
         if (capData != null) {
             capData.addLevel(capLevel);
+        }
+    }
+
+    @Override
+    public void handleZoneRule(ServerLevel level) {
+        LevelZoneData lzd = getLZD(level);
+        Set<ZoneType> tickedZones = new HashSet<>();
+
+        for (ServerPlayer player : level.players()) {
+            BeyondPlayerData playerData = BeyondAPI.getBeyondPlayerData(player);
+
+            ZoneType oldZone = playerData.getPlayerZoneData().getCurrentZone();
+            ZoneData newZoneData = lzd.getZoneData(player.getOnPos());
+            ZoneType newZone = newZoneData != null ? newZoneData.getZone() : ZoneType.Empty;
+            ZoneData oldZoneData = lzd.getZoneData(oldZone);
+
+            if (tickedZones.add(newZone)) {
+                dispatch(newZoneData, cap -> cap.levelTick(level, newZone));
+            }
+
+            dispatch(newZoneData, cap -> cap.playerTick(player, newZone));
+
+            if (oldZone != newZone) {
+                playerData.getPlayerZoneData().setCurrentZone(newZone);
+                NeoForge.EVENT_BUS.post(new PlayerChangeZoneEvent(player, oldZone, newZone));
+
+                if (oldZone != ZoneType.Empty) {
+                    dispatch(oldZoneData, cap -> cap.playerChangeZone(player, oldZone, newZone));
+                    dispatch(newZoneData, cap -> cap.playerChangeZone(player, oldZone, newZone));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handlePlayerRightClickBlock(ServerPlayer player, BlockPos pos) {
+        if (player == null || pos == null) return;
+        ServerLevel level = player.level();
+        ZoneData zoneData = getLZD(level).getZoneData(pos);
+        Block block = level.getBlockState(pos).getBlock();
+        dispatch(zoneData, cap -> cap.playerRightClickBlock(player, block));
+    }
+
+    @Override
+    public void handleMobTick(Mob mob) {
+        if (mob == null) return;
+        ServerLevel level = (ServerLevel) mob.level();
+        ZoneData zoneData = getLZD(level).getZoneData(mob.blockPosition());
+        if (zoneData == null) return;
+        dispatch(zoneData, cap -> cap.mobTick(mob, zoneData.getZone()));
+    }
+
+    private static void dispatch(ZoneData zoneData, Consumer<ZoneCapType> action) {
+        if (zoneData == null) return;
+        for (ZoneCapData capData : zoneData.getZoneCaps()) {
+            action.accept(capData.getType());
         }
     }
 }

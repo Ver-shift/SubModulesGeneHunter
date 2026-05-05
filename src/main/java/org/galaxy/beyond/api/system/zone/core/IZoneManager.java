@@ -2,6 +2,8 @@ package org.galaxy.beyond.api.system.zone.core;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import org.galaxy.beyond.api.system.node.NodeData;
@@ -48,4 +50,14 @@ public interface IZoneManager {
 
     void setCapLevel(ServerLevel serverLevel,ZoneType type, ZoneCapType zoneCapType,int capLevel);
     void addCapLevel(ServerLevel serverLevel,ZoneType type, ZoneCapType zoneCapType,int capLevel);
+
+    /**
+     * 统一入口：遍历玩家，检测区域变化，触发 levelTick/playerTick/changeZone，
+     * 并发布 {@link org.galaxy.beyond.api.event.custom.PlayerChangeZoneEvent} 到 EVENT_BUS。
+     */
+    void handleZoneRule(ServerLevel level);
+
+    void handlePlayerRightClickBlock(ServerPlayer player, BlockPos pos);
+
+    void handleMobTick(Mob mob);
 }

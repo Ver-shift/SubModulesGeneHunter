@@ -6,31 +6,36 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.galaxy.beyond.api.system.node.NodeManager;
+import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
+import org.galaxy.beyond.api.system.rogue.core.IPlayerRougeManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
+import org.galaxy.beyond.api.system.rogue.player.PlayerRougeManager;
 import org.galaxy.beyond.api.system.structure.StructureManager;
+import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 import org.galaxy.beyond.api.system.zone.ZoneManager;
+import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
 public class BeyondManager implements IBeyondManager {
     @Getter
-    private final ZoneManager zoneManager = new ZoneManager();
+    private final IZoneManager zoneManager = new ZoneManager();
     @Getter
-    private final NodeManager nodeManager = new NodeManager();
+    private final INodeManager nodeManager = new NodeManager();
     @Getter
-    private final RogueManager rogueManager = new RogueManager();
+    private final IRogueManager rogueManager = new RogueManager();
     @Getter
-    private final StructureManager structureManager = new StructureManager();
-
+    private final IStructureManager structureManager = new StructureManager();
 
 
     @Override
     public void levelTick(ServerLevel level) {
-
+        zoneManager.handleZoneRule(level);
+        rogueManager.tick(level);
     }
 
     @Override
     public void playerTick(ServerPlayer player) {
-
+        //全局tick 注意影响哦。
     }
 
     @Override
@@ -47,9 +52,4 @@ public class BeyondManager implements IBeyondManager {
     public void onChunkLoad(LevelChunk chunk) {
         zoneManager.onChunkLoad(chunk);
     }
-
-
-
-
-
 }

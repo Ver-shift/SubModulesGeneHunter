@@ -13,4 +13,7 @@ public class BeyondLevelData {
     private final LevelZoneData levelZoneData = new LevelZoneData();
 
     private final SafeZoneStructureData safeZoneStructureData = new SafeZoneStructureData();
+
+
+
 }

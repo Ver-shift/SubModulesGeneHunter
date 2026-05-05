@@ -1,5 +1,6 @@
 {
-  "itemGroup.beyond": "Example Mod Tab",
+  "itemGroup.beyond": "Beyond",
+  "item.beyond.loot_bag": "Loot Bag",
   "block.beyond.example_block": "Example Block",
   "item.beyond.example_item": "Example Item",
 
@@ -9,5 +10,7 @@
   "beyond.configuration.items": "Item List",
   "beyond.configuration.logDirtBlock": "Log Dirt Block",
   "beyond.configuration.magicNumberIntroduction": "Magic Number Text",
-  "beyond.configuration.magicNumber": "Magic Number"
+  "beyond.configuration.magicNumber": "Magic Number",
+
+  "beyond.rogue.not_in_game": "You are not in a game!"
 }

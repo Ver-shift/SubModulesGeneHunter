@@ -1,8 +1,13 @@
 package org.galaxy.beyond;
 
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.IEventBus;
 import org.galaxy.beyond.api.config.CommonConfig;
+import org.galaxy.beyond.api.init.BeyondComponentInit;
+import org.galaxy.beyond.api.init.BeyondCreativeTabInit;
+import org.galaxy.beyond.api.init.BeyondItemInit;
 import org.galaxy.beyond.api.init.BeyondRogueEventTypeInit;
 import org.galaxy.beyond.api.init.BeyondZoneNodeCapInit;
 import org.galaxy.beyond.api.system.BeyondManager;
@@ -21,7 +26,10 @@ import net.neoforged.fml.ModContainer;
 public class Beyond {
     public static final String MODID = "beyond";
     private static final Logger LOGGER = LogUtils.getLogger();
+
     public static BeyondManager MANAGER;
+    public static MinecraftServer SERVER;
+    public static ServerLevel OVERWORLD;
 
     public static Identifier asResource(String path) {
         return Identifier.fromNamespaceAndPath(MODID, path);
@@ -49,6 +57,9 @@ public class Beyond {
         modEventBus.addListener(BeyondZoneNodeCapInit::registerRegistry);
         BeyondRogueEventTypeInit.register(modEventBus);
         BeyondZoneNodeCapInit.register(modEventBus);
+        BeyondComponentInit.register(modEventBus);
+        BeyondItemInit.register(modEventBus);
+        BeyondCreativeTabInit.register(modEventBus);
     }
 
 

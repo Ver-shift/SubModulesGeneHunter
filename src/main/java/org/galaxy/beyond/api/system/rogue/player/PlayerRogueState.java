@@ -7,7 +7,7 @@ public enum PlayerRogueState {
     IN_SAFE_ZONE,
 
     /**
-     * 玩家准备好启动了，需要所有玩家都ready
+     * 跨出安全区边界，等待所有玩家ready
      */
     READY_ROGUE,
 
@@ -17,27 +17,76 @@ public enum PlayerRogueState {
     ON_ROGUE,
 
     /**
-     * 玩家正在节点内部，但是并没有触发任何事件。
+     * 进入节点区域，未触发事件
      */
     IN_NODE,
 
     /**
-     * 玩家在节点内部，准备启动，ready，每个玩家ready 才能启动
+     * 右键节点方块，等待所有玩家ready，启动节点第一个事件
      */
     READY_NODE,
 
     /**
-     * 玩家死亡，进行漂浮状态。
+     * 节点事件正在执行中
+     */
+    IN_NODE_EVENT,
+
+    /**
+     * 当前事件完成，等待所有玩家ready，触发下一个事件
+     */
+    READY_NEXT,
+
+    /**
+     * 玩家死亡，还有复活次数
      */
     DEAD,
 
     /**
-     * 中间态过渡，玩家经过任何的状态都会有，通过总线自动确认下一个状态。
+     * 复活次数归零，观战等待结算
+     */
+    SPECTATING,
+
+    /**
+     * 中间态过渡，由tick自动确定下一个状态
      */
     EMPTY;
 
+    // ===== 分组判断 =====
 
-    public boolean inNode(){
-        return this == IN_NODE || this == READY_NODE;
+    public boolean isInSafeZone() {
+        return this == IN_SAFE_ZONE;
+    }
+
+    public boolean isInGame() {
+        return this == READY_ROGUE || this == ON_ROGUE || isInNode();
+    }
+
+    public boolean isInNode() {
+        return this == IN_NODE || this == READY_NODE
+            || this == IN_NODE_EVENT || this == READY_NEXT;
+    }
+
+    public boolean isDead() {
+        return this == DEAD || this == SPECTATING;
+    }
+
+    // ===== 状态转换合法性 =====
+
+    public boolean canTransitionTo(PlayerRogueState target) {
+        return switch (this) {
+            case IN_SAFE_ZONE  -> target == READY_ROGUE || target == ON_ROGUE;
+            case READY_ROGUE   -> target == ON_ROGUE || target == IN_SAFE_ZONE;
+            case ON_ROGUE      -> target == IN_NODE || target == DEAD || target == IN_SAFE_ZONE;
+            case IN_NODE       -> target == READY_NODE || target == ON_ROGUE || target == DEAD;
+            case READY_NODE    -> target == IN_NODE_EVENT || target == ON_ROGUE;
+            case IN_NODE_EVENT -> target == READY_NEXT    // 单个事件完成，等待下一事件
+                               || target == ON_ROGUE      // EventTask全部完成
+                               || target == DEAD;         // 事件中死亡
+            case READY_NEXT    -> target == IN_NODE_EVENT  // 全部ready，触发下一事件
+                               || target == ON_ROGUE;      // 放弃节点
+            case DEAD          -> target == ON_ROGUE || target == SPECTATING;
+            case SPECTATING    -> target == IN_SAFE_ZONE;
+            case EMPTY         -> true;
+        };
     }
 }

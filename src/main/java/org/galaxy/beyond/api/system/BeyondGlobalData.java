@@ -15,4 +15,5 @@ public class BeyondGlobalData {
 
     private RogueDefinition rogueDefinition = new RogueDefinition();
     private RogueRandom rogueRandom = new RogueRandom();
+    private ResourceKey<Level> rougeLevel = Level.OVERWORLD;
 }
