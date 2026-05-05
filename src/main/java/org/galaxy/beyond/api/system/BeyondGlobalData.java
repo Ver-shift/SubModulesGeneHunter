@@ -3,6 +3,7 @@ package org.galaxy.beyond.api.system;
 import lombok.Data;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import org.galaxy.beyond.api.system.random.RogueRandom;
 import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
 
 /**
@@ -11,9 +12,7 @@ import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
 @Data
 public class BeyondGlobalData {
 
-    public static final ResourceKey<Level> OVERWORLD = Level.OVERWORLD;
 
     private RogueDefinition rogueDefinition = new RogueDefinition();
-
-
+    private RogueRandom rogueRandom = new RogueRandom();
 }

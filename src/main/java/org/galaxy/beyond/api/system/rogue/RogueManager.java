@@ -2,26 +2,15 @@ package org.galaxy.beyond.api.system.rogue;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
-import org.galaxy.beyond.api.system.rogue.core.IRogueListener;
+import org.galaxy.beyond.api.system.rogue.player.PlayerRogueState;
+
+import java.util.List;
 
 public class RogueManager implements IRogueManager {
-
-
-
-    @Override
-    public void addExtension(RogueState rogueState, IRogueListener extension) {
-
-    }
-
-    @Override
-    public void removeExtension(RogueState rogueState, IRogueListener extension) {
-    }
-
-    @Override
-    public void clearExtensions(RogueState rogueState) {
-    }
 
 
 
@@ -33,6 +22,8 @@ public class RogueManager implements IRogueManager {
     @Override
     public void tick(ServerLevel level) {
         // TODO: 框架占位
+        
+        
     }
 
     @Override
@@ -53,5 +44,17 @@ public class RogueManager implements IRogueManager {
     @Override
     public void tryFinishRogue(ServerLevel level) {
         // TODO: 框架占位
+    }
+
+    @Override
+    public boolean isPlayerAllReady(ServerLevel level, PlayerRogueState playerRogueState) {
+        List<ServerPlayer> players = BeyondAPI.getBeyondLevelData(level).getRogueData().getInGamePlayers();
+        for (ServerPlayer player : players) {
+            PlayerRogueState state = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getState();
+            if (state != playerRogueState) {
+                return false;
+            }
+        }
+        return !players.isEmpty();
     }
 }

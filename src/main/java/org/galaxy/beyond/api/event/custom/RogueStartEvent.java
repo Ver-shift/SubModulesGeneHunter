@@ -1,4 +1,4 @@
-package org.galaxy.beyond.api.system.rogue.event;
+package org.galaxy.beyond.api.event.custom;
 
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.Event;

@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.system.rogue.RogueState;
+import org.galaxy.beyond.api.system.rogue.player.PlayerRogueState;
 
 public interface IRogueManager {
 
@@ -39,12 +40,11 @@ public interface IRogueManager {
     void tryFinishRogue(ServerLevel level);
 
     /**
-     * 注册内置扩展（修饰器模式），仅在指定状态下触发。
-     * 适用于同模组内部的轻量逻辑组合。
+     * 当每个玩家都达到了指定的状态
+     * @param level
+     * @param playerRogueState
+     * @return
      */
-    void addExtension(RogueState rogueState, IRogueListener extension);
+    boolean isPlayerAllReady(ServerLevel level,PlayerRogueState playerRogueState);
 
-    void removeExtension(RogueState rogueState, IRogueListener extension);
-
-    void clearExtensions(RogueState rogueState);
 }

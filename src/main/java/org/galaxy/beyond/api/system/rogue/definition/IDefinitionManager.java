@@ -16,4 +16,6 @@ public interface IDefinitionManager {
     EventTask resolveEvent(ServerLevel level, EncounterType encounterType);
 
     List<SceneType> resolveScenes(ServerLevel level);
+
+    
 }

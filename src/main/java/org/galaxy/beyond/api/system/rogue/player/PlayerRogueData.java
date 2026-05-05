@@ -1,5 +1,8 @@
 package org.galaxy.beyond.api.system.rogue.player;
 
+import lombok.Data;
+
+@Data
 public class PlayerRogueData {
 
     private PlayerRogueState state;
