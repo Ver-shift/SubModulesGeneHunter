@@ -12,5 +12,7 @@
   "beyond.configuration.magicNumberIntroduction": "魔法数字文本",
   "beyond.configuration.magicNumber": "魔法数字",
 
-  "beyond.rogue.not_in_game": "你当前不在游戏中！"
+  "beyond.rogue.not_in_game": "你当前不在游戏中！",
+
+  "beyond.info.clear_inventory": "已回收 %s 件物品，总价值 %s"
 }

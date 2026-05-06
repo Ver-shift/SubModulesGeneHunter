@@ -1,8 +1,8 @@
 package org.galaxy.beyond.api.system.rogue.core;
 
 import net.minecraft.server.level.ServerPlayer;
-import org.galaxy.beyond.api.system.rogue.player.PlayerRogueState;
-import org.galaxy.beyond.api.system.zone.ZoneType;
+import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 public interface IPlayerRougeManager {
 
@@ -11,7 +11,6 @@ public interface IPlayerRougeManager {
      */
     void tick(ServerPlayer player);
 
-    void playerChangeZone(ServerPlayer player, ZoneType from,ZoneType to);
     /**
      * 尝试加入肉鸽系统
      */
@@ -22,26 +21,34 @@ public interface IPlayerRougeManager {
      */
     void leaveRogue(ServerPlayer player);
 
-    /**
-     * 玩家加入当前副本
-     * 玩家在初始态加入
-     * 玩家中途加入，直接复制一套其他玩家相同的装备
-     */
-    void intoProgress(ServerPlayer player);
+    //状态切换==================================================
 
-    /**
-     * 设置玩家状态，发布 PlayerRogueStateChangeEvent
-     */
-    void setState(ServerPlayer player, PlayerRogueState newState);
+    void playerLevelSafeZone(ServerPlayer player);
 
-    /**
-     * 获取玩家当前状态
-     */
+    void playerIntoSafeZone(ServerPlayer player);
+
+
+    void useLootBag(ServerPlayer player);
+
+    void clickNodeBlock(ServerPlayer player);
+
+    void playerDeath(LivingDeathEvent event);
+
+
+    //状态切换后触发的逻辑======================================
+    void handlePreRogue(ServerPlayer player);
+
+
+    //辅助逻辑==================================================
+    void setState(ServerPlayer player,PlayerRogueState state);
     PlayerRogueState getState(ServerPlayer player);
 
-
-    void playerUseLootBag(ServerPlayer player);
-
-    boolean isInGame(ServerPlayer player);
-
+    void giveItem(ServerPlayer player, Item item);
+    boolean isInRogue(ServerPlayer player);
+    /**
+     *
+     * @param player
+     * @return 清理的物品总价值
+     */
+    int clearPlayerInventoryWithValueComp(ServerPlayer player);
 }

@@ -50,4 +50,5 @@ public class BeyondRogueEventTypeInit {
     public static final Supplier<RogueEventType> HEAL = registerEvent(HealEvent::new);
     public static final Supplier<RogueEventType> MONSTER = registerEvent(MonsterEvent::new);
     public static final Supplier<RogueEventType> SHOP = registerEvent(ShopEvent::new);
+    public static final Supplier<RogueEventType> REWARD = registerEvent(RewardEvent::new);
 }

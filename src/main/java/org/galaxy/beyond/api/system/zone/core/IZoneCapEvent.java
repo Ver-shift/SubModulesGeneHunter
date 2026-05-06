@@ -23,4 +23,6 @@ public interface IZoneCapEvent {
     default void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to) {}
 
     default void playerRightClickBlock(ServerPlayer player, Block block) {}
+
+
 }

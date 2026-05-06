@@ -1,9 +1,8 @@
 package org.galaxy.beyond.api.event.custom;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.Event;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import org.galaxy.beyond.api.system.rogue.player.PlayerRogueState;
+import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 
 /**
  * 玩家肉鸽状态变更事件。在 PlayerRogueState 发生改变时发布到 EVENT_BUS。

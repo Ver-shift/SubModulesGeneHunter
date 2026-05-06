@@ -2,7 +2,7 @@ package org.galaxy.beyond.api.system.node;
 
 import lombok.Data;
 import net.minecraft.world.level.ChunkPos;
-import org.w3c.dom.Node;
+import org.galaxy.beyond.api.system.node.core.NodeState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 public class NodeData {
 
-    private NodeColor color;
+    private NodeColor color = NodeColor.EMPTY;
     private NodeState state = NodeState.LOCKED;
 
     /**

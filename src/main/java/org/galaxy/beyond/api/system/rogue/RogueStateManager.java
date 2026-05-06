@@ -2,39 +2,37 @@ package org.galaxy.beyond.api.system.rogue;
 
 import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.system.rogue.core.IPlayerRougeManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueStateManager;
-import org.galaxy.beyond.api.system.rogue.player.PlayerRogueState;
+import org.galaxy.beyond.api.system.rogue.core.RogueState;
+import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 
 public class RogueStateManager implements IRogueStateManager {
     @Override
     public void tick(ServerLevel level) {
+
+
+
+        //全部玩家都要有的状态
         switch (isPlayerAllState(level)){
-            case IN_SAFE_ZONE -> {}
-            case READY_ROGUE -> {}
-            case ON_ROGUE -> {}
-            case IN_NODE -> {}
-            case READY_NODE -> {}
-            case IN_NODE_EVENT -> {}
-            case READY_NEXT -> {}
-            case DEAD -> {}
-            case SPECTATING -> {}
             case EMPTY -> {}
         }
 
+        //只要有一个玩家达到了这种状态。比如某个玩家选择了
+
+        //根据状态分配不同的任务
         switch (getRogueState(level)){
-            case LOBBY ->{}
-            case READY ->{}
-            case IN_PROGRESS ->{}
-            case IN_NODE ->{}
-            case POST_GAME->{}
-            case EMPTY->{}
+            case EMPTY -> {}
         }
     }
 
     @Override
     public PlayerRogueState isPlayerAllState(ServerLevel level) {
         return null;
+    }
+
+    @Override
+    public boolean hasPlayerRogueState(ServerLevel level, PlayerRogueState state) {
+        return false;
     }
 
     private RogueState getRogueState(ServerLevel level) {

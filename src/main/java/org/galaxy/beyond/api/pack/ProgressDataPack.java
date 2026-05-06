@@ -34,7 +34,7 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Identif
             Identifier fullId = entry.getKey();
             try (Reader reader = entry.getValue().openAsReader()) {
                 ProgressDefinition def = GSON.fromJson(reader, ProgressDefinition.class);
-                Identifier key = Beyond.asResource(extractName(fullId.getPath()));
+                Identifier key = Beyond.asResource("aaa");
                 map.put(key, def);
             } catch (Exception e) {
                 LOGGER.error("Failed to parse progress definition: {}", fullId, e);

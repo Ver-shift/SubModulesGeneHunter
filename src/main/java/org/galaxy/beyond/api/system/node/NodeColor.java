@@ -4,7 +4,8 @@ public enum NodeColor {
     BLUE(0x0000FF),
     GREEN(0x00FF00),
     ORANGE(0xFFA500),
-    RED(0xFF0000);
+    RED(0xFF0000),
+    EMPTY(0xFFFFFF);
 
     private final int colorValue;
 

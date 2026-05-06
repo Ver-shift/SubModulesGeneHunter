@@ -12,5 +12,7 @@
   "beyond.configuration.magicNumberIntroduction": "Magic Number Text",
   "beyond.configuration.magicNumber": "Magic Number",
 
-  "beyond.rogue.not_in_game": "You are not in a game!"
+  "beyond.rogue.not_in_game": "You are not in a game!",
+
+  "beyond.info.clear_inventory": "Recycled %s items, total value %s"
 }

@@ -41,7 +41,7 @@ public class BeyondPackInit {
 
         @SubscribeEvent
         public static void onAddReloadListeners(AddServerReloadListenersEvent event) {
-            event.addListener(ROGUE_DATA);
+
         }
     }
 }

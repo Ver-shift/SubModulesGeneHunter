@@ -9,6 +9,7 @@ import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.IPlayerRougeManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
+import org.galaxy.beyond.api.system.rogue.core.IRogueNodeManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueStateManager;
 import org.galaxy.beyond.api.system.rogue.player.PlayerRougeManager;
 
@@ -20,6 +21,8 @@ public class RogueManager implements IRogueManager {
     private final IRogueStateManager rogueStateManager = new RogueStateManager();
     @Getter
     private final IPlayerRougeManager playerRougeManager = new PlayerRougeManager();
+    @Getter
+    private final IRogueNodeManager rogueNodeManager = new RogueNodeManager();
 
     @Override
     public void setRogueLevel(ResourceKey<Level> level) {
