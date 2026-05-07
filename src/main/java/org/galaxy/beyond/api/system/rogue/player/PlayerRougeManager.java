@@ -1,5 +1,6 @@
 package org.galaxy.beyond.api.system.rogue.player;
 
+import lombok.AllArgsConstructor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -10,12 +11,17 @@ import org.galaxy.beyond.api.init.BeyondComponentInit;
 import org.galaxy.beyond.api.init.BeyondItemInit;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.IPlayerRougeManager;
+import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
 import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 import org.galaxy.beyond.component.ValueComp;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
+@AllArgsConstructor
 public class PlayerRougeManager implements IPlayerRougeManager {
+
+    private final IRogueManager rogueManager;
+
 
     @Override
     public void tick(ServerPlayer player) {
@@ -97,6 +103,8 @@ public class PlayerRougeManager implements IPlayerRougeManager {
 
     public void handlePreNode(ServerPlayer player) {
         //给玩家发布当前准备人数和消息
+        //将肉鸽状态设置为PreRogue(如果是InProgress状态的话)，
+        //将当前缓存节点数据也设置为PreRogue来做出标记。
     }
 
     public void handlePreEvent(ServerPlayer player) {

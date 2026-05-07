@@ -49,4 +49,11 @@ public enum RogueState {
 
     EMPTY;
 
+    public static boolean isNodeEvent(RogueState state) {
+        switch (state) {
+            case PRE_NODE,NODE_INIT,ROGUE_PRE_EVENT,ON_EVENT_TASK,NODE_FINISH -> {return true;}
+            default -> {return false;}
+        }
+    }
+
 }

@@ -18,11 +18,15 @@ import java.util.List;
 public class RogueManager implements IRogueManager {
 
     @Getter
-    private final IRogueStateManager rogueStateManager = new RogueStateManager();
+    private final IRogueStateManager rogueStateManager = new RogueStateManager(this);
     @Getter
-    private final IPlayerRougeManager playerRougeManager = new PlayerRougeManager();
+    private final IPlayerRougeManager playerRougeManager = new PlayerRougeManager(this);
     @Getter
-    private final IRogueNodeManager rogueNodeManager = new RogueNodeManager();
+    private final IRogueNodeManager rogueNodeManager = new RogueNodeManager(this);
+    public RogueManager(){
+
+    }
+
 
     @Override
     public void setRogueLevel(ResourceKey<Level> level) {
