@@ -43,10 +43,12 @@ public class ZoneManager implements IZoneManager {
         return BeyondAPI.getBeyondDimensionData(level).getLevelZoneData();
     }
 
+    // 通过IAttachmentHolder.syncData触发NeoForge附件同步，内部路由至AttachmentSync.syncLevelUpdate
     private void syncLevelData(ServerLevel level) {
         level.syncData(BeyondAttachmentInit.GLOBAL_DATA.get());
     }
 
+    // 返回实际是否修改了数据，调用方据此决定是否需要syncLevelData
     @Override
     public boolean addZone(ServerLevel serverLevel, ChunkPos pos, ZoneType zoneType) {
         return getLZD(serverLevel).addZone(pos, zoneType);
