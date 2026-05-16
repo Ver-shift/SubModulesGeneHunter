@@ -1,9 +1,8 @@
 package org.galaxy.beyond.api;
 
-import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
@@ -32,7 +31,7 @@ public class BeyondGlobalData implements IPersistedSerializable {
     @Persisted
     private ResourceKey<Level> rougeLevel = Level.OVERWORLD;
 
-    @Configurable
+    // Map由PersistedParser直接序列化，无需@DescSynced
     @Persisted
     private final Map<ResourceKey<Level>, BeyondDimensionData> dimensionDataMap = new ConcurrentHashMap<>();
 

@@ -1,6 +1,5 @@
 package org.galaxy.beyond.api.system.zone;
 
-import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import lombok.AccessLevel;
@@ -22,18 +21,17 @@ public class LevelZoneData implements IPersistedSerializable {
     public LevelZoneData() {
     }
 
-    // HashMap不可被LDLib2 @DescSynced自动追踪变更，使用@Configurable替代让PersistedParser正确序列化
+    // K/V皆为LDLib2 direct类型，直接@Persisted即可
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
-    @Configurable
-    @Persisted(subPersisted = true)
+    @Persisted
     private Map<ChunkPos, ZoneType> levelZone = new HashMap<>();
 
+    // K为direct类型，V为IPersistedSerializable(read-only)，需final
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
-    @Configurable
-    @Persisted(subPersisted = true)
-    private Map<ZoneType, ZoneData> levelZoneData = new HashMap<>();
+    @Persisted
+    private final Map<ZoneType, ZoneData> levelZoneData = new HashMap<>();
 
     // ---- 区块区域类型查询 ----
 
@@ -48,6 +46,7 @@ public class LevelZoneData implements IPersistedSerializable {
     public boolean hasZones() {
         return !levelZone.isEmpty();
     }
+
     // ---- ZoneData 查询 ----
 
     public ZoneData getZoneData(ChunkPos chunkPos) {

@@ -2,7 +2,6 @@ package org.galaxy.beyond.api.system.rogue.definition;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
 import lombok.Data;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.random.Weighted;
@@ -17,7 +16,6 @@ import java.util.Map;
 @Data
 public class RogueDefinition implements IPersistedSerializable {
 
-    @Configurable
     @Persisted(subPersisted = true)
     private final Map<Identifier, ProgressDefinition> rogueProgress = new HashMap<>();
 
