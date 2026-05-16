@@ -2,7 +2,7 @@ package org.galaxy.beyond.api.system.random;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
+import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.world.level.levelgen.RandomSupport;
@@ -24,7 +24,7 @@ public class RogueRandom implements IPersistedSerializable {
 
     @Getter @Setter
     private Map<String, SingleThreadedRandomSource> randoms = new HashMap<>();
-    @DescSynced
+    @Configurable
     @Persisted
     private Map<String, Long> seeds = new HashMap<>();
 
