@@ -1,0 +1,95 @@
+{
+  "sceneRolls": [
+    {
+      "order": 1,
+      "entries": [
+        { "weight": 5, "scene": "HARVEST" },
+        { "weight": 1, "scene": "REPOSE" }
+      ]
+    },
+    {
+      "order": 2,
+      "entries": [
+        { "weight": 3, "scene": "HARVEST" },
+        { "weight": 2, "scene": "REPOSE" }
+      ]
+    },
+    {
+      "order": 3,
+      "entries": [
+        { "weight": 1, "scene": "HARVEST" },
+        { "weight": 1, "scene": "CLIMAX" }
+      ]
+    }
+  ],
+  "encounters": [
+    {
+      "type": "Green_Event",
+      "events": [
+        {
+          "weight": 8,
+          "task": { "events": ["beyond:monster", "beyond:reward"] }
+        },
+        {
+          "weight": 2,
+          "task": { "events": ["beyond:shop"] }
+        }
+      ]
+    },
+    {
+      "type": "Orange_NormalMonster",
+      "events": [
+        {
+          "weight": 5,
+          "task": { "events": ["beyond:monster"] }
+        },
+        {
+          "weight": 3,
+          "task": { "events": ["beyond:monster", "beyond:reward"] }
+        },
+        {
+          "weight": 2,
+          "task": { "events": ["beyond:boss"] }
+        }
+      ]
+    },
+    {
+      "type": "Red_EliteMonster",
+      "events": [
+        {
+          "weight": 4,
+          "task": { "events": ["beyond:monster", "beyond:monster", "beyond:boss"] }
+        },
+        {
+          "weight": 1,
+          "task": { "events": ["beyond:boss"] }
+        }
+      ]
+    },
+    {
+      "type": "Green_Bonfire",
+      "events": [
+        { "weight": 1, "task": { "events": ["beyond:heal"] } }
+      ]
+    },
+    {
+      "type": "Orange_NormalShop",
+      "events": [
+        { "weight": 1, "task": { "events": ["beyond:shop"] } }
+      ]
+    },
+    {
+      "type": "Red_CursedShop",
+      "events": [
+        {
+          "weight": 3,
+          "task": { "events": ["beyond:shop", "beyond:monster"] }
+        },
+        {
+          "weight": 1,
+          "task": { "events": ["beyond:shop"] }
+        }
+      ]
+    }
+  ]
+}

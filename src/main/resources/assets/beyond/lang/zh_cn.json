@@ -12,7 +12,13 @@
   "beyond.configuration.magicNumberIntroduction": "魔法数字文本",
   "beyond.configuration.magicNumber": "魔法数字",
 
+  "block.beyond.node_block": "节点方块",
+  "beyond.welcome": "欢迎游玩我的肉鸽mod",
   "beyond.rogue.not_in_game": "你当前不在游戏中！",
 
-  "beyond.info.clear_inventory": "已回收 %s 件物品，总价值 %s"
+  "beyond.info.clear_inventory": "已回收 %s 件物品，总价值 %s",
+
+  "commands.beyond.home.success": "已传送至出生点",
+  "commands.beyond.safezone.expand.success": "安全区已扩容至 %s 个区块范围",
+  "commands.beyond.safezone.expand.odd": "区块大小必须为偶数"
 }

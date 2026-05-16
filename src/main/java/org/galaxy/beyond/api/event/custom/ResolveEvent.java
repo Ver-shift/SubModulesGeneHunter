@@ -12,37 +12,30 @@ import java.util.List;
 
 /**
  * 将数据包数据转化为运行时数据。
- * 可以在转化的时候插入新数据。实现更高随机性。
- * @param <T>
- * @param <V>
+ * 可在转化时插入新数据，实现更高随机性。
  */
-public abstract class ResolveEvent<T,V> extends LevelEvent {
+public abstract class ResolveEvent<T, V> extends LevelEvent {
     @Getter
     private final T from;
-    @Getter @Setter
+    @Getter
+    @Setter
     private V to;
 
-    public ResolveEvent(LevelAccessor level,T from,V to) {
+    public ResolveEvent(LevelAccessor level, T from, V to) {
         super(level);
         this.from = from;
         this.to = to;
     }
 
-    public static class ResolveEventTaskEvent extends ResolveEvent<ProgressDefinition.EncounterEntry,EventTask>{
-        public ResolveEventTaskEvent(LevelAccessor level, ProgressDefinition.EncounterEntry from, EventTask to) {
+    public static class ResolveEventTaskEvent extends ResolveEvent<ProgressDefinition.Encounter, EventTask> {
+        public ResolveEventTaskEvent(LevelAccessor level, ProgressDefinition.Encounter from, EventTask to) {
             super(level, from, to);
         }
-
     }
 
-    public static class ResolveSceneEvent extends ResolveEvent<List<ProgressDefinition.SceneEntry>,List<SceneType>>{
-
-        public ResolveSceneEvent(LevelAccessor level, List<ProgressDefinition.SceneEntry> from, List<SceneType> to) {
+    public static class ResolveSceneEvent extends ResolveEvent<List<ProgressDefinition.SceneRoll>, List<SceneType>> {
+        public ResolveSceneEvent(LevelAccessor level, List<ProgressDefinition.SceneRoll> from, List<SceneType> to) {
             super(level, from, to);
         }
-
-
     }
-
-
 }

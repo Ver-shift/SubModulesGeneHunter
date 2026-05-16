@@ -12,7 +12,13 @@
   "beyond.configuration.magicNumberIntroduction": "Magic Number Text",
   "beyond.configuration.magicNumber": "Magic Number",
 
+  "block.beyond.node_block": "Node Block",
+  "beyond.welcome": "Welcome to my roguelike mod!",
   "beyond.rogue.not_in_game": "You are not in a game!",
 
-  "beyond.info.clear_inventory": "Recycled %s items, total value %s"
+  "beyond.info.clear_inventory": "Recycled %s items, total value %s",
+
+  "commands.beyond.home.success": "Teleported to spawn point",
+  "commands.beyond.safezone.expand.success": "Safe zone expanded to %s chunks",
+  "commands.beyond.safezone.expand.odd": "Chunk size must be an even number"
 }

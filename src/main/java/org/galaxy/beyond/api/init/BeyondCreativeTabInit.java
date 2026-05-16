@@ -19,6 +19,7 @@ public class BeyondCreativeTabInit {
                     .title(Component.translatable("itemGroup.beyond"))
                     .icon(() -> new ItemStack(BeyondItemInit.LOOT_BAG.get()))
                     .displayItems((params, output) -> {
+                        output.accept(BeyondBlockInit.NODE_BLOCK_ITEM.get());
                         output.accept(BeyondItemInit.LOOT_BAG.get());
                     })
                     .build());
