@@ -3,6 +3,7 @@ package org.galaxy.beyond.api.system.rogue.core;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import org.galaxy.beyond.api.system.zone.ZoneType;
 
 public interface IPlayerRougeManager {
 
@@ -27,6 +28,7 @@ public interface IPlayerRougeManager {
 
     void playerIntoSafeZone(ServerPlayer player);
 
+    void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to);
 
     void useLootBag(ServerPlayer player);
 

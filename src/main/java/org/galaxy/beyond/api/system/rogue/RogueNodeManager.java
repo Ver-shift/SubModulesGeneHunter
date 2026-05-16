@@ -1,68 +1,57 @@
 package org.galaxy.beyond.api.system.rogue;
 
-import lombok.AllArgsConstructor;
 import net.minecraft.server.level.ServerLevel;
-import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.BeyondAPI;
 import org.galaxy.beyond.api.system.node.core.NodeState;
 import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueNodeManager;
-import org.galaxy.beyond.api.system.rogue.core.IRogueStateManager;
-import org.galaxy.beyond.api.system.rogue.core.RogueState;
-/**
- * 只负责执行状态，不负责切换状态。
- */
 
-@AllArgsConstructor
+/**
+ * 只负责执行节点逻辑，不负责状态切换。状态切换由 PhaseRunner + IRoguePhase 管理。
+ */
 public class RogueNodeManager implements IRogueNodeManager {
+
     private final IRogueManager rogueManager;
+
+    public RogueNodeManager(IRogueManager rogueManager) {
+        this.rogueManager = rogueManager;
+    }
 
     @Override
     public void tick(ServerLevel level) {
-        switch (getNodeState(level)){
-            case LOCKED -> {}
-            case PRE_NODE -> {}
-            case NODE_INIT -> {handleNodeInit(level);}
-            case ROGUE_PRE_EVENT -> {}
-            case ON_EVENT_TASK -> {handleOnEvent(level);}
-            case NODE_FINISH -> {handleNodeFinish(level);}
-            case UNLOCKED -> {}
+        NodeState state = getNodeState(level);
+        switch (state) {
+            case PRE_EVENT -> handlePreEvent(level);
+            case ON_EVENT -> handleOnEvent(level);
+            default -> { /* 无操作 */ }
         }
     }
 
     @Override
     public void handleOnEvent(ServerLevel level) {
-        //只会触发一个事件，就触发死锁，防止tick反复触发
-
-
+        // 触发事件，由 PhaseRunner 驱动
     }
 
-    public void handleNodeFinish(ServerLevel level) {
-        //拓展区域，
-        BeyondAPI.getBeyondManager().getZoneManager()
-                .addActiveZone(level,getRogueNodeData(level));
-        //步进一个Scene，并且锁定该节点.
-
-        //或者结束对局。
-
-    }
-    public void handleNodeInit(ServerLevel level) {
-        //抽取事件，填充RogueNodeData
+    public void handlePreEvent(ServerLevel level) {
+        // 抽取遭遇类型，填充 RogueNodeData
     }
 
     @Override
     public NodeState getNodeState(ServerLevel level) {
-        return null;
+        RogueNodeData data = getRogueNodeData(level);
+        return data != null ? data.getNodeData().getState() : NodeState.LOCKED;
     }
 
     @Override
     public void setNodeState(ServerLevel level, NodeState state) {
-
+        RogueNodeData data = getRogueNodeData(level);
+        if (data != null && data.getNodeData() != null) {
+            data.getNodeData().setState(state);
+        }
     }
 
     @Override
     public RogueNodeData getRogueNodeData(ServerLevel level) {
-        return null;
+        return BeyondAPI.getBeyondDimensionData(level).getRogueData().getRogueNodeData();
     }
-
-
 }

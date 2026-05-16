@@ -1,8 +1,12 @@
 package org.galaxy.beyond.api.system.statistics;
 
-public class PlayerStatisticsData {
+import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 
-    private int loginCount = 0;
+public class PlayerStatisticsData implements IPersistedSerializable {
 
-
+    @DescSynced
+    @Persisted
+    private int loginCount;
 }

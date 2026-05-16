@@ -1,5 +1,8 @@
 package org.galaxy.beyond.api.system.random;
 
+import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.world.level.levelgen.RandomSupport;
@@ -8,7 +11,7 @@ import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RogueRandom {
+public class RogueRandom implements IPersistedSerializable {
 
     // 关卡指定random源，让固定种子有相同的游戏体验
     public static final String PROGRESS = "progress";
@@ -21,7 +24,9 @@ public class RogueRandom {
 
     @Getter @Setter
     private Map<String, SingleThreadedRandomSource> randoms = new HashMap<>();
-    private final Map<String, Long> seeds = new HashMap<>();
+    @DescSynced
+    @Persisted
+    private Map<String, Long> seeds = new HashMap<>();
 
     public RogueRandom() {}
 
@@ -83,8 +88,10 @@ public class RogueRandom {
 
     public SingleThreadedRandomSource getRandom(String name) {
         return randoms.computeIfAbsent(name, k -> {
-            long seed = RandomSupport.generateUniqueSeed();
-            seeds.put(k, seed);
+            long seed = seeds.containsKey(k) ? seeds.get(k) : RandomSupport.generateUniqueSeed();
+            if (!seeds.containsKey(k)) {
+                seeds.put(k, seed);
+            }
             return new SingleThreadedRandomSource(seed);
         });
     }

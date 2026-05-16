@@ -1,14 +1,33 @@
 package org.galaxy.beyond.api.system.rogue.player;
 
+import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import lombok.Data;
 import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 
 @Data
-public class PlayerRogueData {
+public class PlayerRogueData implements IPersistedSerializable {
 
+    @DescSynced
+    @Persisted
     private PlayerRogueState state = PlayerRogueState.LOBBY;
-    private int lifeCount;          // 剩余复活次数
-    private int maxLifeCount;       // 最大复活次数（属性驱动）
-    private int deathCount;         // 累计死亡次数
-    private long readyTimestamp;    // ready的时间戳，用于超时检测
+    @DescSynced
+    @Persisted
+    private int lifeCount;
+    @DescSynced
+    @Persisted
+    private int maxLifeCount;
+    @DescSynced
+    @Persisted
+    private int deathCount;
+    @DescSynced
+    @Persisted
+    private long readyTimestamp;
+    @DescSynced
+    @Persisted
+    private int spectatorTicks;
+    @DescSynced
+    @Persisted
+    private boolean firstSpawnDone;
 }
