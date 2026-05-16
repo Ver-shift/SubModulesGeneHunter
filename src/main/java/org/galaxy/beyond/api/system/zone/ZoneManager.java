@@ -3,21 +3,17 @@ package org.galaxy.beyond.api.system.zone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.StructureTags;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.event.custom.PlayerChangeZoneEvent;
-import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.system.BeyondPlayerData;
+import org.galaxy.beyond.api.init.BeyondAttachmentInit;
+import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.BeyondPlayerData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
-import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
 import java.util.*;
@@ -31,159 +27,66 @@ public class ZoneManager implements IZoneManager {
     public void onChunkLoad(ChunkAccess chunk) {
         if (!(chunk.getLevel() instanceof ServerLevel serverLevel)) return;
 
+        // 安全区未初始化时，不生成节点区域（初始化前的节点被安全区吸收）
+        var dimData = BeyondAPI.getBeyondDimensionData(serverLevel);
+        if (dimData.getSafeZoneStructureData().getInitialized() < 1) return;
+
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         BlockPos worldPos = new BlockPos(chunk.getPos().x() << 4, 0, chunk.getPos().z() << 4);
-        if (structureManager.getStructureBoundingBox(serverLevel, worldPos) != null) {
+        // TODO: 后续改为配置文件指定的结构标签，目前使用所有mod结构
+        if (structureManager.hasAnyStructure(serverLevel, worldPos)) {
             addNodeZone(serverLevel, worldPos);
         }
     }
 
     private LevelZoneData getLZD(ServerLevel level) {
-        return BeyondAPI.getBeyondLevelData(level).getLevelZoneData();
+        return BeyondAPI.getBeyondDimensionData(level).getLevelZoneData();
+    }
+
+    private void syncLevelData(ServerLevel level) {
+        level.syncData(BeyondAttachmentInit.GLOBAL_DATA.get());
     }
 
     @Override
-    public void addZone(ServerLevel serverLevel, ChunkPos pos, ZoneType zoneType) {
-        getLZD(serverLevel).addZone(pos, zoneType);
+    public boolean addZone(ServerLevel serverLevel, ChunkPos pos, ZoneType zoneType) {
+        return getLZD(serverLevel).addZone(pos, zoneType);
     }
-
-    @Override
-    public void safeZoneInit(ServerLevel serverLevel) {
-        SafeZoneStructureData data = BeyondAPI.getBeyondLevelData(serverLevel).getSafeZoneStructureData();
-        var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
-
-        // 1. 在世界出生点附近查找村庄结构
-        BlockPos searchPos = serverLevel.getRespawnData().pos();
-        BlockPos nearest = serverLevel.findNearestMapStructure(StructureTags.VILLAGE, searchPos, 500, false);
-        if (nearest == null) return;
-
-        // 2. 获取村庄边界框与区块列表
-        BoundingBox box = structureManager.getStructureBoundingBox(serverLevel, nearest);
-        if (box == null) return;
-
-        // 3. 在结构覆盖的区块中搜索安全出生点（优先从中心区块开始）
-        List<ChunkPos> chunks = structureManager.getStructureChunks(serverLevel, nearest);
-        BlockPos safePos = findSafePositionInChunks(serverLevel, chunks, box);
-        if (safePos != null) {
-            data.setSpawnPos(safePos);
-            data.setInitialized(1);
-        }
-
-        // 4. 注册安全区
-        BlockPos center = box.getCenter();
-        data.setCenterPos(center);
-        int xChunks = (box.getXSpan() + 15) / 16;
-        int zChunks = (box.getZSpan() + 15) / 16;
-        int chunkSize = Math.max(xChunks, zChunks);
-        if (chunkSize % 2 == 0) chunkSize++;
-        addSafeZone(serverLevel, chunkSize, center);
-    }
-
-    /**
-     * 在结构覆盖的区块中搜索安全的站立位置，优先选择靠近边界框中心、能看到天空的位置。
-     */
-    private BlockPos findSafePositionInChunks(ServerLevel level, List<ChunkPos> chunks, BoundingBox box) {
-        BlockPos center = box.getCenter();
-
-        // 按距离中心区块排序，优先搜索中心区域
-        List<ChunkPos> sortedChunks = chunks.stream()
-                .sorted((a, b) -> {
-                    int da = Math.abs(a.x() - (center.getX() >> 4)) + Math.abs(a.z() - (center.getZ() >> 4));
-                    int db = Math.abs(b.x() - (center.getX() >> 4)) + Math.abs(b.z() - (center.getZ() >> 4));
-                    return Integer.compare(da, db);
-                })
-                .toList();
-
-        for (ChunkPos chunkPos : sortedChunks) {
-            // 在每个区块的中心附近搜索
-            int startX = (chunkPos.x() << 4) + 4;
-            int startZ = (chunkPos.z() << 4) + 4;
-            for (int dx = 0; dx < 8; dx++) {
-                for (int dz = 0; dz < 8; dz++) {
-                    int x = startX + dx;
-                    int z = startZ + dz;
-                    if (x < box.minX() || x > box.maxX() || z < box.minZ() || z > box.maxZ()) continue;
-
-                    BlockPos ground = findGround(level, x, z);
-                    if (ground != null && isSafeStandingPosition(level, ground)) {
-                        return ground;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 查找指定 (x, z) 处的地面高度（上方第一个空气位置）。
-     */
-    private BlockPos findGround(ServerLevel level, int x, int z) {
-        int maxY = level.getMinY() + level.getHeight() - 1;
-        for (int y = maxY; y >= level.getMinY(); y--) {
-            BlockPos pos = new BlockPos(x, y, z);
-            BlockState state = level.getBlockState(pos);
-            if (isValidGround(state)) {
-                return pos.above();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 检查位置是否可以安全站立。
-     */
-    public static boolean isSafeStandingPosition(ServerLevel level, BlockPos pos) {
-        BlockPos belowPos = pos.below();
-        BlockState belowState = level.getBlockState(belowPos);
-        BlockState feetState = level.getBlockState(pos);
-        BlockState headState = level.getBlockState(pos.above());
-
-        boolean groundSolid = isValidGround(belowState);
-        boolean hasSpace = feetState.isAir() && (headState.isAir() || !headState.blocksMotion());
-        boolean openSky = level.canSeeSky(pos);
-
-        return groundSolid && hasSpace && openSky;
-    }
-
-    /**
-     * 脚下必须是固体方块（排除空气、液体、树叶、火等）。
-     */
-    public static boolean isValidGround(BlockState state) {
-        return !state.isAir()
-                && !state.is(Blocks.WATER)
-                && !state.is(Blocks.LAVA)
-                && !state.is(Blocks.FIRE)
-                && !state.is(Blocks.CAMPFIRE)
-                && !state.is(Blocks.SOUL_CAMPFIRE)
-                && state.blocksMotion();
-    }
-
-
 
     @Override
     public void addSafeZone(ServerLevel serverLevel, int chunkSize, BlockPos center) {
         ChunkPos centerChunk = ChunkPos.containing(center);
         int radius = chunkSize / 2;
+        LevelZoneData lzd = getLZD(serverLevel);
+        boolean changed = false;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
-                addZone(serverLevel, new ChunkPos(centerChunk.x() + dx, centerChunk.z() + dz), ZoneType.Safe_Zone);
+                ChunkPos pos = new ChunkPos(centerChunk.x() + dx, centerChunk.z() + dz);
+                if (addZone(serverLevel, pos, ZoneType.Safe_Zone)) {
+                    changed = true;
+                }
             }
         }
+        if (changed) syncLevelData(serverLevel);
     }
 
     @Override
     public void addNodeZone(ServerLevel serverLevel, BlockPos pos) {
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         List<ChunkPos> chunks = structureManager.getStructureChunks(serverLevel, pos);
+        LevelZoneData lzd = getLZD(serverLevel);
+        boolean changed = false;
         for (ChunkPos chunkPos : chunks) {
-            addZone(serverLevel, chunkPos, ZoneType.Node_Zone);
+            if (addZone(serverLevel, chunkPos, ZoneType.Node_Zone)) {
+                changed = true;
+            }
         }
+        if (changed) syncLevelData(serverLevel);
     }
 
     @Override
     public void activeZoneInit(ServerLevel serverLevel) {
         LevelZoneData lzd = getLZD(serverLevel);
-        Map<ChunkPos, ZoneType> zones = lzd.getLevelZone();
+        Set<Map.Entry<ChunkPos, ZoneType>> zones = lzd.getZoneEntries();
         Set<ChunkPos> safeChunks = getChunksByType(zones, ZoneType.Safe_Zone);
         if (safeChunks.isEmpty()) return;
 
@@ -208,7 +111,9 @@ public class ZoneManager implements IZoneManager {
 
             int nodesCovered = countChunkClusters(allNodeChunks, exMinX, exMinZ, exMaxX, exMaxZ);
             if (nodesCovered >= minNodes && expand >= minExpand) {
-                fillActiveZone(serverLevel, zones, exMinX, exMinZ, exMaxX, exMaxZ);
+                if (fillActiveZone(serverLevel, zones, exMinX, exMinZ, exMaxX, exMaxZ)) {
+                    syncLevelData(serverLevel);
+                }
                 return;
             }
             expand++;
@@ -218,7 +123,7 @@ public class ZoneManager implements IZoneManager {
     @Override
     public void addActiveZone(ServerLevel serverLevel, RogueNodeData nodeData) {
         LevelZoneData lzd = getLZD(serverLevel);
-        Map<ChunkPos, ZoneType> zones = lzd.getLevelZone();
+        Set<Map.Entry<ChunkPos, ZoneType>> zones = lzd.getZoneEntries();
 
         List<ChunkPos> nodeChunks = nodeData.getNodeData().getNodeChunks();
         if (nodeChunks.isEmpty()) return;
@@ -247,7 +152,9 @@ public class ZoneManager implements IZoneManager {
 
             int connections = countChunkClusters(othersInRange, exMinX, exMinZ, exMaxX, exMaxZ);
             if (connections >= minConnections) {
-                fillActiveZone(serverLevel, zones, exMinX, exMinZ, exMaxX, exMaxZ);
+                if (fillActiveZone(serverLevel, zones, exMinX, exMinZ, exMaxX, exMaxZ)) {
+                    syncLevelData(serverLevel);
+                }
                 return;
             }
             r++;
@@ -257,8 +164,8 @@ public class ZoneManager implements IZoneManager {
     /**
      * 从 zone 映射中提取指定类型的所有区块。
      */
-    private Set<ChunkPos> getChunksByType(Map<ChunkPos, ZoneType> zones, ZoneType type) {
-        return zones.entrySet().stream()
+    private Set<ChunkPos> getChunksByType(Set<Map.Entry<ChunkPos, ZoneType>> zones, ZoneType type) {
+        return zones.stream()
                 .filter(e -> e.getValue() == type)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toCollection(HashSet::new));
@@ -299,17 +206,23 @@ public class ZoneManager implements IZoneManager {
 
     /**
      * 将矩形区域内尚未归属任何 zone 的区块注册为 Active_Zone。
+     * @return 是否有新区块被添加
      */
-    private void fillActiveZone(ServerLevel serverLevel, Map<ChunkPos, ZoneType> zones,
+    private boolean fillActiveZone(ServerLevel serverLevel, Set<Map.Entry<ChunkPos, ZoneType>> zones,
                                 int minX, int minZ, int maxX, int maxZ) {
+        Set<ChunkPos> existing = zones.stream().map(Map.Entry::getKey).collect(Collectors.toSet());
+        boolean changed = false;
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
                 ChunkPos pos = new ChunkPos(x, z);
-                if (!zones.containsKey(pos)) {
-                    addZone(serverLevel, pos, ZoneType.Active_Zone);
+                if (!existing.contains(pos)) {
+                    if (addZone(serverLevel, pos, ZoneType.Active_Zone)) {
+                        changed = true;
+                    }
                 }
             }
         }
+        return changed;
     }
 
     @Override
@@ -317,6 +230,7 @@ public class ZoneManager implements IZoneManager {
         LevelZoneData lzd = getLZD(serverLevel);
         ZoneData zoneData = lzd.getOrCreateZoneData(type);
         zoneData.addCap(zoneCapType);
+        syncLevelData(serverLevel);
     }
 
     @Override
@@ -325,6 +239,7 @@ public class ZoneManager implements IZoneManager {
         ZoneData zoneData = lzd.getZoneData(type);
         if (zoneData != null) {
             zoneData.removeCap(zoneCapType);
+            syncLevelData(serverLevel);
         }
     }
 
@@ -334,6 +249,7 @@ public class ZoneManager implements IZoneManager {
         ZoneData zoneData = lzd.getZoneData(type);
         if (zoneData != null) {
             zoneData.clearCaps();
+            syncLevelData(serverLevel);
         }
     }
 
@@ -355,6 +271,7 @@ public class ZoneManager implements IZoneManager {
         ZoneCapData capData = zoneData.getCapData(zoneCapType);
         if (capData != null) {
             capData.setLevel(capLevel);
+            syncLevelData(serverLevel);
         }
     }
 
@@ -366,6 +283,7 @@ public class ZoneManager implements IZoneManager {
         ZoneCapData capData = zoneData.getCapData(zoneCapType);
         if (capData != null) {
             capData.addLevel(capLevel);
+            syncLevelData(serverLevel);
         }
     }
 

@@ -17,12 +17,7 @@ public interface IZoneManager {
 
     void onChunkLoad(ChunkAccess chunk);
 
-    void addZone(ServerLevel serverLevel, ChunkPos pos, ZoneType zoneType);
-
-    /**
-     * 安全区控制，通过寻找结构进行初始化
-     */
-    void safeZoneInit(ServerLevel serverLevel);
+    boolean addZone(ServerLevel serverLevel, ChunkPos pos, ZoneType zoneType);
 
     /**
      * 添加安全区区块

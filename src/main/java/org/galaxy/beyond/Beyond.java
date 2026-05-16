@@ -4,13 +4,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
-import org.galaxy.beyond.api.init.BeyondComponentInit;
-import org.galaxy.beyond.api.init.BeyondCreativeTabInit;
-import org.galaxy.beyond.api.init.BeyondItemInit;
-import org.galaxy.beyond.api.init.BeyondRogueEventTypeInit;
-import org.galaxy.beyond.api.init.BeyondZoneNodeCapInit;
-import org.galaxy.beyond.api.system.BeyondManager;
+import org.galaxy.beyond.api.init.*;
+import org.galaxy.beyond.api.BeyondManager;
+import org.galaxy.beyond.comand.BeyondCommand;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -41,6 +39,8 @@ public class Beyond {
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         newRegistry(modEventBus);
 
+        NeoForge.EVENT_BUS.addListener(BeyondCommand::register);
+
     }
 
     /**
@@ -58,8 +58,11 @@ public class Beyond {
         BeyondRogueEventTypeInit.register(modEventBus);
         BeyondZoneNodeCapInit.register(modEventBus);
         BeyondComponentInit.register(modEventBus);
+        BeyondBlockInit.register(modEventBus);
         BeyondItemInit.register(modEventBus);
         BeyondCreativeTabInit.register(modEventBus);
+        BeyondAttachmentInit.register(modEventBus);
+        BeyondMobEffectInit.register(modEventBus);
     }
 
 

@@ -1,4 +1,4 @@
-package org.galaxy.beyond.api.system;
+package org.galaxy.beyond.api;
 
 import lombok.Getter;
 import net.minecraft.server.level.ServerLevel;
@@ -8,10 +8,10 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.galaxy.beyond.api.system.node.NodeManager;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
-import org.galaxy.beyond.api.system.rogue.core.IPlayerRougeManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
-import org.galaxy.beyond.api.system.rogue.player.PlayerRougeManager;
+import org.galaxy.beyond.api.system.structure.SafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.StructureManager;
+import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 import org.galaxy.beyond.api.system.zone.ZoneManager;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
@@ -25,7 +25,13 @@ public class BeyondManager implements IBeyondManager {
     private final IRogueManager rogueManager = new RogueManager();
     @Getter
     private final IStructureManager structureManager = new StructureManager();
+    @Getter
+    private final ISafeZoneStructureManager safeZoneStructureManager = new SafeZoneStructureManager();
 
+    @Override
+    public void onLevelLoad(ServerLevel level) {
+        safeZoneStructureManager.initialize(level);
+    }
 
     @Override
     public void levelTick(ServerLevel level) {
@@ -35,17 +41,23 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void playerTick(ServerPlayer player) {
-        //全局tick 注意影响哦。
+        safeZoneStructureManager.playerTick(player);
     }
 
     @Override
     public void entityTick(LivingEntity entity) {
-
     }
 
     @Override
-    public void playerLogin(ServerPlayer player) {
+    public void playerChangedDimension(ServerPlayer player) {
+        safeZoneStructureManager.onPlayerEnterDimension(player);
+        safeZoneStructureManager.trySafeZoneSpawn(player);
+    }
 
+    @Override
+    public void playerLoggedIn(ServerPlayer player) {
+        safeZoneStructureManager.onPlayerEnterDimension(player);
+        safeZoneStructureManager.trySafeZoneSpawn(player);
     }
 
     @Override
