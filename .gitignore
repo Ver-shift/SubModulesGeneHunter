@@ -29,6 +29,10 @@ bin/
 ### VS Code ###
 .vscode/
 
+### Claude Code ###
+.superpowers/
+docs/
+
 ### Mac OS ###
 .DS_Store
 
