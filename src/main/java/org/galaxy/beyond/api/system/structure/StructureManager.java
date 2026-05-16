@@ -9,43 +9,57 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class StructureManager implements IStructureManager {
 
-    /**
-     * 获取指定位置的唯一结构，若存在多个或没有则返回 null。
-     */
-    private StructureStart getSingleStructure(ServerLevel level, Vec3i pos) {
-        ChunkAccess chunkAccess = level.getChunk(new BlockPos(pos));
-        List<StructureStart> starts = chunkAccess.getAllStarts().values().stream().toList();
-        return starts.size() == 1 ? starts.getFirst() : null;
+    private List<StructureStart> getAllStarts(ServerLevel level, Vec3i pos) {
+        ChunkAccess chunk = level.getChunk(new BlockPos(pos));
+        return new ArrayList<>(chunk.getAllStarts().values());
+    }
+
+    @Override
+    public boolean hasAnyStructure(ServerLevel level, Vec3i pos) {
+        return !getAllStarts(level, pos).isEmpty();
     }
 
     @Override
     public List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos) {
-        StructureStart structure = getSingleStructure(level, pos);
-        if (structure == null) return List.of();
+        List<StructureStart> starts = getAllStarts(level, pos);
+        if (starts.isEmpty()) return List.of();
 
-        BoundingBox box = structure.getBoundingBox();
-        List<ChunkPos> chunks = new ArrayList<>();
-        int minChunkX = box.minX() >> 4;
-        int maxChunkX = box.maxX() >> 4;
-        int minChunkZ = box.minZ() >> 4;
-        int maxChunkZ = box.maxZ() >> 4;
-
-        for (int x = minChunkX; x <= maxChunkX; x++) {
-            for (int z = minChunkZ; z <= maxChunkZ; z++) {
-                chunks.add(new ChunkPos(x, z));
+        Set<ChunkPos> chunks = new HashSet<>();
+        for (StructureStart start : starts) {
+            BoundingBox box = start.getBoundingBox();
+            int minCX = box.minX() >> 4;
+            int maxCX = box.maxX() >> 4;
+            int minCZ = box.minZ() >> 4;
+            int maxCZ = box.maxZ() >> 4;
+            for (int cx = minCX; cx <= maxCX; cx++) {
+                for (int cz = minCZ; cz <= maxCZ; cz++) {
+                    chunks.add(new ChunkPos(cx, cz));
+                }
             }
         }
-        return chunks;
+        return new ArrayList<>(chunks);
     }
 
     @Override
     public BoundingBox getStructureBoundingBox(ServerLevel level, Vec3i pos) {
-        StructureStart structure = getSingleStructure(level, pos);
-        return structure == null ? null : structure.getBoundingBox();
+        List<StructureStart> starts = getAllStarts(level, pos);
+        if (starts.isEmpty()) return null;
+
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
+        for (StructureStart start : starts) {
+            BoundingBox box = start.getBoundingBox();
+            if (box.minX() < minX) minX = box.minX();
+            if (box.minY() < minY) minY = box.minY();
+            if (box.minZ() < minZ) minZ = box.minZ();
+            if (box.maxX() > maxX) maxX = box.maxX();
+            if (box.maxY() > maxY) maxY = box.maxY();
+            if (box.maxZ() > maxZ) maxZ = box.maxZ();
+        }
+        return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
     }
 }

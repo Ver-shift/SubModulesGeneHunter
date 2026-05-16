@@ -5,28 +5,25 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
-import net.minecraft.world.level.levelgen.structure.StructureType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public interface IStructureManager {
 
     /**
-     * 根据当前的位置获取结构占据的所有区块
+     * 获取位置所在区块中所有结构占据的区块集合。
      */
-    List<ChunkPos> getStructureChunks(ServerLevel level,Vec3i pos);
+    List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos);
 
     /**
-     * 获取结构边界框，若位置不存在唯一结构则返回 null。
+     * 获取该位置所有结构的合并包围盒，若没有结构则返回 null。
      */
     @Nullable
     BoundingBox getStructureBoundingBox(ServerLevel level, Vec3i pos);
 
-
+    /**
+     * 检查该位置所在区块是否包含任意结构。
+     */
+    boolean hasAnyStructure(ServerLevel level, Vec3i pos);
 }
-

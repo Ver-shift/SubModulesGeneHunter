@@ -1,18 +1,54 @@
 package org.galaxy.beyond.api.system.zone;
 
-import lombok.Data;
+import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-@Data
-public class LevelZoneData {
+/**
+ * 只允许从内部方法获取数据
+ */
+public class LevelZoneData implements IPersistedSerializable {
 
-    //二重结构查询：先根据区块查询区域类型，再根据区域类型查询区域数据
+    public LevelZoneData() {
+    }
+
+    @Getter(AccessLevel.PRIVATE)
+    @Setter(AccessLevel.PRIVATE)
+    @DescSynced
+    @Persisted(subPersisted = true)
     private Map<ChunkPos, ZoneType> levelZone = new HashMap<>();
+
+    @Getter(AccessLevel.PRIVATE)
+    @Setter(AccessLevel.PRIVATE)
+    @DescSynced
+    @Persisted(subPersisted = true)
     private Map<ZoneType, ZoneData> levelZoneData = new HashMap<>();
+
+    // ---- 区块区域类型查询 ----
+
+    public ZoneType getZoneType(ChunkPos pos) {
+        return levelZone.get(pos);
+    }
+
+    public Set<Map.Entry<ChunkPos, ZoneType>> getZoneEntries() {
+        return Collections.unmodifiableSet(levelZone.entrySet());
+    }
+
+    public boolean hasZones() {
+        return !levelZone.isEmpty();
+    }
+
+    // ---- ZoneData 查询 ----
 
     public ZoneData getZoneData(ChunkPos chunkPos) {
         return levelZoneData.get(levelZone.get(chunkPos));
@@ -26,11 +62,16 @@ public class LevelZoneData {
         return levelZoneData.get(zoneType);
     }
 
+    // ---- 修改 ----
+
     public ZoneData getOrCreateZoneData(ZoneType zoneType) {
-        return levelZoneData.computeIfAbsent(zoneType, ZoneData::new);
+        return levelZoneData.computeIfAbsent(zoneType, k -> new ZoneData(k));
     }
 
-    public void addZone(ChunkPos chunkPos, ZoneType zoneType) {
+    public boolean addZone(ChunkPos chunkPos, ZoneType zoneType) {
+        if (levelZone.get(chunkPos) == zoneType) return false;
         levelZone.put(chunkPos, zoneType);
+        getOrCreateZoneData(zoneType);
+        return true;
     }
 }
