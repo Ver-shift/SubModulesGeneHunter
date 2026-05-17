@@ -15,6 +15,9 @@
   "block.beyond.node_block": "节点方块",
   "beyond.welcome": "欢迎游玩我的肉鸽mod",
   "beyond.rogue.not_in_game": "你当前不在游戏中！",
+  "beyond.rogue.death.no_lives": "所有生命耗尽！即将结算...",
+  "beyond.rogue.death.lives_left": "你死亡了！剩余生命：%s",
+  "beyond.rogue.reward": "结算完成！回收物品总价值 %s",
   "beyond.rogue.start": "关卡 %s 开始！所有玩家已准备就绪",
   "beyond.rogue.start.no_progress": "未设置当前关卡，请使用 /beyond config currentProgress 设置",
   "beyond.rogue.start.progress_not_found": "关卡 %s 定义不存在，请检查 rogue_progress 数据包",
@@ -37,6 +40,7 @@
   "beyond.info.back_to_safe_zone": "已返回安全区，背包内物品已回收，总价值 %s",
 
   "commands.beyond.home.success": "已传送至出生点",
+  "commands.beyond.home.not_found": "安全区未初始化，找不到出生点",
   "commands.beyond.safezone.expand.success": "安全区已扩容至 %s 个区块范围",
   "commands.beyond.safezone.expand.odd": "区块大小必须为偶数",
 

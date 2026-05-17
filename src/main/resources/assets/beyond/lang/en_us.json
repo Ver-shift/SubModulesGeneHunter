@@ -15,6 +15,9 @@
   "block.beyond.node_block": "Node Block",
   "beyond.welcome": "Welcome to my roguelike mod!",
   "beyond.rogue.not_in_game": "You are not in a game!",
+  "beyond.rogue.death.no_lives": "No lives left! Settling...",
+  "beyond.rogue.death.lives_left": "You died! Lives left: %s",
+  "beyond.rogue.reward": "Settled! Total value recycled: %s",
   "beyond.rogue.start": "Level %s started! All players ready",
   "beyond.rogue.start.no_progress": "No level set, use /beyond config currentProgress first",
   "beyond.rogue.start.progress_not_found": "Level %s not found, check rogue_progress datapacks",
@@ -30,13 +33,14 @@
   "beyond.node.pre_event_all_ready": "All players finished the event!",
   "beyond.node.next_event": "Event complete! Ready for next event",
   "beyond.node.unlocked": "Node unlocked! All events completed",
-  "beyond.node.already_unlocked": "This node is already unlocked"
+  "beyond.node.already_unlocked": "This node is already unlocked",
 
   "beyond.info.clear_inventory": "Recycled %s items, total value %s",
   "beyond.info.leave_too_frequent": "Entering/leaving safe zone too frequently! Please wait %s seconds.",
   "beyond.info.back_to_safe_zone": "Returned to safe zone, inventory recycled, total value %s",
 
   "commands.beyond.home.success": "Teleported to spawn point",
+  "commands.beyond.home.not_found": "Safe zone not initialized, spawn point not found",
   "commands.beyond.safezone.expand.success": "Safe zone expanded to %s chunks",
   "commands.beyond.safezone.expand.odd": "Chunk size must be an even number",
 

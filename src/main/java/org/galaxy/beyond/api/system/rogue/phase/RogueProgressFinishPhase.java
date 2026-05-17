@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.IRoguePhase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
+import org.galaxy.beyond.api.system.rogue.core.RogueState;
 
 public class RogueProgressFinishPhase implements IRoguePhase {
 
@@ -30,7 +31,7 @@ public class RogueProgressFinishPhase implements IRoguePhase {
         }
         // 所有玩家回到安全区后，重置全局状态
         if (allDone) {
-            ctx.setState(level, org.galaxy.beyond.api.system.rogue.core.RogueState.LOBBY);
+            ctx.forceTo(level, RogueState.LOBBY);
         }
     }
 }

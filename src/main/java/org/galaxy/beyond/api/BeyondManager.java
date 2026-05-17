@@ -39,7 +39,9 @@ public class BeyondManager implements IBeyondManager {
     @Override
     public void levelTick(ServerLevel level) {
         zoneManager.handleZoneRule(level);
-        rogueManager.tick(level);
+        if (level.dimension().equals(BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getRogueDimension())) {
+            rogueManager.tick(level);
+        }
     }
 
     @Override
