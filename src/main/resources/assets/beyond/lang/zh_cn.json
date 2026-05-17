@@ -28,6 +28,8 @@
   "beyond.node.locked_triggered": "节点已激活！",
   "beyond.node.solo_auto_start": "自动推进节点事件链...",
   "beyond.node.event_progress": "节点事件 #%s 执行中...",
+  "beyond.node.encounter_resolved": "遭遇类型 %s 已解析",
+  "beyond.node.no_encounter": "未找到遭遇数据，事件无法触发",
   "beyond.node.click_again": "再次点击节点方块继续推进",
   "beyond.node.pre_node_waiting": "准备中：%s/%s 名玩家已就绪，等待其他人...",
   "beyond.node.pre_node_all_ready": "全部玩家已准备！事件即将触发",

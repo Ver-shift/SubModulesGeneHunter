@@ -28,6 +28,8 @@
   "beyond.node.locked_triggered": "Node activated!",
   "beyond.node.solo_auto_start": "Auto-advancing node event chain...",
   "beyond.node.event_progress": "Node event #%s executing...",
+  "beyond.node.encounter_resolved": "Encounter %s resolved",
+  "beyond.node.no_encounter": "No encounter data found, event cannot trigger",
   "beyond.node.click_again": "Click the node block again to continue",
   "beyond.node.pre_node_waiting": "Preparing: %s/%s players ready, waiting...",
   "beyond.node.pre_node_all_ready": "All players ready! Event starting",

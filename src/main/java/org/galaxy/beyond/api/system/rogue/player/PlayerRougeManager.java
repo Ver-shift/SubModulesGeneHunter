@@ -144,6 +144,11 @@ public class PlayerRougeManager implements IPlayerRougeManager {
             case LOCKED -> {
                 nodeManager.setNodeState(level, NodeState.PRE_NODE);
                 setState(player, PlayerRogueState.PRE_NODE);
+                // 记录当前节点区块位置，供后续遭遇解析使用
+                var nodeData = nodeManager.getRogueNodeData(level);
+                if (nodeData != null) {
+                    nodeData.setNodeChunk(player.chunkPosition());
+                }
                 player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
                 if (solo) {
                     nodeManager.setNodeState(level, NodeState.ON_EVENT);
