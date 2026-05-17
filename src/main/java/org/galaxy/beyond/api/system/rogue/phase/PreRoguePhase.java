@@ -37,8 +37,8 @@ public class PreRoguePhase implements IRoguePhase {
 
         // 只有未全员就绪时才播报
         if (ready < total) {
-            level.getServer().sendSystemMessage(
-                    Component.translatable("beyond.rogue.ready_status", ready, total));
+            level.getServer().getPlayerList().broadcastSystemMessage(
+                    Component.translatable("beyond.rogue.ready_status", ready, total), false);
         }
     }
 }

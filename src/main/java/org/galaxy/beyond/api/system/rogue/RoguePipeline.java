@@ -46,12 +46,12 @@ public final class RoguePipeline {
                 var globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
                 var progressId = globalData.getRogueConfig().getCurrentProgress();
                 if (progressId == null) {
-                    level.getServer().sendSystemMessage(Component.translatable("beyond.rogue.start.no_progress"));
+                    level.getServer().getPlayerList().broadcastSystemMessage(Component.translatable("beyond.rogue.start.no_progress"), false);
                     return;
                 }
                 var definition = globalData.getRogueDefinition().getRogueProgress().get(progressId);
                 if (definition == null) {
-                    level.getServer().sendSystemMessage(Component.translatable("beyond.rogue.start.progress_not_found", progressId.toString()));
+                    level.getServer().getPlayerList().broadcastSystemMessage(Component.translatable("beyond.rogue.start.progress_not_found", progressId.toString()), false);
                     return;
                 }
 
@@ -62,7 +62,7 @@ public final class RoguePipeline {
                 var scenes = defManager.resolveScenes(level);
                 progressType.setScenes(scenes);
 
-                level.getServer().sendSystemMessage(Component.translatable("beyond.rogue.start", progressId.toString()));
+                level.getServer().getPlayerList().broadcastSystemMessage(Component.translatable("beyond.rogue.start", progressId.toString()), false);
             }
         };
     }
