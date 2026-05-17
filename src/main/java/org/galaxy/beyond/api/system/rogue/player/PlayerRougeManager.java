@@ -144,11 +144,10 @@ public class PlayerRougeManager implements IPlayerRougeManager {
             case LOCKED -> {
                 nodeManager.setNodeState(level, NodeState.PRE_NODE);
                 setState(player, PlayerRogueState.PRE_NODE);
+                player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
                 if (solo) {
-                    // 单人：立即检查全员就绪 → 自动推进到 ON_EVENT
                     nodeManager.setNodeState(level, NodeState.ON_EVENT);
-                } else {
-                    player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
+                    player.sendSystemMessage(Component.translatable("beyond.node.solo_auto_start"));
                 }
             }
 

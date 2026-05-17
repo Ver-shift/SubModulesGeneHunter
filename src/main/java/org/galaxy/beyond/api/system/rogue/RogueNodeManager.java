@@ -1,5 +1,6 @@
 package org.galaxy.beyond.api.system.rogue;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.api.BeyondAPI;
 import org.galaxy.beyond.api.system.node.core.NodeState;
@@ -29,7 +30,9 @@ public class RogueNodeManager implements IRogueNodeManager {
 
     @Override
     public void handleOnEvent(ServerLevel level) {
-        // 触发事件，由 PhaseRunner 驱动
+        int idx = rogueManager.getProgressManager().getCurrentProgressIndex(level);
+        level.getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable("beyond.node.event_progress", idx + 1), false);
     }
 
     @Override
