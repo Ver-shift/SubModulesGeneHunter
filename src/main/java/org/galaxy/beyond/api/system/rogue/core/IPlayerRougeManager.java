@@ -31,7 +31,7 @@ public interface IPlayerRougeManager {
     void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to);
 
     void useLootBag(ServerPlayer player);
-3
+
     void clickNodeBlock(ServerPlayer player);
 
     void playerDeath(LivingDeathEvent event);

@@ -137,68 +137,65 @@ public class PlayerRougeManager implements IPlayerRougeManager {
         ServerLevel level = (ServerLevel) player.level();
         var nodeManager = rogueManager.getRogueNodeManager();
         NodeState nodeState = nodeManager.getNodeState(level);
+        boolean solo = getRoguePlayerCount() == 1;
 
         switch (nodeState) {
-            // ---- 分支1：LOCK → 激活节点，等待全员准备 ----
+            // ---- 分支1：LOCK → 激活节点 ----
             case LOCKED -> {
                 nodeManager.setNodeState(level, NodeState.PRE_NODE);
                 setState(player, PlayerRogueState.PRE_NODE);
-                player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
-                // 单人时提示可直接再次点击
-                if (getRoguePlayerCount() == 1) {
-                    player.sendSystemMessage(Component.translatable("beyond.node.click_again"));
+                if (solo) {
+                    // 单人：立即检查全员就绪 → 自动推进到 ON_EVENT
+                    nodeManager.setNodeState(level, NodeState.ON_EVENT);
+                } else {
+                    player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
                 }
             }
 
-            // ---- 分支2：PRE_NODE → 检查全员是否已准备 ----
+            // ---- 分支2：PRE_NODE → 检查全员 ----
             case PRE_NODE -> {
                 if (allRoguePlayersMatch(PlayerRogueState.PRE_NODE)) {
                     nodeManager.setNodeState(level, NodeState.ON_EVENT);
-                    player.sendSystemMessage(Component.translatable("beyond.node.pre_node_all_ready"));
-                } else {
+                    if (!solo) player.sendSystemMessage(Component.translatable("beyond.node.pre_node_all_ready"));
+                } else if (!solo) {
                     int cnt = countRoguePlayersInState(PlayerRogueState.PRE_NODE);
                     int total = getRoguePlayerCount();
                     player.sendSystemMessage(Component.translatable("beyond.node.pre_node_waiting", cnt, total));
                 }
             }
 
-            // ---- 分支3：PRE_EVENT → 检查全员是否完成当前事件 ----
+            // ---- 分支3：PRE_EVENT → 检查全员 ----
             case PRE_EVENT -> {
                 if (allRoguePlayersMatch(PlayerRogueState.PRE_EVENT)) {
                     nodeManager.setNodeState(level, NodeState.ON_EVENT);
-                    player.sendSystemMessage(Component.translatable("beyond.node.pre_event_all_ready"));
-                } else {
+                    if (!solo) player.sendSystemMessage(Component.translatable("beyond.node.pre_event_all_ready"));
+                } else if (!solo) {
                     int cnt = countRoguePlayersInState(PlayerRogueState.PRE_EVENT);
                     int total = getRoguePlayerCount();
                     player.sendSystemMessage(Component.translatable("beyond.node.pre_event_waiting", cnt, total));
                 }
             }
 
-            // ---- 分支4：ON_EVENT → 判断是否最后一个事件 ----
+            // ---- 分支4：ON_EVENT → 最后一个事件？ ----
             case ON_EVENT -> {
                 var progressMgr = rogueManager.getProgressManager();
                 int current = progressMgr.getCurrentProgressIndex(level);
                 int total = progressMgr.getTotalProgress(level);
                 if (total > 0 && current >= total - 1) {
-                    // 最后一个事件 → 解锁 + 推进进度
                     nodeManager.setNodeState(level, NodeState.UNLOCKED);
                     progressMgr.advanceProgress(level);
                     player.sendSystemMessage(Component.translatable("beyond.node.unlocked"));
                 } else {
-                    // 不是最后一个 → 切换到 PRE_EVENT，等待下次点击
                     nodeManager.setNodeState(level, NodeState.PRE_EVENT);
                     setAllRoguePlayersState(PlayerRogueState.PRE_EVENT);
-                    player.sendSystemMessage(Component.translatable("beyond.node.next_event"));
-                    if (getRoguePlayerCount() == 1) {
-                        player.sendSystemMessage(Component.translatable("beyond.node.click_again"));
+                    if (!solo) {
+                        player.sendSystemMessage(Component.translatable("beyond.node.next_event"));
                     }
                 }
             }
 
-            // ---- 分支5：UNLOCKED → 已解锁 ----
-            case UNLOCKED -> {
-                player.sendSystemMessage(Component.translatable("beyond.node.already_unlocked"));
-            }
+            // ---- 分支5：UNLOCKED → 已解锁（沉默） ----
+            case UNLOCKED -> { /* 不刷屏 */ }
         }
     }
 
