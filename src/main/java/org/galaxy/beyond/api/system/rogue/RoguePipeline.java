@@ -55,8 +55,14 @@ public final class RoguePipeline {
                     return;
                 }
 
+                // 重置上一局的节点数据和进度
+                var rogueData = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData();
+                rogueData.setRogueNodeData(null);
+                rogueData.setProgressIndex(0);
+                rogueData.getEncounterAssignments().clear();
+
                 ProgressType progressType = new ProgressType(progressId);
-                BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().setProgressType(progressType);
+                rogueData.setProgressType(progressType);
 
                 var defManager = new DefinitionManager();
                 var scenes = defManager.resolveScenes(level);
