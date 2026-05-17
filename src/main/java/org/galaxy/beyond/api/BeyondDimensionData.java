@@ -16,15 +16,14 @@ import org.galaxy.beyond.api.system.zone.LevelZoneData;
 @Data
 public class BeyondDimensionData implements IPersistedSerializable {
 
-    @DescSynced
     @Persisted(subPersisted = true)
-    private final RogueData rogueData = new RogueData();
-    @DescSynced
+    private RogueData rogueData = new RogueData();
+
     @Persisted(subPersisted = true)
-    private final LevelZoneData levelZoneData = new LevelZoneData();
-    @DescSynced
+    private LevelZoneData levelZoneData = new LevelZoneData();
+
     @Persisted(subPersisted = true)
-    private final SafeZoneStructureData safeZoneStructureData = new SafeZoneStructureData();
+    private SafeZoneStructureData safeZoneStructureData = new SafeZoneStructureData();
 
     public static final MapCodec<BeyondDimensionData> CODEC = PersistedParser.createMapCodec(BeyondDimensionData::new);
     public static final Codec<BeyondDimensionData> CODEC_DIRECT = CODEC.codec();

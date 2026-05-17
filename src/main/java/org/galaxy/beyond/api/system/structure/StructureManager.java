@@ -8,6 +8,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
+import org.galaxy.beyond.api.system.zone.ZoneHelper;
 
 import java.util.*;
 
@@ -35,11 +36,7 @@ public class StructureManager implements IStructureManager {
             int maxCX = box.maxX() >> 4;
             int minCZ = box.minZ() >> 4;
             int maxCZ = box.maxZ() >> 4;
-            for (int cx = minCX; cx <= maxCX; cx++) {
-                for (int cz = minCZ; cz <= maxCZ; cz++) {
-                    chunks.add(new ChunkPos(cx, cz));
-                }
-            }
+            chunks.addAll(new ZoneHelper.Bounds(minCX, minCZ, maxCX, maxCZ).allChunks());
         }
         return new ArrayList<>(chunks);
     }

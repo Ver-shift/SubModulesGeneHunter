@@ -1,0 +1,32 @@
+{
+  "sceneRolls": [
+    {
+      "order": 1,
+      "entries": [
+        { "weight": 1, "scene": "HARVEST" }
+      ]
+    },
+    {
+      "order": 2,
+      "entries": [
+        { "weight": 2, "scene": "HARVEST" },
+        { "weight": 1, "scene": "REPOSE" }
+      ]
+    }
+  ],
+  "encounters": [
+    {
+      "type": "Green_Event",
+      "events": [
+        { "weight": 5, "task": { "events": ["beyond:monster", "beyond:reward"] } },
+        { "weight": 1, "task": { "events": ["beyond:monster"] } }
+      ]
+    },
+    {
+      "type": "Green_Bonfire",
+      "events": [
+        { "weight": 1, "task": { "events": ["beyond:heal"] } }
+      ]
+    }
+  ]
+}

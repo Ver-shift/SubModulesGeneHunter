@@ -3,13 +3,17 @@ package org.galaxy.beyond.api.system.rogue.player;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.UUID;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondComponentInit;
 import org.galaxy.beyond.api.init.BeyondItemInit;
 import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.node.core.NodeState;
 import org.galaxy.beyond.api.system.rogue.core.IPlayerRougeManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
 import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
@@ -33,7 +37,7 @@ public class PlayerRougeManager implements IPlayerRougeManager {
     public void tick(ServerPlayer player) {
         switch (getState(player)) {
             case LOBBY -> {}
-            case PRE_ROGUE -> handlePreRogue(player);
+            case PRE_ROGUE -> {}
             case ON_PROGRESS -> {}
             case PRE_NODE -> handlePreNode(player);
             case PRE_EVENT -> handlePreEvent(player);
@@ -47,7 +51,7 @@ public class PlayerRougeManager implements IPlayerRougeManager {
 
     @Override
     public void intoRogue(ServerPlayer player) {
-        BeyondAPI.getBeyondDimensionData(player.level()).getRogueData().getInGamePlayers().add(player);
+        BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().addRoguePlayer(player.getUUID());
         var data = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData();
         if (data.getMaxLifeCount() == 0) {
             data.setMaxLifeCount(DEFAULT_MAX_LIVES);
@@ -57,7 +61,7 @@ public class PlayerRougeManager implements IPlayerRougeManager {
 
     @Override
     public void leaveRogue(ServerPlayer player) {
-        BeyondAPI.getBeyondDimensionData(player.level()).getRogueData().getInGamePlayers().remove(player);
+        BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().removeRoguePlayer(player.getUUID());
         setState(player, PlayerRogueState.LOBBY);
     }
 
@@ -69,17 +73,31 @@ public class PlayerRougeManager implements IPlayerRougeManager {
     @Override
     public void playerIntoSafeZone(ServerPlayer player) {
         int totalValue = clearPlayerInventoryWithValueComp(player);
-        player.sendSystemMessage(Component.translatable("beyond.info.back_to_safe_zone", totalValue));
+        if (totalValue > 0) {
+            player.sendSystemMessage(Component.translatable("beyond.info.back_to_safe_zone", totalValue));
+        }
         setState(player, PlayerRogueState.LOBBY);
         leaveRogue(player);
     }
 
     @Override
     public void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to) {
-        // 安全区 → 外部：开始游戏
+        // 安全区 → 外部：检查冷却，发放战利品袋
         if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
+            if (isInRogue(player)) return;
+            var data = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData();
+            long now = player.level().getGameTime();
+            long cooldownTicks = CommonConfig.LOBBY_COOLDOWN_SECONDS.get() * 20L;
+            if (now - data.getLastLeaveSafeZoneTime() < cooldownTicks) {
+                long remainingTicks = cooldownTicks - (now - data.getLastLeaveSafeZoneTime());
+                long displaySeconds = (remainingTicks + 19) / 20;
+                player.sendSystemMessage(Component.translatable("beyond.info.leave_too_frequent", displaySeconds));
+                return;
+            }
             intoRogue(player);
-            setState(player, PlayerRogueState.PRE_ROGUE);
+            playerLevelSafeZone(player);
+            data.setLastLeaveSafeZoneTime(now);
+            // 保持 LOBBY 状态，等待玩家使用战利品袋
         }
         // 外部 → 安全区：退出游戏
         if (from != ZoneType.Safe_Zone && to == ZoneType.Safe_Zone) {
@@ -89,15 +107,135 @@ public class PlayerRougeManager implements IPlayerRougeManager {
 
     @Override
     public void useLootBag(ServerPlayer player) {
+        giveItem(player, Items.IRON_SWORD);
         setState(player, PlayerRogueState.PRE_ROGUE);
+
+        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        int totalRogues = cfg.getRoguePlayerIds().size();
+        int readyCount = countReadyPlayers(player);
+        player.sendSystemMessage(Component.translatable("beyond.rogue.player_ready", readyCount, totalRogues));
+
+        if (readyCount < totalRogues) {
+            player.sendSystemMessage(Component.translatable("beyond.rogue.waiting_players", totalRogues - readyCount));
+        }
+    }
+
+    private int countReadyPlayers(ServerPlayer self) {
+        int count = 0;
+        var overworld = BeyondAPI.getOverWorld();
+        var cfg = BeyondAPI.getGlobalData(overworld).getRogueConfig();
+        var playerList = overworld.getServer().getPlayerList();
+        for (UUID id : cfg.getRoguePlayerIds()) {
+            ServerPlayer p = playerList.getPlayer(id);
+            if (p != null && getState(p) == PlayerRogueState.PRE_ROGUE) count++;
+        }
+        return count;
     }
 
     @Override
     public void clickNodeBlock(ServerPlayer player) {
-        int choice = 1;
-        switch (choice) {
-            case 1: setState(player, PlayerRogueState.PRE_NODE); break;
-            case 2: setState(player, PlayerRogueState.PRE_EVENT); break;
+        ServerLevel level = (ServerLevel) player.level();
+        var nodeManager = rogueManager.getRogueNodeManager();
+        NodeState nodeState = nodeManager.getNodeState(level);
+
+        switch (nodeState) {
+            // ---- 分支1：LOCK → 激活节点，等待全员准备 ----
+            case LOCKED -> {
+                nodeManager.setNodeState(level, NodeState.PRE_NODE);
+                setState(player, PlayerRogueState.PRE_NODE);
+                player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
+                // 单人时提示可直接再次点击
+                if (getRoguePlayerCount() == 1) {
+                    player.sendSystemMessage(Component.translatable("beyond.node.click_again"));
+                }
+            }
+
+            // ---- 分支2：PRE_NODE → 检查全员是否已准备 ----
+            case PRE_NODE -> {
+                if (allRoguePlayersMatch(PlayerRogueState.PRE_NODE)) {
+                    nodeManager.setNodeState(level, NodeState.ON_EVENT);
+                    player.sendSystemMessage(Component.translatable("beyond.node.pre_node_all_ready"));
+                } else {
+                    int cnt = countRoguePlayersInState(PlayerRogueState.PRE_NODE);
+                    int total = getRoguePlayerCount();
+                    player.sendSystemMessage(Component.translatable("beyond.node.pre_node_waiting", cnt, total));
+                }
+            }
+
+            // ---- 分支3：PRE_EVENT → 检查全员是否完成当前事件 ----
+            case PRE_EVENT -> {
+                if (allRoguePlayersMatch(PlayerRogueState.PRE_EVENT)) {
+                    nodeManager.setNodeState(level, NodeState.ON_EVENT);
+                    player.sendSystemMessage(Component.translatable("beyond.node.pre_event_all_ready"));
+                } else {
+                    int cnt = countRoguePlayersInState(PlayerRogueState.PRE_EVENT);
+                    int total = getRoguePlayerCount();
+                    player.sendSystemMessage(Component.translatable("beyond.node.pre_event_waiting", cnt, total));
+                }
+            }
+
+            // ---- 分支4：ON_EVENT → 判断是否最后一个事件 ----
+            case ON_EVENT -> {
+                var progressMgr = rogueManager.getProgressManager();
+                int current = progressMgr.getCurrentProgressIndex(level);
+                int total = progressMgr.getTotalProgress(level);
+                if (total > 0 && current >= total - 1) {
+                    // 最后一个事件 → 解锁 + 推进进度
+                    nodeManager.setNodeState(level, NodeState.UNLOCKED);
+                    progressMgr.advanceProgress(level);
+                    player.sendSystemMessage(Component.translatable("beyond.node.unlocked"));
+                } else {
+                    // 不是最后一个 → 切换到 PRE_EVENT，等待下次点击
+                    nodeManager.setNodeState(level, NodeState.PRE_EVENT);
+                    setAllRoguePlayersState(PlayerRogueState.PRE_EVENT);
+                    player.sendSystemMessage(Component.translatable("beyond.node.next_event"));
+                    if (getRoguePlayerCount() == 1) {
+                        player.sendSystemMessage(Component.translatable("beyond.node.click_again"));
+                    }
+                }
+            }
+
+            // ---- 分支5：UNLOCKED → 已解锁 ----
+            case UNLOCKED -> {
+                player.sendSystemMessage(Component.translatable("beyond.node.already_unlocked"));
+            }
+        }
+    }
+
+    private boolean allRoguePlayersMatch(PlayerRogueState target) {
+        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        var playerList = BeyondAPI.getOverWorld().getServer().getPlayerList();
+        var ids = cfg.getRoguePlayerIds();
+        if (ids.isEmpty()) return false;
+        for (UUID id : ids) {
+            ServerPlayer p = playerList.getPlayer(id);
+            if (p == null) return false;
+            if (getState(p) != target) return false;
+        }
+        return true;
+    }
+
+    private int countRoguePlayersInState(PlayerRogueState target) {
+        int count = 0;
+        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        var playerList = BeyondAPI.getOverWorld().getServer().getPlayerList();
+        for (UUID id : cfg.getRoguePlayerIds()) {
+            ServerPlayer p = playerList.getPlayer(id);
+            if (p != null && getState(p) == target) count++;
+        }
+        return count;
+    }
+
+    private int getRoguePlayerCount() {
+        return BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getRoguePlayerIds().size();
+    }
+
+    private void setAllRoguePlayersState(PlayerRogueState target) {
+        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        var playerList = BeyondAPI.getOverWorld().getServer().getPlayerList();
+        for (UUID id : cfg.getRoguePlayerIds()) {
+            ServerPlayer p = playerList.getPlayer(id);
+            if (p != null) setState(p, target);
         }
     }
 
@@ -161,12 +299,15 @@ public class PlayerRougeManager implements IPlayerRougeManager {
      * 玩家死亡状态 —— 检查是否所有玩家都已死亡
      */
     public void handleStateDeath(ServerPlayer player) {
-        ServerLevel level = (ServerLevel) player.level();
-        var allPlayers = BeyondAPI.getBeyondDimensionData(level).getRogueData().getInGamePlayers();
+        var overworld = BeyondAPI.getOverWorld();
+        var cfg = BeyondAPI.getGlobalData(overworld).getRogueConfig();
+        var playerList = overworld.getServer().getPlayerList();
 
         // 如果所有在游戏中的玩家都处于 DEAD 或 SPECTATOR 状态 → 全局结算
         boolean allDead = true;
-        for (var p : allPlayers) {
+        for (UUID id : cfg.getRoguePlayerIds()) {
+            ServerPlayer p = playerList.getPlayer(id);
+            if (p == null) continue;
             var state = getState(p);
             if (state != PlayerRogueState.DEAD
                     && state != PlayerRogueState.SPECTATOR
@@ -178,11 +319,11 @@ public class PlayerRougeManager implements IPlayerRougeManager {
         }
 
         if (allDead) {
-            // 全局游戏结束
-            for (var p : allPlayers) {
-                setState(p, PlayerRogueState.REWARD);
+            for (UUID id : cfg.getRoguePlayerIds()) {
+                ServerPlayer p = playerList.getPlayer(id);
+                if (p != null) setState(p, PlayerRogueState.REWARD);
             }
-            BeyondAPI.getBeyondDimensionData(level).getRogueData()
+            BeyondAPI.getBeyondDimensionData(overworld).getRogueData()
                     .setRogueState(RogueState.ROGUE_PROGRESS_FINISH);
         }
     }
@@ -217,7 +358,7 @@ public class PlayerRougeManager implements IPlayerRougeManager {
 
     @Override
     public boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getBeyondDimensionData(player.level()).getRogueData().getInGamePlayers().contains(player);
+        return BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().isRoguePlayer(player.getUUID());
     }
 
     @Override

@@ -3,13 +3,16 @@ package org.galaxy.beyond.api.system.rogue.phase;
 import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.IRoguePhase;
-import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
+import org.galaxy.beyond.api.system.rogue.core.RogueState;
 
 public class OnProgressPhase implements IRoguePhase {
 
     @Override
     public void tick(ServerLevel level, RogueContext ctx) {
-        // 检测玩家是否在节点区域内触发了节点方块
-        // 如果有任何一个玩家的状态变成 PRE_NODE，条件就会触发流转
+        int current = ctx.getProgressManager().getCurrentProgressIndex(level);
+        int total = ctx.getProgressManager().getTotalProgress(level);
+        if (total > 0 && current >= total) {
+            ctx.forceTo(level, RogueState.ROGUE_PROGRESS_FINISH);
+        }
     }
 }

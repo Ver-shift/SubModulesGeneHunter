@@ -8,6 +8,8 @@ import org.galaxy.beyond.api.system.zone.CapType;
 import org.galaxy.beyond.api.system.zone.ZoneCapType;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
+import java.util.Arrays;
+
 public class AllSafeZoneCap extends ZoneCapType {
 
     public static final Identifier ID = Identifier.parse(Beyond.MODID + ":all_safe_zone");
@@ -29,6 +31,6 @@ public class AllSafeZoneCap extends ZoneCapType {
     @Override
     public void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to) {
         BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager().playerChangeZone(player, from, to);
-        Beyond.debugInfo("player change Zone");
+        Beyond.debugInfo("player change from" + Arrays.toString(new String[]{from.getName()}) + " to Zone" + Arrays.toString(new String[]{to.getName()}));
     }
 }

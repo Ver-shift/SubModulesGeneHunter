@@ -12,7 +12,7 @@ public class PreEventPhase implements IRoguePhase {
 
     @Override
     public void enter(ServerLevel level, RogueContext ctx) {
-        ctx.node().handleOnEvent(level);
+        ctx.node().handlePreEvent(level);
         ctx.setAllPlayerState(level, PlayerRogueState.PRE_EVENT);
     }
 

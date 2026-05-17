@@ -18,10 +18,10 @@ import org.joml.Vector4f;
 
 import java.util.*;
 
-public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
+public class ActiveZoneBorderRenderer {
 
-    private static final int R = 64, G = 120, B = 220;
-    private static final float ALPHA = 0.65F;
+    private static final int R = 220, G = 220, B = 220;
+    private static final float ALPHA = 0.35F;
 
     private GpuBuffer vertexBuffer;
     private RenderSystem.AutoStorageIndexBuffer indices;
@@ -35,7 +35,6 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
         return indices;
     }
 
-    @Override
     public void render(Level level, Vec3 cameraPos, PoseStack poseStack) {
         if (level == null) return;
 
@@ -47,9 +46,9 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
         Set<Map.Entry<ChunkPos, ZoneType>> zones = zd.getZoneEntries();
         if (!zd.hasZones()) return;
 
-        var safe = ZoneHelper.filterByMask(zones, ZoneType.Safe_Zone.mask());
-        if (safe.isEmpty()) return;
-        ZoneHelper.Bounds b = safe.bounds();
+        var active = ZoneHelper.filterByMask(zones, ZoneType.Active_Zone.mask());
+        if (active.isEmpty()) return;
+        ZoneHelper.Bounds b = active.bounds();
 
         double bx1 = b.minX() * 16.0, bx2 = (b.maxX() + 1) * 16.0;
         double bz1 = b.minZ() * 16.0, bz2 = (b.maxZ() + 1) * 16.0;
@@ -80,10 +79,10 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
 
         try (RenderPass renderPass = RenderSystem.getDevice()
                 .createCommandEncoder()
-                .createRenderPass(() -> "Safe zone border", ctx.colorTarget(), OptionalInt.empty(), ctx.depthTarget(), OptionalDouble.empty())) {
+                .createRenderPass(() -> "Active zone border", ctx.colorTarget(), OptionalInt.empty(), ctx.depthTarget(), OptionalDouble.empty())) {
             RenderHelper.bindPassState(renderPass, ctx, dynamicTransforms, indexBuffer, indices, this.vertexBuffer);
 
-            List<RenderPass.Draw<SafeZoneBorderRenderer>> draws = new ArrayList<>(4);
+            List<RenderPass.Draw<ActiveZoneBorderRenderer>> draws = new ArrayList<>(4);
             for (int side = 0; side < 4; side++) {
                 draws.add(new RenderPass.Draw<>(0, this.vertexBuffer, indexBuffer, indices.type(), 6 * side, 6, 0));
             }
@@ -99,7 +98,7 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
 
         if (this.vertexBuffer == null) {
             this.vertexBuffer = RenderSystem.getDevice()
-                    .createBuffer(() -> "Safe zone border vbo",
+                    .createBuffer(() -> "Active zone border vbo",
                             GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
                             (long) vertexCount * vertexSize);
         }

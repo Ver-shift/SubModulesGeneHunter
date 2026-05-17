@@ -8,11 +8,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.common.NeoForge;
+import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.BeyondPlayerData;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.event.custom.PlayerChangeZoneEvent;
 import org.galaxy.beyond.api.init.BeyondAttachmentInit;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.BeyondPlayerData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
@@ -22,33 +22,32 @@ import java.util.stream.Collectors;
 
 public class ZoneManager implements IZoneManager {
 
-
     @Override
     public void onChunkLoad(ChunkAccess chunk) {
         if (!(chunk.getLevel() instanceof ServerLevel serverLevel)) return;
 
-        // 安全区未初始化时，不生成节点区域（初始化前的节点被安全区吸收）
         var dimData = BeyondAPI.getBeyondDimensionData(serverLevel);
         if (dimData.getSafeZoneStructureData().getInitialized() < 1) return;
 
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         BlockPos worldPos = new BlockPos(chunk.getPos().x() << 4, 0, chunk.getPos().z() << 4);
-        // TODO: 后续改为配置文件指定的结构标签，目前使用所有mod结构
         if (structureManager.hasAnyStructure(serverLevel, worldPos)) {
             addNodeZone(serverLevel, worldPos);
         }
     }
 
+    // ---- 内部辅助 ----
+
     private LevelZoneData getLZD(ServerLevel level) {
         return BeyondAPI.getBeyondDimensionData(level).getLevelZoneData();
     }
 
-    // 通过IAttachmentHolder.syncData触发NeoForge附件同步，内部路由至AttachmentSync.syncLevelUpdate
     private void syncLevelData(ServerLevel level) {
         level.syncData(BeyondAttachmentInit.GLOBAL_DATA.get());
     }
 
-    // 返回实际是否修改了数据，调用方据此决定是否需要syncLevelData
+    // ---- 基础 Zone 操作 ----
+
     @Override
     public boolean addZone(ServerLevel serverLevel, ChunkPos pos, ZoneType zoneType) {
         return getLZD(serverLevel).addZone(pos, zoneType);
@@ -56,17 +55,12 @@ public class ZoneManager implements IZoneManager {
 
     @Override
     public void addSafeZone(ServerLevel serverLevel, int chunkSize, BlockPos center) {
-        ChunkPos centerChunk = ChunkPos.containing(center);
+        ChunkPos cc = ChunkPos.containing(center);
         int radius = chunkSize / 2;
         LevelZoneData lzd = getLZD(serverLevel);
         boolean changed = false;
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                ChunkPos pos = new ChunkPos(centerChunk.x() + dx, centerChunk.z() + dz);
-                if (addZone(serverLevel, pos, ZoneType.Safe_Zone)) {
-                    changed = true;
-                }
-            }
+        for (ChunkPos p : ZoneHelper.expandSquare(cc, radius)) {
+            if (lzd.addZone(p, ZoneType.Safe_Zone)) changed = true;
         }
         if (changed) syncLevelData(serverLevel);
     }
@@ -77,244 +71,183 @@ public class ZoneManager implements IZoneManager {
         List<ChunkPos> chunks = structureManager.getStructureChunks(serverLevel, pos);
         LevelZoneData lzd = getLZD(serverLevel);
         boolean changed = false;
-        for (ChunkPos chunkPos : chunks) {
-            if (addZone(serverLevel, chunkPos, ZoneType.Node_Zone)) {
-                changed = true;
-            }
+        for (ChunkPos cp : chunks) {
+            if (cp == null) continue;
+            ZoneType existing = lzd.getZoneType(cp);
+            if (existing != null && existing.matches(ZoneType.Safe_Zone.mask())) continue;
+            if (lzd.addZone(cp, ZoneType.Node_Zone)) changed = true;
         }
         if (changed) syncLevelData(serverLevel);
     }
 
+    // ---- Active Zone 初始化与扩展 ----
+
     @Override
     public void activeZoneInit(ServerLevel serverLevel) {
         LevelZoneData lzd = getLZD(serverLevel);
-        Set<Map.Entry<ChunkPos, ZoneType>> zones = lzd.getZoneEntries();
-        Set<ChunkPos> safeChunks = getChunksByType(zones, ZoneType.Safe_Zone);
-        if (safeChunks.isEmpty()) return;
+        Set<Map.Entry<ChunkPos, ZoneType>> entries = lzd.getZoneEntries();
 
-        Set<ChunkPos> allNodeChunks = getChunksByType(zones, ZoneType.Node_Zone);
+        var safe = ZoneHelper.filterByMask(entries, ZoneType.Safe_Zone.mask());
+        if (safe.isEmpty()) return;
+        var nodes = ZoneHelper.filterByMask(entries, ZoneType.Node_Zone.mask());
+        ZoneHelper.Bounds safeBounds = safe.bounds();
 
-        // 安全区包围盒
-        int safeMinX = safeChunks.stream().mapToInt(ChunkPos::x).min().orElse(0);
-        int safeMaxX = safeChunks.stream().mapToInt(ChunkPos::x).max().orElse(0);
-        int safeMinZ = safeChunks.stream().mapToInt(ChunkPos::z).min().orElse(0);
-        int safeMaxZ = safeChunks.stream().mapToInt(ChunkPos::z).max().orElse(0);
+        var cfg = BeyondAPI.getGlobalData(serverLevel).getRogueConfig();
+        int minExpand = cfg.getMinNodeExpandChunks();
+        int maxExpand = cfg.getMaxNodeExpandRange();
+        int minNodes  = cfg.getMinNodeExpandCount();
 
-        int minExpand = CommonConfig.ACTIVE_ZONE_MIN_EXPAND.get();
-        int minNodes = CommonConfig.ACTIVE_ZONE_MIN_NODES.get();
-        int expand = minExpand;
-        int maxIterations = 200;
-
-        while (expand < maxIterations) {
-            int exMinX = safeMinX - expand;
-            int exMaxX = safeMaxX + expand;
-            int exMinZ = safeMinZ - expand;
-            int exMaxZ = safeMaxZ + expand;
-
-            int nodesCovered = countChunkClusters(allNodeChunks, exMinX, exMinZ, exMaxX, exMaxZ);
-            if (nodesCovered >= minNodes && expand >= minExpand) {
-                if (fillActiveZone(serverLevel, zones, exMinX, exMinZ, exMaxX, exMaxZ)) {
-                    syncLevelData(serverLevel);
-                }
+        // 从安全区向外逐层扩张，直到找到足够节点或达到最大距离
+        ZoneHelper.Bounds best = null;
+        for (int expand = minExpand; expand <= maxExpand; expand++) {
+            ZoneHelper.Bounds b = safeBounds.expanded(expand);
+            if (countClusters(nodes.chunks(), b) >= minNodes) {
+                if (fillActiveZone(serverLevel, entries, b)) syncLevelData(serverLevel);
                 return;
             }
-            expand++;
+            best = b;
+        }
+        // 达到最大距离仍未满足节点数，以最大范围注册（best 即 maxExpand 对应范围）
+        if (best != null && fillActiveZone(serverLevel, entries, best)) {
+            syncLevelData(serverLevel);
         }
     }
 
     @Override
     public void addActiveZone(ServerLevel serverLevel, RogueNodeData nodeData) {
         LevelZoneData lzd = getLZD(serverLevel);
-        Set<Map.Entry<ChunkPos, ZoneType>> zones = lzd.getZoneEntries();
+        Set<Map.Entry<ChunkPos, ZoneType>> entries = lzd.getZoneEntries();
+        List<ChunkPos> selfList = nodeData.getNodeData().getNodeChunks();
+        if (selfList.isEmpty()) return;
 
-        List<ChunkPos> nodeChunks = nodeData.getNodeData().getNodeChunks();
-        if (nodeChunks.isEmpty()) return;
+        Set<ChunkPos> selfChunks = new HashSet<>(selfList);
+        var allNodes = ZoneHelper.filterByMask(entries, ZoneType.Node_Zone.mask());
+        ZoneHelper.Bounds nodeBounds = ZoneHelper.boundsOf(selfChunks);
 
-        int nodeMinX = nodeChunks.stream().mapToInt(ChunkPos::x).min().orElse(0);
-        int nodeMaxX = nodeChunks.stream().mapToInt(ChunkPos::x).max().orElse(0);
-        int nodeMinZ = nodeChunks.stream().mapToInt(ChunkPos::z).min().orElse(0);
-        int nodeMaxZ = nodeChunks.stream().mapToInt(ChunkPos::z).max().orElse(0);
-
-        Set<ChunkPos> allNodeChunks = getChunksByType(zones, ZoneType.Node_Zone);
-        Set<ChunkPos> selfChunks = new HashSet<>(nodeChunks);
-        int radius = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
-        int minConnections = CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get();
-
+        int radius   = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
+        int minConns = CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get();
         int r = radius;
+
         while (r < 200) {
-            int exMinX = nodeMinX - r;
-            int exMaxX = nodeMaxX + r;
-            int exMinZ = nodeMinZ - r;
-            int exMaxZ = nodeMaxZ + r;
-
-            Set<ChunkPos> othersInRange = allNodeChunks.stream()
-                    .filter(p -> p.x() >= exMinX && p.x() <= exMaxX && p.z() >= exMinZ && p.z() <= exMaxZ)
+            ZoneHelper.Bounds b = nodeBounds.expanded(r);
+            Set<ChunkPos> others = allNodes.chunks().stream()
+                    .filter(b::contains)
                     .collect(Collectors.toCollection(HashSet::new));
-            othersInRange.removeAll(selfChunks);
+            others.removeAll(selfChunks);
 
-            int connections = countChunkClusters(othersInRange, exMinX, exMinZ, exMaxX, exMaxZ);
-            if (connections >= minConnections) {
-                if (fillActiveZone(serverLevel, zones, exMinX, exMinZ, exMaxX, exMaxZ)) {
-                    syncLevelData(serverLevel);
-                }
+            if (countClusters(others, b) >= minConns) {
+                if (fillActiveZone(serverLevel, entries, b)) syncLevelData(serverLevel);
                 return;
             }
             r++;
         }
     }
 
-    /**
-     * 从 zone 映射中提取指定类型的所有区块。
-     */
-    private Set<ChunkPos> getChunksByType(Set<Map.Entry<ChunkPos, ZoneType>> zones, ZoneType type) {
-        return zones.stream()
-                .filter(e -> e.getValue() == type)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toCollection(HashSet::new));
-    }
-
-    /**
-     * 统计矩形区域内连通分量的个数，每个分量对应一个独立的节点。
-     */
-    private int countChunkClusters(Set<ChunkPos> chunkSet, int minX, int minZ, int maxX, int maxZ) {
-        Set<ChunkPos> inArea = chunkSet.stream()
-                .filter(p -> p.x() >= minX && p.x() <= maxX && p.z() >= minZ && p.z() <= maxZ)
-                .collect(Collectors.toCollection(HashSet::new));
-
-        int clusters = 0;
-        while (!inArea.isEmpty()) {
-            ChunkPos seed = inArea.iterator().next();
-            floodFill(inArea, seed);
-            clusters++;
-        }
-        return clusters;
-    }
-
-    /**
-     * 四邻域洪泛填充，从集合中移除与 seed 连通的所有区块。
-     */
-    private void floodFill(Set<ChunkPos> remaining, ChunkPos seed) {
-        Deque<ChunkPos> stack = new ArrayDeque<>();
-        stack.push(seed);
-        while (!stack.isEmpty()) {
-            ChunkPos p = stack.pop();
-            if (!remaining.remove(p)) continue;
-            stack.push(new ChunkPos(p.x() + 1, p.z()));
-            stack.push(new ChunkPos(p.x() - 1, p.z()));
-            stack.push(new ChunkPos(p.x(), p.z() + 1));
-            stack.push(new ChunkPos(p.x(), p.z() - 1));
-        }
-    }
-
-    /**
-     * 将矩形区域内尚未归属任何 zone 的区块注册为 Active_Zone。
-     * @return 是否有新区块被添加
-     */
-    private boolean fillActiveZone(ServerLevel serverLevel, Set<Map.Entry<ChunkPos, ZoneType>> zones,
-                                int minX, int minZ, int maxX, int maxZ) {
-        Set<ChunkPos> existing = zones.stream().map(Map.Entry::getKey).collect(Collectors.toSet());
+    /** 将矩形区域内尚未归属任何 zone 的区块注册为 Active_Zone */
+    private boolean fillActiveZone(ServerLevel serverLevel,
+                                   Set<Map.Entry<ChunkPos, ZoneType>> entries, ZoneHelper.Bounds b) {
+        Set<ChunkPos> existing = entries.stream().map(Map.Entry::getKey).collect(Collectors.toSet());
         boolean changed = false;
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                ChunkPos pos = new ChunkPos(x, z);
-                if (!existing.contains(pos)) {
-                    if (addZone(serverLevel, pos, ZoneType.Active_Zone)) {
-                        changed = true;
-                    }
-                }
+        for (ChunkPos p : b.allChunks()) {
+            if (!existing.contains(p) && addZone(serverLevel, p, ZoneType.Active_Zone)) {
+                changed = true;
             }
         }
         return changed;
     }
 
+    // ---- 连通分量统计 ----
+
+    private static int countClusters(Set<ChunkPos> chunks, ZoneHelper.Bounds b) {
+        Set<ChunkPos> inArea = chunks.stream()
+                .filter(b::contains).collect(Collectors.toCollection(HashSet::new));
+        int clusters = 0;
+        while (!inArea.isEmpty()) {
+            floodFill(inArea, inArea.iterator().next());
+            clusters++;
+        }
+        return clusters;
+    }
+
+    private static void floodFill(Set<ChunkPos> remaining, ChunkPos seed) {
+        Deque<ChunkPos> stack = new ArrayDeque<>();
+        stack.push(seed);
+        while (!stack.isEmpty()) {
+            ChunkPos p = stack.pop();
+            if (!remaining.remove(p)) continue;
+            for (ChunkPos n : ZoneHelper.neighbors4(p)) stack.push(n);
+        }
+    }
+
+    // ---- Cap 操作 ----
+
     @Override
     public void addCap(ServerLevel serverLevel, ZoneType type, ZoneCapType zoneCapType) {
-        LevelZoneData lzd = getLZD(serverLevel);
-        ZoneData zoneData = lzd.getOrCreateZoneData(type);
-        zoneData.addCap(zoneCapType);
+        ZoneData zd = getLZD(serverLevel).getOrCreateZoneData(type);
+        zd.addCap(zoneCapType);
         syncLevelData(serverLevel);
     }
 
     @Override
     public void removeCap(ServerLevel serverLevel, ZoneType type, ZoneCapType zoneCapType) {
-        LevelZoneData lzd = getLZD(serverLevel);
-        ZoneData zoneData = lzd.getZoneData(type);
-        if (zoneData != null) {
-            zoneData.removeCap(zoneCapType);
-            syncLevelData(serverLevel);
-        }
+        ZoneData zd = getLZD(serverLevel).getZoneData(type);
+        if (zd != null) { zd.removeCap(zoneCapType); syncLevelData(serverLevel); }
     }
 
     @Override
     public void clearCap(ServerLevel serverLevel, ZoneType type) {
-        LevelZoneData lzd = getLZD(serverLevel);
-        ZoneData zoneData = lzd.getZoneData(type);
-        if (zoneData != null) {
-            zoneData.clearCaps();
-            syncLevelData(serverLevel);
-        }
+        ZoneData zd = getLZD(serverLevel).getZoneData(type);
+        if (zd != null) { zd.clearCaps(); syncLevelData(serverLevel); }
     }
 
     @Override
     public List<ZoneCapType> getCaps(ServerLevel serverLevel, ZoneType type) {
-        LevelZoneData lzd = getLZD(serverLevel);
-        ZoneData zoneData = lzd.getZoneData(type);
-        if (zoneData == null) return List.of();
-        return zoneData.getZoneCaps().stream()
-                .map(ZoneCapData::getType)
-                .toList();
+        ZoneData zd = getLZD(serverLevel).getZoneData(type);
+        if (zd == null) return List.of();
+        return zd.getZoneCaps().stream().map(ZoneCapData::getType).toList();
     }
 
     @Override
-    public void setCapLevel(ServerLevel serverLevel, ZoneType type, ZoneCapType zoneCapType, int capLevel) {
-        LevelZoneData lzd = getLZD(serverLevel);
-        ZoneData zoneData = lzd.getZoneData(type);
-        if (zoneData == null) return;
-        ZoneCapData capData = zoneData.getCapData(zoneCapType);
-        if (capData != null) {
-            capData.setLevel(capLevel);
-            syncLevelData(serverLevel);
-        }
+    public void setCapLevel(ServerLevel serverLevel, ZoneType type, ZoneCapType cap, int level) {
+        ZoneData zd = getLZD(serverLevel).getZoneData(type);
+        if (zd == null) return;
+        ZoneCapData cd = zd.getCapData(cap);
+        if (cd != null) { cd.setLevel(level); syncLevelData(serverLevel); }
     }
 
     @Override
-    public void addCapLevel(ServerLevel serverLevel, ZoneType type, ZoneCapType zoneCapType, int capLevel) {
-        LevelZoneData lzd = getLZD(serverLevel);
-        ZoneData zoneData = lzd.getZoneData(type);
-        if (zoneData == null) return;
-        ZoneCapData capData = zoneData.getCapData(zoneCapType);
-        if (capData != null) {
-            capData.addLevel(capLevel);
-            syncLevelData(serverLevel);
-        }
+    public void addCapLevel(ServerLevel serverLevel, ZoneType type, ZoneCapType cap, int delta) {
+        ZoneData zd = getLZD(serverLevel).getZoneData(type);
+        if (zd == null) return;
+        ZoneCapData cd = zd.getCapData(cap);
+        if (cd != null) { cd.addLevel(delta); syncLevelData(serverLevel); }
     }
+
+    // ---- Tick / 事件处理 ----
 
     @Override
     public void handleZoneRule(ServerLevel level) {
         LevelZoneData lzd = getLZD(level);
-        Set<ZoneType> tickedZones = new HashSet<>();
+        Set<ZoneType> tickedZones = EnumSet.noneOf(ZoneType.class);
 
         for (ServerPlayer player : level.players()) {
-            BeyondPlayerData playerData = BeyondAPI.getBeyondPlayerData(player);
-
-            ZoneType oldZone = playerData.getPlayerZoneData().getCurrentZone();
-            ZoneData newZoneData = lzd.getZoneData(player.getOnPos());
-            ZoneType newZone = newZoneData != null ? newZoneData.getZone() : ZoneType.Empty;
-            ZoneData oldZoneData = lzd.getZoneData(oldZone);
+            BeyondPlayerData pd = BeyondAPI.getBeyondPlayerData(player);
+            ZoneType oldZone = pd.getPlayerZoneData().getCurrentZone();
+            ZoneData newZd = lzd.getZoneData(player.getOnPos());
+            ZoneType newZone = newZd != null ? newZd.getZone() : ZoneType.Empty;
+            ZoneData oldZd = lzd.getZoneData(oldZone);
 
             if (tickedZones.add(newZone)) {
-                dispatch(newZoneData, cap -> cap.levelTick(level, newZone));
+                dispatch(newZd, cap -> cap.levelTick(level, newZone));
             }
-
-            dispatch(newZoneData, cap -> cap.playerTick(player, newZone));
+            dispatch(newZd, cap -> cap.playerTick(player, newZone));
 
             if (oldZone != newZone) {
-                playerData.getPlayerZoneData().setCurrentZone(newZone);
+                pd.getPlayerZoneData().setCurrentZone(newZone);
                 NeoForge.EVENT_BUS.post(new PlayerChangeZoneEvent(player, oldZone, newZone));
-
                 if (oldZone != ZoneType.Empty) {
-                    dispatch(oldZoneData, cap -> cap.playerChangeZone(player, oldZone, newZone));
-                    dispatch(newZoneData, cap -> cap.playerChangeZone(player, oldZone, newZone));
+                    dispatch(oldZd, cap -> cap.playerChangeZone(player, oldZone, newZone));
+                    dispatch(newZd, cap -> cap.playerChangeZone(player, oldZone, newZone));
                 }
             }
         }
@@ -324,24 +257,19 @@ public class ZoneManager implements IZoneManager {
     public void handlePlayerRightClickBlock(ServerPlayer player, BlockPos pos) {
         if (player == null || pos == null) return;
         ServerLevel level = player.level();
-        ZoneData zoneData = getLZD(level).getZoneData(pos);
-        Block block = level.getBlockState(pos).getBlock();
-        dispatch(zoneData, cap -> cap.playerRightClickBlock(player, block));
+        dispatch(getLZD(level).getZoneData(pos), cap -> cap.playerRightClickBlock(player, level.getBlockState(pos).getBlock()));
     }
 
     @Override
     public void handleMobTick(Mob mob) {
-        if (mob == null) return;
+        if (mob == null || mob.level().isClientSide()) return;
         ServerLevel level = (ServerLevel) mob.level();
-        ZoneData zoneData = getLZD(level).getZoneData(mob.blockPosition());
-        if (zoneData == null) return;
-        dispatch(zoneData, cap -> cap.mobTick(mob, zoneData.getZone()));
+        ZoneData zd = getLZD(level).getZoneData(mob.blockPosition());
+        if (zd != null) dispatch(zd, cap -> cap.mobTick(mob, zd.getZone()));
     }
 
-    private static void dispatch(ZoneData zoneData, Consumer<ZoneCapType> action) {
-        if (zoneData == null) return;
-        for (ZoneCapData capData : zoneData.getZoneCaps()) {
-            action.accept(capData.getType());
-        }
+    private static void dispatch(ZoneData zd, Consumer<ZoneCapType> action) {
+        if (zd == null) return;
+        for (ZoneCapData cd : zd.getZoneCaps()) action.accept(cd.getType());
     }
 }

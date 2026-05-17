@@ -32,6 +32,7 @@ public class RogueNodeManager implements IRogueNodeManager {
         // 触发事件，由 PhaseRunner 驱动
     }
 
+    @Override
     public void handlePreEvent(ServerLevel level) {
         // 抽取遭遇类型，填充 RogueNodeData
     }
@@ -39,19 +40,29 @@ public class RogueNodeManager implements IRogueNodeManager {
     @Override
     public NodeState getNodeState(ServerLevel level) {
         RogueNodeData data = getRogueNodeData(level);
-        return data != null ? data.getNodeData().getState() : NodeState.LOCKED;
+        if (data == null || data.getNodeData() == null) return NodeState.LOCKED;
+        return data.getNodeData().getState();
     }
 
     @Override
     public void setNodeState(ServerLevel level, NodeState state) {
-        RogueNodeData data = getRogueNodeData(level);
-        if (data != null && data.getNodeData() != null) {
-            data.getNodeData().setState(state);
+        RogueNodeData data = getOrInitRogueNodeData(level);
+        if (data.getNodeData() == null) {
+            data.setNodeData(new org.galaxy.beyond.api.system.node.NodeData());
         }
+        data.getNodeData().setState(state);
+    }
+
+    private RogueNodeData getOrInitRogueNodeData(ServerLevel level) {
+        var rogueData = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData();
+        if (rogueData.getRogueNodeData() == null) {
+            rogueData.setRogueNodeData(new RogueNodeData());
+        }
+        return rogueData.getRogueNodeData();
     }
 
     @Override
     public RogueNodeData getRogueNodeData(ServerLevel level) {
-        return BeyondAPI.getBeyondDimensionData(level).getRogueData().getRogueNodeData();
+        return BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getRogueNodeData();
     }
 }

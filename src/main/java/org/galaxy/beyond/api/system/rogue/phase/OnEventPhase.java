@@ -6,9 +6,10 @@ import org.galaxy.beyond.api.system.node.core.NodeState;
 import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.IRoguePhase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
+import org.galaxy.beyond.api.system.rogue.core.RogueState;
 
 /**
- * ON_EVENT 阶段：触发事件、拓展区域、推进进度。
+ * ON_EVENT 阶段：触发事件、拓展区域、解锁节点、推进进度。
  */
 public class OnEventPhase implements IRoguePhase {
 
@@ -31,17 +32,22 @@ public class OnEventPhase implements IRoguePhase {
         var nodeData = ctx.nodeData(level);
         if (nodeData != null) {
             BeyondAPI.getBeyondManager().getZoneManager().addActiveZone(level, nodeData);
-            ctx.node().setNodeState(level, NodeState.UNLOCKED);
         }
 
         int currentIdx = ctx.getProgressManager().getCurrentProgressIndex(level);
         int total = ctx.getProgressManager().getTotalProgress(level);
 
-        if (currentIdx >= total - 1) {
+        if (total > 0 && currentIdx >= total - 1) {
             ctx.setAllPlayerState(level, PlayerRogueState.REWARD);
+            ctx.forceTo(level, RogueState.ROGUE_PROGRESS_FINISH);
         } else {
             ctx.getProgressManager().advanceProgress(level);
             ctx.setAllPlayerState(level, PlayerRogueState.ON_PROGRESS);
+        }
+
+        // 最后才标记节点解锁
+        if (nodeData != null) {
+            ctx.node().setNodeState(level, NodeState.UNLOCKED);
         }
     }
 }

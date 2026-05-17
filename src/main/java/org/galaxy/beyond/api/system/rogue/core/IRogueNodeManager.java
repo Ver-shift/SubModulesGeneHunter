@@ -10,6 +10,7 @@ public interface IRogueNodeManager {
 
 
     void handleOnEvent(ServerLevel level);
+    void handlePreEvent(ServerLevel level);
 
     /**
      * 设置肉鸽节点的状态，

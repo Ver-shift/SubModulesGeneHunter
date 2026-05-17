@@ -6,7 +6,9 @@ import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.api.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class RogueContext {
 
@@ -17,6 +19,7 @@ public class RogueContext {
     private final ISceneManager sceneManager;
     @Getter
     private final ProgressManager progressManager;
+    private PhaseRunner runner;
 
     public RogueContext(IRogueNodeManager nodeManager, IPlayerRougeManager playerManager,
                         ISceneManager sceneManager, ProgressManager progressManager) {
@@ -26,8 +29,16 @@ public class RogueContext {
         this.progressManager = progressManager;
     }
 
+    void setRunner(PhaseRunner runner) {
+        this.runner = runner;
+    }
+
+    public void forceTo(ServerLevel level, RogueState state) {
+        if (runner != null) runner.forceState(level, state);
+    }
+
     public RogueData data(ServerLevel level) {
-        return BeyondAPI.getBeyondDimensionData(level).getRogueData();
+        return BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData();
     }
 
     public RogueState currentState(ServerLevel level) {
@@ -47,7 +58,14 @@ public class RogueContext {
     }
 
     public List<ServerPlayer> inGamePlayers(ServerLevel level) {
-        return data(level).getInGamePlayers();
+        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        List<ServerPlayer> result = new ArrayList<>();
+        var playerList = level.getServer().getPlayerList();
+        for (UUID id : cfg.getRoguePlayerIds()) {
+            ServerPlayer p = playerList.getPlayer(id);
+            if (p != null) result.add(p);
+        }
+        return result;
     }
 
     public boolean allPlayersMatch(ServerLevel level, PlayerRogueState state) {

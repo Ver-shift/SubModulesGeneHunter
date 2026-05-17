@@ -40,7 +40,6 @@ public class Beyond {
         newRegistry(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(BeyondCommand::register);
-
     }
 
     /**

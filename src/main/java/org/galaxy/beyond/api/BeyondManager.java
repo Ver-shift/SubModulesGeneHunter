@@ -1,10 +1,13 @@
 package org.galaxy.beyond.api;
 
 import lombok.Getter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.galaxy.beyond.api.pack.ProgressDataPack;
 import org.galaxy.beyond.api.system.node.NodeManager;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
@@ -63,5 +66,19 @@ public class BeyondManager implements IBeyondManager {
     @Override
     public void onChunkLoad(LevelChunk chunk) {
         zoneManager.onChunkLoad(chunk);
+    }
+
+    @Override
+    public void onServerStarted(MinecraftServer server) {
+        var globalData = BeyondAPI.getGlobalData(server.overworld());
+        if (globalData != null) {
+            globalData.getRogueConfig().reset();
+        }
+        ProgressDataPack.applyPending(server);
+    }
+
+    @Override
+    public void onPlayerRightClickBlock(ServerPlayer player, BlockPos pos) {
+        zoneManager.handlePlayerRightClickBlock(player, pos);
     }
 }

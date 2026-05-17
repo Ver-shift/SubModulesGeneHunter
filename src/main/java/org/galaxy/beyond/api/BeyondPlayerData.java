@@ -17,13 +17,13 @@ public class BeyondPlayerData implements IPersistedSerializable {
 
     @DescSynced
     @Persisted(subPersisted = true)
-    private final PlayerRogueData playerRogueData = new PlayerRogueData();
+    private PlayerRogueData playerRogueData = new PlayerRogueData();
     @DescSynced
     @Persisted(subPersisted = true)
-    private final PlayerZoneData playerZoneData = new PlayerZoneData();
+    private PlayerZoneData playerZoneData = new PlayerZoneData();
     @DescSynced
     @Persisted(subPersisted = true)
-    private final PlayerStatisticsData playerStatisticsData = new PlayerStatisticsData();
+    private PlayerStatisticsData playerStatisticsData = new PlayerStatisticsData();
 
     public static final MapCodec<BeyondPlayerData> CODEC = PersistedParser.createMapCodec(BeyondPlayerData::new);
     public static final StreamCodec<ByteBuf, BeyondPlayerData> STREAM_CODEC = PersistedParser.createStreamCodec(BeyondPlayerData::new);

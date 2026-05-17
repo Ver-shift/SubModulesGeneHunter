@@ -13,11 +13,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.LevelData;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondMobEffectInit;
 import org.galaxy.beyond.api.BeyondAPI;
 import org.galaxy.beyond.api.BeyondPlayerData;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
+import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
 import java.util.*;
@@ -28,7 +28,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
     private static final int FALLBACK_CHUNK_SIZE = 3;
 
     public void initialize(ServerLevel level) {
-        if (!level.dimension().equals(CommonConfig.getRogueDimension())) return;
+        if (!level.dimension().equals(BeyondAPI.getGlobalData(level).getRogueConfig().getRogueDimension())) return;
 
         var data = BeyondAPI.getBeyondDimensionData(level).getSafeZoneStructureData();
         if (data.getInitialized() >= 1) return;
@@ -74,7 +74,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
     @Override
     public void onPlayerEnterDimension(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
-        if (!level.dimension().equals(CommonConfig.getRogueDimension())) return;
+        if (!level.dimension().equals(BeyondAPI.getGlobalData(level).getRogueConfig().getRogueDimension())) return;
 
         BeyondPlayerData playerData = BeyondAPI.getBeyondPlayerData(player);
         if (playerData.getPlayerRogueData().isFirstSpawnDone()) return;
@@ -120,22 +120,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         var zoneEntries = dimData.getLevelZoneData().getZoneEntries();
         if (!dimData.getLevelZoneData().hasZones()) return;
 
-        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
-        int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
-        boolean found = false;
-
-        for (var entry : zoneEntries) {
-            if (entry.getValue() != ZoneType.Safe_Zone) continue;
-            int cx = entry.getKey().x(), cz = entry.getKey().z();
-            if (cx < minX) minX = cx;
-            if (cx > maxX) maxX = cx;
-            if (cz < minZ) minZ = cz;
-            if (cz > maxZ) maxZ = cz;
-            found = true;
-        }
-        if (!found) return;
-
-        BlockPos center = new BlockPos((minX + maxX + 1) * 8, 0, (minZ + maxZ + 1) * 8);
+        var safe = ZoneHelper.filterByMask(zoneEntries, ZoneType.Safe_Zone.mask());
+        if (safe.isEmpty()) return;
+        ZoneHelper.Bounds b = safe.bounds();
+        BlockPos center = new BlockPos((b.minX() + b.maxX() + 1) * 8, 0, (b.minZ() + b.maxZ() + 1) * 8);
         BlockPos safePos = findSafeSpawnAt(level, center);
         if (safePos == null) return;
 
@@ -144,7 +132,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     @Override
     public void playerTick(ServerPlayer player) {
-        if (!CommonConfig.DEBUG_MODE.get()) return;
+        if (!BeyondAPI.getGlobalData(player.level()).getRogueConfig().isDebugMode()) return;
 
         var zone = BeyondAPI.getBeyondPlayerData(player).getPlayerZoneData().getCurrentZone();
         int level = switch (zone) {

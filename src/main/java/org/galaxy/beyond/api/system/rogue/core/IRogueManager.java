@@ -3,6 +3,7 @@ package org.galaxy.beyond.api.system.rogue.core;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import org.galaxy.beyond.api.system.rogue.ProgressManager;
 
 /**
  * 以点带面回点 玩家状态->肉鸽状态->节点状态
@@ -23,5 +24,6 @@ public interface IRogueManager {
     IPlayerRougeManager getPlayerRougeManager();
     IRogueNodeManager getRogueNodeManager();
 
+    ProgressManager getProgressManager();
 
 }

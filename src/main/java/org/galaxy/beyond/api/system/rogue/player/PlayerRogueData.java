@@ -9,25 +9,20 @@ import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 @Data
 public class PlayerRogueData implements IPersistedSerializable {
 
-    @DescSynced
     @Persisted
     private PlayerRogueState state = PlayerRogueState.LOBBY;
-    @DescSynced
     @Persisted
     private int lifeCount;
-    @DescSynced
     @Persisted
     private int maxLifeCount;
-    @DescSynced
     @Persisted
     private int deathCount;
-    @DescSynced
     @Persisted
     private long readyTimestamp;
-    @DescSynced
     @Persisted
     private int spectatorTicks;
-    @DescSynced
     @Persisted
     private boolean firstSpawnDone;
+    @Persisted
+    private long lastLeaveSafeZoneTime;
 }

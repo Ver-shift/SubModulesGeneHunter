@@ -2,10 +2,15 @@ package org.galaxy.beyond.api.system.zone;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.ReadOnlyManaged;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.Collections;
@@ -31,7 +36,8 @@ public class LevelZoneData implements IPersistedSerializable {
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
     @Persisted
-    private final Map<ZoneType, ZoneData> levelZoneData = new HashMap<>();
+    @ReadOnlyManaged(serializeMethod = "levelZoneDataSerialize", deserializeMethod = "levelZoneDataDeserialize")
+    private Map<ZoneType, ZoneData> levelZoneData = new HashMap<>();
 
     // ---- 区块区域类型查询 ----
 
@@ -72,5 +78,23 @@ public class LevelZoneData implements IPersistedSerializable {
         levelZone.put(chunkPos, zoneType);
         getOrCreateZoneData(zoneType);
         return true;
+    }
+
+    public CompoundTag levelZoneDataSerialize(Map<ZoneType, ZoneData> m) {
+        var keys = new ListTag();
+        m.keySet().forEach(k -> keys.add(StringTag.valueOf(k.name())));
+        var c = new CompoundTag();
+        c.put("keys", keys);
+        return c;
+    }
+
+    public Map<ZoneType, ZoneData> levelZoneDataDeserialize(CompoundTag c) {
+        var m = new HashMap<ZoneType, ZoneData>();
+        var keys = c.getListOrEmpty("keys");
+        for (Tag e : keys) {
+            var zoneType = ZoneType.valueOf(e.asString().orElse(""));
+            m.put(zoneType, new ZoneData(zoneType));
+        }
+        return m;
     }
 }

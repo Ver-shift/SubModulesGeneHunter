@@ -27,7 +27,8 @@ public class LootBag extends Item {
             if (!player.getAbilities().instabuild) {
                 player.getItemInHand(hand).shrink(1);
             }
-        }else {
+        }else if (player instanceof ServerPlayer serverPlayer
+                && !BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager().isInRogue(serverPlayer)){
             player.sendSystemMessage(Component.translatable("beyond.rogue.not_in_game"));
         }
 

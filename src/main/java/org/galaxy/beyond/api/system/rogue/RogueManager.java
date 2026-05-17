@@ -5,12 +5,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.*;
 import org.galaxy.beyond.api.system.rogue.player.PlayerRougeManager;
-
-import java.util.List;
 
 public class RogueManager implements IRogueManager {
 
@@ -34,12 +31,9 @@ public class RogueManager implements IRogueManager {
         sceneManager = new SceneManager();
         progressManager = new ProgressManager();
 
-        // 注册默认行动路线
-        progressManager.registerRoute(ProgressManager.createDefaultRoute());
-        progressManager.setCurrentRoute(progressManager.getRoute(Beyond.asResource("default").toString()));
-
         ctx = new RogueContext(rogueNodeManager, playerRougeManager, sceneManager, progressManager);
         runner = new PhaseRunner(RoguePipeline.build(), ctx, RogueState.LOBBY);
+        ctx.setRunner(runner);
         rogueStateManager = new RogueStateManager(runner, ctx);
     }
 
@@ -51,8 +45,7 @@ public class RogueManager implements IRogueManager {
     @Override
     public void tick(ServerLevel level) {
         runner.tick(level);
-        List<ServerPlayer> playerList = BeyondAPI.getBeyondDimensionData(level).getRogueData().getInGamePlayers();
-        for (ServerPlayer player : playerList) {
+        for (ServerPlayer player : ctx.inGamePlayers(level)) {
             playerRougeManager.tick(player);
         }
     }

@@ -9,6 +9,7 @@ public class PhaseRunner {
     private StepNode current;
     private final RogueContext ctx;
     private boolean entered;
+    private boolean justEntered;
 
     public PhaseRunner(Pipeline pipeline, RogueContext ctx, RogueState initialState) {
         this.pipeline = pipeline;
@@ -23,9 +24,10 @@ public class PhaseRunner {
         if (!entered) {
             current.phase.enter(level, ctx);
             entered = true;
+            justEntered = true;
         }
 
-        if (current.transition != null && current.transition.isSatisfied(level, ctx)) {
+        if (!justEntered && current.transition != null && current.transition.isSatisfied(level, ctx)) {
             current.phase.exit(level, ctx);
             current.transition.onTransition(level, ctx);
 
@@ -36,9 +38,11 @@ public class PhaseRunner {
             }
 
             current.phase.enter(level, ctx);
+            justEntered = true;
         }
 
         current.phase.tick(level, ctx);
+        justEntered = false;
     }
 
     public RogueState currentState() {
@@ -52,6 +56,8 @@ public class PhaseRunner {
             current = target;
             ctx.setState(level, state);
             current.phase.enter(level, ctx);
+            entered = true;
+            justEntered = true;
         }
     }
 }

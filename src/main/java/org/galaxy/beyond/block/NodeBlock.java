@@ -3,6 +3,8 @@ package org.galaxy.beyond.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +17,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.node.core.NodeState;
 
 import javax.annotation.Nullable;
 
@@ -78,5 +83,28 @@ public class NodeBlock extends HorizontalDirectionalBlock {
             }
         }
         return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                               Player player, BlockHitResult hitResult) {
+        if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
+        }
+
+        var rogueManager = BeyondAPI.getBeyondManager().getRogueManager();
+        var playerManager = rogueManager.getPlayerRougeManager();
+        if (!playerManager.isInRogue(serverPlayer)) return InteractionResult.PASS;
+
+        var nodeManager = rogueManager.getRogueNodeManager();
+        NodeState nodeState = nodeManager.getNodeState((net.minecraft.server.level.ServerLevel) level);
+
+        switch (nodeState) {
+            case LOCKED -> playerManager.clickNodeBlock(serverPlayer);
+            case PRE_NODE, PRE_EVENT, ON_EVENT -> playerManager.clickNodeBlock(serverPlayer);
+            case UNLOCKED -> {} // 已解锁，可传送
+        }
+
+        return InteractionResult.SUCCESS;
     }
 }

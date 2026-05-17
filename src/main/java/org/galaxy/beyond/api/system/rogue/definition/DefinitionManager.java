@@ -20,9 +20,9 @@ public class DefinitionManager implements IDefinitionManager {
     public EventTask resolveEvent(ServerLevel level, EncounterType encounterType) {
         List<RogueEventType> allEvents = new ArrayList<>();
 
-        BeyondGlobalData globalData = BeyondAPI.getGlobalData(level);
+        BeyondGlobalData globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
         RandomSource random = globalData.getRogueRandom().getProgressRandom();
-        ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(level).getRogueData().getProgressType();
+        ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getProgressType();
         ProgressDefinition definition = globalData.getRogueDefinition().getRogueProgress().get(currentProgress.getId());
 
         for (Encounter encounter : definition.getEncounters()) {
@@ -44,9 +44,9 @@ public class DefinitionManager implements IDefinitionManager {
 
     @Override
     public List<SceneType> resolveScenes(ServerLevel level) {
-        BeyondGlobalData globalData = BeyondAPI.getGlobalData(level);
+        BeyondGlobalData globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
         RandomSource random = globalData.getRogueRandom().getProgressRandom();
-        ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(level).getRogueData().getProgressType();
+        ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getProgressType();
         ProgressDefinition definition = globalData.getRogueDefinition().getRogueProgress().get(currentProgress.getId());
 
         // 按 order 排序后，每个 roll 从自身加权条目中抽取 1 个 SceneType

@@ -9,6 +9,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
@@ -67,10 +68,18 @@ public class BeyondManagerEventHandle {
         }
     }
 
+    @SubscribeEvent
+    public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            BeyondAPI.getBeyondManager().onPlayerRightClickBlock(player, event.getPos());
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onServerStarted(ServerStartedEvent event) {
         Beyond.SERVER = event.getServer();
         Beyond.OVERWORLD = Beyond.SERVER.overworld();
+        BeyondAPI.getBeyondManager().onServerStarted(Beyond.SERVER);
     }
 
 }

@@ -3,46 +3,26 @@ package org.galaxy.beyond.api.system.rogue;
 import lombok.Getter;
 import org.galaxy.beyond.api.system.node.NodeColor;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+
+/**
+ * 遭遇类型 = SceneType(进度类型) × NodeColor(节点颜色) 的 9 种组合。
+ * 蓝色节点表示已解锁，无遭遇。
+ */
 @Getter
 public enum EncounterType {
 
-    /**
-     * 有趣的事件或者解密
-     */
     Green_Event(NodeColor.GREEN, SceneType.HARVEST),
-    /**
-     * 篝火，纯粹的回复血量
-     */
     Green_Bonfire(NodeColor.GREEN, SceneType.REPOSE),
-    /**
-     * 商店+Boss
-     */
     Green_BossShop(NodeColor.GREEN, SceneType.CLIMAX),
 
-    /**
-     * 普通的怪物
-     */
     Orange_NormalMonster(NodeColor.ORANGE, SceneType.HARVEST),
-    /**
-     * 普通商店
-     */
     Orange_NormalShop(NodeColor.ORANGE, SceneType.REPOSE),
-    /**
-     * 商店+Boss
-     */
     Orange_BossShop(NodeColor.ORANGE, SceneType.CLIMAX),
 
-    /**
-     * 精英怪挑战
-     */
     Red_EliteMonster(NodeColor.RED, SceneType.HARVEST),
-    /**
-     * 诅咒商店
-     */
     Red_CursedShop(NodeColor.RED, SceneType.REPOSE),
-    /**
-     * 商店+Boss
-     */
     Red_BossShop(NodeColor.RED, SceneType.CLIMAX);
 
     private final NodeColor color;
@@ -51,5 +31,27 @@ public enum EncounterType {
     EncounterType(NodeColor color, SceneType sceneType) {
         this.color = color;
         this.sceneType = sceneType;
+    }
+
+    private static final EnumMap<NodeColor, EnumMap<SceneType, EncounterType>> LOOKUP = new EnumMap<>(NodeColor.class);
+    static {
+        for (var et : values()) {
+            LOOKUP.computeIfAbsent(et.color, c -> new EnumMap<>(SceneType.class)).put(et.sceneType, et);
+        }
+    }
+
+    /** 根据节点颜色和进度类型查找对应的遭遇类型，蓝色节点返回空 */
+    public static EncounterType from(NodeColor color, SceneType scene) {
+        var byScene = LOOKUP.get(color);
+        return byScene != null ? byScene.get(scene) : null;
+    }
+
+    /** 返回指定 SceneType 下所有可能的 EncounterType (排除 BLUE) */
+    public static EnumSet<EncounterType> byScene(SceneType scene) {
+        var result = EnumSet.noneOf(EncounterType.class);
+        for (var et : values()) {
+            if (et.sceneType == scene) result.add(et);
+        }
+        return result;
     }
 }
