@@ -34,6 +34,7 @@
   "beyond.node.next_event": "Event complete! Ready for next event",
   "beyond.node.unlocked": "Node unlocked! All events completed",
   "beyond.node.already_unlocked": "This node is already unlocked",
+  "beyond.node.not_in_rogue": "Leave the safe zone first to interact with nodes",
 
   "beyond.info.clear_inventory": "Recycled %s items, total value %s",
   "beyond.info.leave_too_frequent": "Entering/leaving safe zone too frequently! Please wait %s seconds.",

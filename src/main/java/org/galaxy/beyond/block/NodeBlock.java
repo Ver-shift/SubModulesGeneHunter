@@ -3,6 +3,7 @@ package org.galaxy.beyond.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -95,14 +96,17 @@ public class NodeBlock extends HorizontalDirectionalBlock {
 
         var rogueManager = BeyondAPI.getBeyondManager().getRogueManager();
         var playerManager = rogueManager.getPlayerRougeManager();
-        if (!playerManager.isInRogue(serverPlayer)) return InteractionResult.PASS;
+        if (!playerManager.isInRogue(serverPlayer)) {
+            serverPlayer.sendSystemMessage(Component.translatable("beyond.node.not_in_rogue"));
+            return InteractionResult.SUCCESS;
+        }
 
         var nodeManager = rogueManager.getRogueNodeManager();
         NodeState nodeState = nodeManager.getNodeState((net.minecraft.server.level.ServerLevel) level);
 
         switch (nodeState) {
             case LOCKED, PRE_NODE, PRE_EVENT, ON_EVENT -> playerManager.clickNodeBlock(serverPlayer);
-            case UNLOCKED -> {} // 已解锁，可传送
+            case UNLOCKED -> serverPlayer.sendSystemMessage(Component.translatable("beyond.node.already_unlocked"));
         }
 
         return InteractionResult.SUCCESS;

@@ -34,6 +34,7 @@
   "beyond.node.next_event": "当前事件完成！准备进入下一个事件",
   "beyond.node.unlocked": "节点已解锁！所有事件已完成",
   "beyond.node.already_unlocked": "该节点已解锁",
+  "beyond.node.not_in_rogue": "你需要先离开安全区才能交互节点",
 
   "beyond.info.clear_inventory": "已回收 %s 件物品，总价值 %s",
   "beyond.info.leave_too_frequent": "出入安全区太频繁了！请等待 %s 秒后再试。",
