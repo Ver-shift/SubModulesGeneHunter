@@ -36,9 +36,12 @@ public class BeyondManager implements IBeyondManager {
         safeZoneStructureManager.initialize(level);
     }
 
+    private boolean serverReady;
+
     @Override
     public void levelTick(ServerLevel level) {
         zoneManager.handleZoneRule(level);
+        if (!serverReady) return;
         if (level.dimension().equals(BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getRogueDimension())) {
             rogueManager.tick(level);
         }
@@ -77,6 +80,7 @@ public class BeyondManager implements IBeyondManager {
             globalData.getRogueConfig().reset();
         }
         ProgressDataPack.applyPending(server);
+        serverReady = true;
     }
 
     @Override

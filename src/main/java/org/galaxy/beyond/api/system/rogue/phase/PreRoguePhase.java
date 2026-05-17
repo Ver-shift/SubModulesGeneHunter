@@ -24,7 +24,7 @@ public class PreRoguePhase implements IRoguePhase {
     @Override
     public void tick(ServerLevel level, RogueContext ctx) {
         tickCounter++;
-        if (tickCounter % 100 != 0) return; // 每5秒播报一次
+        if (tickCounter % 100 != 0) return;
 
         var players = ctx.inGamePlayers(level);
         int total = players.size();
@@ -35,7 +35,10 @@ public class PreRoguePhase implements IRoguePhase {
             if (ctx.getPlayerManager().getState(p) == PlayerRogueState.PRE_ROGUE) ready++;
         }
 
-        level.getServer().sendSystemMessage(
-                Component.translatable("beyond.rogue.ready_status", ready, total));
+        // 只有未全员就绪时才播报
+        if (ready < total) {
+            level.getServer().sendSystemMessage(
+                    Component.translatable("beyond.rogue.ready_status", ready, total));
+        }
     }
 }

@@ -5,10 +5,12 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -20,19 +22,60 @@ import java.util.*;
 
 public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
 
-    private static final int R = 64, G = 120, B = 220;
     private static final float ALPHA = 0.65F;
+
+    // 安全区内：蓝色
+    private static final int R_BLUE = 64, G_BLUE = 120, B_BLUE = 220;
+    // 奖励袋发放后：橙色
+    private static final int R_ORANGE = 220, G_ORANGE = 140, B_ORANGE = 30;
+    // 关卡启动后：红色
+    private static final int R_RED = 200, G_RED = 30, B_RED = 30;
 
     private GpuBuffer vertexBuffer;
     private RenderSystem.AutoStorageIndexBuffer indices;
     private boolean needsRebuild = true;
     private double lastMinX, lastMinZ, lastMaxX, lastMaxZ;
+    private int frameCounter;
+    private int currentR = R_BLUE, currentG = G_BLUE, currentB = B_BLUE;
+    private int targetR = R_BLUE, targetG = G_BLUE, targetB = B_BLUE;
 
     private RenderSystem.AutoStorageIndexBuffer getIndices() {
         if (indices == null) {
             indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
         }
         return indices;
+    }
+
+    private static void resolveColor(PlayerRogueState state, int[] out) {
+        switch (state) {
+            case LOBBY -> { out[0] = R_BLUE;  out[1] = G_BLUE;  out[2] = B_BLUE;  }
+            case PRE_ROGUE -> { out[0] = R_ORANGE; out[1] = G_ORANGE; out[2] = B_ORANGE; }
+            default -> { out[0] = R_RED;   out[1] = G_RED;   out[2] = B_RED;   }
+        }
+    }
+
+    private void updateColor(Level level) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) {
+            targetR = R_BLUE; targetG = G_BLUE; targetB = B_BLUE;
+            return;
+        }
+        try {
+            var playerData = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get());
+            if (playerData != null) {
+                int[] out = {R_BLUE, G_BLUE, B_BLUE};
+                resolveColor(playerData.getPlayerRogueData().getState(), out);
+                targetR = out[0]; targetG = out[1]; targetB = out[2];
+            }
+        } catch (Exception ignored) {
+            targetR = R_BLUE; targetG = G_BLUE; targetB = B_BLUE;
+        }
+
+        // 平滑过渡
+        float rate = 0.1f;
+        currentR = currentR + (int)((targetR - currentR) * rate + 0.5f);
+        currentG = currentG + (int)((targetG - currentG) * rate + 0.5f);
+        currentB = currentB + (int)((targetB - currentB) * rate + 0.5f);
     }
 
     @Override
@@ -57,14 +100,14 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
 
         if (needsRebuild || bx1 != lastMinX || bz1 != lastMinZ || bx2 != lastMaxX || bz2 != lastMaxZ) {
             rebuildBuffer(bx1, bz1, bx2, bz2, halfHeight);
-            lastMinX = bx1;
-            lastMinZ = bz1;
-            lastMaxX = bx2;
-            lastMaxZ = bz2;
+            lastMinX = bx1; lastMinZ = bz1; lastMaxX = bx2; lastMaxZ = bz2;
             needsRebuild = false;
         }
 
-        float red = R / 255.0F, green = G / 255.0F, blue = B / 255.0F;
+        frameCounter++;
+        if (frameCounter % 20 == 0) updateColor(level);
+
+        float red = currentR / 255.0F, green = currentG / 255.0F, blue = currentB / 255.0F;
         float offset = (float) (System.currentTimeMillis() % 3000L) / 3000.0F;
 
         var ctx = RenderHelper.captureRenderContext();
