@@ -33,6 +33,11 @@ public enum EncounterType {
         this.sceneType = sceneType;
     }
 
+    /** 翻译键: beyond.encounter.<name> */
+    public String getTranslationKey() {
+        return "beyond.encounter." + name().toLowerCase();
+    }
+
     private static final EnumMap<NodeColor, EnumMap<SceneType, EncounterType>> LOOKUP = new EnumMap<>(NodeColor.class);
     static {
         for (var et : values()) {

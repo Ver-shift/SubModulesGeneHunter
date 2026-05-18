@@ -2,14 +2,13 @@ package org.galaxy.beyond.api.system.rogue.definition;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
-import org.galaxy.beyond.api.init.BeyondRogueEventTypeInit;
 import org.galaxy.beyond.api.system.rogue.EncounterType;
 import org.galaxy.beyond.api.system.rogue.EventTask;
 import org.galaxy.beyond.api.system.rogue.SceneType;
@@ -29,11 +28,9 @@ import java.util.List;
 @AllArgsConstructor
 public class ProgressDefinition implements IPersistedSerializable {
 
-    @DescSynced
     @Persisted(subPersisted = true)
     private List<SceneRoll> sceneRolls;
 
-    @DescSynced
     @Persisted(subPersisted = true)
     private List<Encounter> encounters;
 
@@ -57,12 +54,10 @@ public class ProgressDefinition implements IPersistedSerializable {
     @AllArgsConstructor
     public static class SceneRoll {
         /** 触发顺序，小值优先 */
-        @DescSynced
     @Persisted
         @Builder.Default
         private int order = 1;
 
-        @DescSynced
     @Persisted(subPersisted = true)
         @Builder.Default
         private List<SceneEntry> entries = List.of();
@@ -88,11 +83,9 @@ public class ProgressDefinition implements IPersistedSerializable {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SceneEntry {
-        @DescSynced
     @Persisted
         @Builder.Default
         private int weight = 1;
-        @DescSynced
     @Persisted
         private SceneType scene;
 
@@ -117,11 +110,9 @@ public class ProgressDefinition implements IPersistedSerializable {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class EventRoll {
-        @DescSynced
     @Persisted
         @Builder.Default
         private int weight = 1;
-        @DescSynced
     @Persisted(subPersisted = true)
         private EventTask task;
 
@@ -146,10 +137,8 @@ public class ProgressDefinition implements IPersistedSerializable {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Encounter {
-        @DescSynced
     @Persisted
         private EncounterType type;
-        @DescSynced
     @Persisted(subPersisted = true)
         @Builder.Default
         private List<EventRoll> events = List.of();
@@ -163,6 +152,7 @@ public class ProgressDefinition implements IPersistedSerializable {
     // 编译器验证
     // ============================================================
     public static void test() {
+        var emptyTask = new EventTask(List.of());
         var def = ProgressDefinition.builder()
                 .sceneRolls(List.of(
                         SceneRoll.of(1,
@@ -175,13 +165,18 @@ public class ProgressDefinition implements IPersistedSerializable {
                         )
                 ))
                 .encounters(List.of(
-                        Encounter.builder()
-                                .type(EncounterType.Green_Event)
-                                .events(List.of(
-                                        EventRoll.of(8, new EventTask(BeyondRogueEventTypeInit.MONSTER,BeyondRogueEventTypeInit.SHOP)),
-                                        EventRoll.of(2, new EventTask(List.of()))
-                                ))
-                                .build()
+                        // GREEN 节点
+                        Encounter.builder().type(EncounterType.Green_Event).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        Encounter.builder().type(EncounterType.Green_Bonfire).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        Encounter.builder().type(EncounterType.Green_BossShop).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        // ORANGE 节点
+                        Encounter.builder().type(EncounterType.Orange_NormalMonster).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        Encounter.builder().type(EncounterType.Orange_NormalShop).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        Encounter.builder().type(EncounterType.Orange_BossShop).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        // RED 节点
+                        Encounter.builder().type(EncounterType.Red_EliteMonster).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        Encounter.builder().type(EncounterType.Red_CursedShop).events(List.of(EventRoll.of(1, emptyTask))).build(),
+                        Encounter.builder().type(EncounterType.Red_BossShop).events(List.of(EventRoll.of(1, emptyTask))).build()
                 ))
                 .build();
     }

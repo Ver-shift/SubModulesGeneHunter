@@ -9,7 +9,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -42,7 +41,6 @@ public class NodeBorderRenderer {
 
     public void render(Level level, Vec3 cameraPos, PoseStack poseStack) {
         if (level == null) return;
-        if (!CommonConfig.DEBUG_MODE.get()) return;
 
         var dimData = BeyondAPI.getBeyondDimensionData(level);
         if (dimData == null) return;

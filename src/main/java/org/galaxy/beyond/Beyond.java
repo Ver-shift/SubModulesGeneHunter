@@ -52,10 +52,10 @@ public class Beyond {
     }
 
     public void newRegistry(IEventBus modEventBus) {
-        modEventBus.addListener(BeyondRogueEventTypeInit::registerRegistry);
-        modEventBus.addListener(BeyondZoneNodeCapInit::registerRegistry);
-        BeyondRogueEventTypeInit.register(modEventBus);
+        modEventBus.addListener(BeyondRegistries::registerRegistries);
+        BeyondRegistries.register(modEventBus);
         BeyondZoneNodeCapInit.register(modEventBus);
+        BeyondPhaseInit.register(modEventBus);
         BeyondComponentInit.register(modEventBus);
         BeyondBlockInit.register(modEventBus);
         BeyondItemInit.register(modEventBus);

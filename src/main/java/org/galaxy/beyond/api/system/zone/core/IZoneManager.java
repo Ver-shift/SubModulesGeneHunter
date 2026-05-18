@@ -54,5 +54,7 @@ public interface IZoneManager {
 
     void handlePlayerRightClickBlock(ServerPlayer player, BlockPos pos);
 
+    void handlePlayerUseItem(ServerPlayer player, net.minecraft.world.item.Item item);
+
     void handleMobTick(Mob mob);
 }

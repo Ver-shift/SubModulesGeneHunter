@@ -11,7 +11,7 @@ import org.galaxy.beyond.api.pack.ProgressDataPack;
 import org.galaxy.beyond.api.system.node.NodeManager;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
-import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
+import org.galaxy.beyond.api.system.rogue.definition.DefinitionManager;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.StructureManager;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
@@ -25,11 +25,13 @@ public class BeyondManager implements IBeyondManager {
     @Getter
     private final INodeManager nodeManager = new NodeManager();
     @Getter
-    private final IRogueManager rogueManager = new RogueManager();
-    @Getter
     private final IStructureManager structureManager = new StructureManager();
     @Getter
     private final ISafeZoneStructureManager safeZoneStructureManager = new SafeZoneStructureManager();
+    @Getter
+    private final RogueManager rogueManager = new RogueManager();
+    @Getter
+    private final DefinitionManager definitionManager = new DefinitionManager();
 
     @Override
     public void onLevelLoad(ServerLevel level) {

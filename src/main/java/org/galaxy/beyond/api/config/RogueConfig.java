@@ -1,7 +1,6 @@
 package org.galaxy.beyond.api.config;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.mojang.serialization.MapCodec;
@@ -27,18 +26,18 @@ public class RogueConfig implements IPersistedSerializable, IRogueConfig {
 
     // ==== 配置文件可覆盖（nullable = 未覆盖，reset() 清除） ====
 
-    @DescSynced @Persisted @Setter private Boolean debugMode;
-    @DescSynced @Persisted @Setter private Integer safeZoneSize;
-    @DescSynced @Persisted @Setter private Integer minNodeExpandCount;
-    @DescSynced @Persisted @Setter private Integer minNodeExpandChunks;
-    @DescSynced @Persisted @Setter private Integer maxNodeExpandRange;
-    @DescSynced @Persisted @Setter private Identifier currentProgress;
-    @DescSynced @Persisted @Setter private ResourceKey<Level> rogueDimension;
+    @Persisted @Setter private Boolean debugMode;
+    @Persisted @Setter private Integer safeZoneSize;
+    @Persisted @Setter private Integer minNodeExpandCount;
+    @Persisted @Setter private Integer minNodeExpandChunks;
+    @Persisted @Setter private Integer maxNodeExpandRange;
+    @Persisted @Setter private Identifier currentProgress;
+    @Persisted @Setter private ResourceKey<Level> rogueDimension;
 
     // ==== 纯持久化（reset() 不清除） ====
 
-    @DescSynced @Persisted private List<String> roguePlayerIdStrings = new ArrayList<>();
-    @DescSynced @Persisted private List<String> safeZonePlayerIdStrings = new ArrayList<>();
+    @Persisted private List<String> roguePlayerIdStrings = new ArrayList<>();
+    @Persisted private List<String> safeZonePlayerIdStrings = new ArrayList<>();
 
     public static final MapCodec<RogueConfig> CODEC = PersistedParser.createMapCodec(RogueConfig::new);
     public static final StreamCodec<ByteBuf, RogueConfig> STREAM_CODEC = PersistedParser.createStreamCodec(RogueConfig::new);
@@ -139,10 +138,7 @@ public class RogueConfig implements IPersistedSerializable, IRogueConfig {
         minNodeExpandCount = null;
         minNodeExpandChunks = null;
         maxNodeExpandRange = null;
-        currentProgress = null;
         rogueDimension = null;
-        roguePlayerIdStrings.clear();
-        safeZonePlayerIdStrings.clear();
     }
 
     private static Set<UUID> toStringSet(List<String> strings) {

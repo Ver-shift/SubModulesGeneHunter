@@ -2,7 +2,6 @@ package org.galaxy.beyond.api;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
@@ -15,13 +14,10 @@ import org.galaxy.beyond.api.system.zone.PlayerZoneData;
 @Data
 public class BeyondPlayerData implements IPersistedSerializable {
 
-    @DescSynced
     @Persisted(subPersisted = true)
     private PlayerRogueData playerRogueData = new PlayerRogueData();
-    @DescSynced
     @Persisted(subPersisted = true)
     private PlayerZoneData playerZoneData = new PlayerZoneData();
-    @DescSynced
     @Persisted(subPersisted = true)
     private PlayerStatisticsData playerStatisticsData = new PlayerStatisticsData();
 

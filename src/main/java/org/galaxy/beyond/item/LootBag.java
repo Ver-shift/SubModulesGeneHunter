@@ -1,17 +1,14 @@
 package org.galaxy.beyond.item;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 
 /**
- * 用于启动游戏
+ * 战利品袋 —— 使用事件由 {@code BeyondManagerEventHandle.onUse} 转发到 Zone Cap。
  */
 public class LootBag extends Item {
     public LootBag(Properties properties) {
@@ -20,23 +17,10 @@ public class LootBag extends Item {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            var playerMgr = BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager();
-
-            if (playerMgr.isInRogue(serverPlayer)) {
-                if (playerMgr.getState(serverPlayer) == PlayerRogueState.PRE_ROGUE) {
-                    player.sendSystemMessage(Component.translatable("beyond.rogue.already_ready"));
-                } else {
-                    playerMgr.useLootBag(serverPlayer);
-                    if (!player.getAbilities().instabuild) {
-                        player.getItemInHand(hand).shrink(1);
-                    }
-                }
-            } else {
-                player.sendSystemMessage(Component.translatable("beyond.rogue.not_in_game"));
-            }
+        if (player instanceof ServerPlayer) {
+            player.startUsingItem(hand);
+            return InteractionResult.CONSUME;
         }
-
-        return super.use(level, player, hand);
+        return InteractionResult.PASS;
     }
 }

@@ -8,6 +8,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
@@ -67,6 +68,13 @@ public class BeyondManagerEventHandle {
             BeyondAPI.getBeyondManager().onChunkLoad(chunk);
         }
     }
+    @SubscribeEvent
+    public static void onUse(LivingEntityUseItemEvent.Start event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            BeyondAPI.getBeyondManager().getZoneManager().handlePlayerUseItem(player, event.getItem().getItem());
+        }
+    }
+
 
     @SubscribeEvent
     public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -81,5 +89,6 @@ public class BeyondManagerEventHandle {
         Beyond.OVERWORLD = Beyond.SERVER.overworld();
         BeyondAPI.getBeyondManager().onServerStarted(Beyond.SERVER);
     }
+
 
 }

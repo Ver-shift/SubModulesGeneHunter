@@ -1,57 +1,22 @@
 package org.galaxy.beyond.api.system.rogue;
 
-import lombok.Getter;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.system.rogue.core.*;
-import org.galaxy.beyond.api.system.rogue.player.PlayerRougeManager;
+import org.galaxy.beyond.api.system.rogue.core.PhaseRunner;
 
-public class RogueManager implements IRogueManager {
+public class RogueManager {
 
-    @Getter
-    private final IPlayerRougeManager playerRougeManager;
-    @Getter
-    private final IRogueNodeManager rogueNodeManager;
-    @Getter
-    private final IRogueStateManager rogueStateManager;
-    @Getter
-    private final ISceneManager sceneManager;
-    @Getter
-    private final ProgressManager progressManager;
+    private final RogueContext context = new RogueContext();
+    private final PhaseRunner phaseRunner = new PhaseRunner(context);
 
-    private final RogueContext ctx;
-    private final PhaseRunner runner;
-
-    public RogueManager() {
-        playerRougeManager = new PlayerRougeManager(this);
-        rogueNodeManager = new RogueNodeManager(this);
-        sceneManager = new SceneManager();
-        progressManager = new ProgressManager();
-
-        ctx = new RogueContext(rogueNodeManager, playerRougeManager, sceneManager, progressManager);
-        runner = new PhaseRunner(RoguePipeline.build(), ctx, RogueState.LOBBY);
-        ctx.setRunner(runner);
-        rogueStateManager = new RogueStateManager(runner, ctx);
+    public RogueContext getContext() {
+        return context;
     }
 
-    @Override
-    public void setRogueLevel(ResourceKey<Level> dimension) {
-        BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).setRougeLevel(dimension);
+    public PhaseRunner getPhaseRunner() {
+        return phaseRunner;
     }
 
-    @Override
     public void tick(ServerLevel level) {
-        runner.tick(level);
-        for (ServerPlayer player : ctx.inGamePlayers(level)) {
-            playerRougeManager.tick(player);
-        }
-    }
-
-    @Override
-    public IRogueStateManager getRogueStateManager() {
-        return rogueStateManager;
+        phaseRunner.tick(level);
     }
 }

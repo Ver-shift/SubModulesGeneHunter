@@ -1,5 +1,6 @@
 package org.galaxy.beyond.api.system.rogue.definition;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
@@ -18,28 +19,39 @@ public class DefinitionManager implements IDefinitionManager {
 
     @Override
     public EventTask resolveEvent(ServerLevel level, EncounterType encounterType) {
-        List<RogueEventType> allEvents = new ArrayList<>();
+        List<Identifier> allEventIds = new ArrayList<>();
 
         BeyondGlobalData globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
         RandomSource random = globalData.getRogueRandom().getProgressRandom();
         ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getProgressType();
         ProgressDefinition definition = globalData.getRogueDefinition().getRogueProgress().get(currentProgress.getId());
 
+        boolean found = false;
         for (Encounter encounter : definition.getEncounters()) {
             if (encounter.getType() != encounterType) continue;
+            found = true;
 
             WeightedList<EventTask> tasks = encounter.eventsAsWeightedList();
+            if (tasks.isEmpty()) continue;
+
             EventTask task = tasks.getRandomOrThrow(random);
 
             ResolveEvent.ResolveEventTaskEvent event = new ResolveEvent.ResolveEventTaskEvent(level, encounter, task);
             var event1 = NeoForge.EVENT_BUS.post(event);
             EventTask resolved = event1.getTo();
             if (resolved != null) {
-                allEvents.addAll(resolved.getEvents());
+                allEventIds.addAll(resolved.getEvents());
             }
         }
 
-        return new EventTask(allEvents);
+        if (!found) {
+            level.getServer().getPlayerList().broadcastSystemMessage(
+                    net.minecraft.network.chat.Component.translatable(
+                            "beyond.definition.missing_encounter", encounterType.name(), currentProgress.getId()), false);
+            allEventIds.addAll(new EventTask(List.of()).getEvents());
+        }
+
+        return new EventTask(allEventIds);
     }
 
     @Override

@@ -15,18 +15,14 @@
     }
   ],
   "encounters": [
-    {
-      "type": "Green_Event",
-      "events": [
-        { "weight": 5, "task": { "events": ["beyond:monster", "beyond:reward"] } },
-        { "weight": 1, "task": { "events": ["beyond:monster"] } }
-      ]
-    },
-    {
-      "type": "Green_Bonfire",
-      "events": [
-        { "weight": 1, "task": { "events": ["beyond:heal"] } }
-      ]
-    }
+    { "type": "Green_Event",       "events": [ { "weight": 1, "task": { "events": ["beyond:monster"] } } ] },
+    { "type": "Green_Bonfire",     "events": [ { "weight": 1, "task": { "events": ["beyond:heal"] } } ] },
+    { "type": "Green_BossShop",    "events": [ { "weight": 1, "task": { "events": ["beyond:boss"] } } ] },
+    { "type": "Orange_NormalMonster", "events": [ { "weight": 1, "task": { "events": ["beyond:monster"] } } ] },
+    { "type": "Orange_NormalShop",    "events": [ { "weight": 1, "task": { "events": ["beyond:shop"] } } ] },
+    { "type": "Orange_BossShop",      "events": [ { "weight": 1, "task": { "events": ["beyond:boss"] } } ] },
+    { "type": "Red_EliteMonster",  "events": [ { "weight": 1, "task": { "events": ["beyond:monster", "beyond:reward"] } } ] },
+    { "type": "Red_CursedShop",    "events": [ { "weight": 1, "task": { "events": ["beyond:shop"] } } ] },
+    { "type": "Red_BossShop",      "events": [ { "weight": 1, "task": { "events": ["beyond:boss"] } } ] }
   ]
 }

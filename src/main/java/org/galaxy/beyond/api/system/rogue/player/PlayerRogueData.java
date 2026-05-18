@@ -2,27 +2,34 @@ package org.galaxy.beyond.api.system.rogue.player;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import lombok.Data;
-import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
+import net.minecraft.resources.Identifier;
+import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.init.BeyondPhaseInit;
+import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 
 @Data
 public class PlayerRogueData implements IPersistedSerializable {
 
-    @DescSynced @Persisted
-    private PlayerRogueState state = PlayerRogueState.LOBBY;
-    @DescSynced @Persisted
+    @Persisted(subPersisted = true)
+    private PlayerPhase phase = getDefault();
+
+    @Persisted
     private int lifeCount;
-    @DescSynced @Persisted
+    @Persisted
     private int maxLifeCount;
-    @DescSynced @Persisted
+    @Persisted
     private int deathCount;
-    @DescSynced @Persisted
+    @Persisted
     private long readyTimestamp;
-    @DescSynced @Persisted
+    @Persisted
     private int spectatorTicks;
-    @DescSynced @Persisted
+    @Persisted
     private boolean firstSpawnDone;
-    @DescSynced @Persisted
+    @Persisted
     private long lastLeaveSafeZoneTime;
+
+    private static PlayerPhase getDefault() {
+        return BeyondPhaseInit.PLAYER_LOBBY.get();
+    }
 }

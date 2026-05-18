@@ -1,63 +1,50 @@
 package org.galaxy.beyond.api.system.rogue.core;
 
 import net.minecraft.server.level.ServerLevel;
-import org.galaxy.beyond.api.system.rogue.RogueContext;
+import org.galaxy.beyond.api.system.rogue.IRogueContext;
 
+/**
+ * 肉鸽全局 Phase 运行器 —— 驱动 {@link RoguePhase} 的生命周期。
+ */
 public class PhaseRunner {
 
-    private final Pipeline pipeline;
-    private StepNode current;
-    private final RogueContext ctx;
+    private final IRogueContext ctx;
+    private RoguePhase current;
     private boolean entered;
-    private boolean justEntered;
 
-    public PhaseRunner(Pipeline pipeline, RogueContext ctx, RogueState initialState) {
-        this.pipeline = pipeline;
+    public PhaseRunner(IRogueContext ctx) {
         this.ctx = ctx;
-        this.current = pipeline.lookup(initialState);
-        if (this.current == null) {
-            this.current = pipeline.first();
-        }
     }
 
     public void tick(ServerLevel level) {
+        RoguePhase phase = ctx.getPhase(level);
+
+        if (phase != current) {
+            entered = false;
+            current = phase;
+        }
+
         if (!entered) {
-            current.phase.enter(level, ctx);
+            if (phase != null) phase.enter(level, ctx);
             entered = true;
-            justEntered = true;
         }
 
-        if (!justEntered && current.transition != null && current.transition.isSatisfied(level, ctx)) {
-            current.phase.exit(level, ctx);
-            current.transition.onTransition(level, ctx);
-
-            StepNode next = pipeline.advance(current);
-            if (next != null && next != current) {
-                current = next;
-                ctx.setState(level, current.state);
-            }
-
-            current.phase.enter(level, ctx);
-            justEntered = true;
-        }
-
-        current.phase.tick(level, ctx);
-        justEntered = false;
+        if (phase != null) phase.tick(level, ctx);
     }
 
-    public RogueState currentState() {
-        return current.state;
-    }
+    public void forceState(ServerLevel level, RoguePhase target) {
+        RoguePhase cur = ctx.getPhase(level);
+        if (target.equals(cur) && entered) return;
 
-    public void forceState(ServerLevel level, RogueState state) {
-        StepNode target = pipeline.lookup(state);
+        if (entered && cur != null) cur.exit(level, ctx);
+
+        ctx.setPhase(level, target);
+        current = target;
+        entered = false;
+
         if (target != null) {
-            current.phase.exit(level, ctx);
-            current = target;
-            ctx.setState(level, state);
-            current.phase.enter(level, ctx);
+            target.enter(level, ctx);
             entered = true;
-            justEntered = true;
         }
     }
 }

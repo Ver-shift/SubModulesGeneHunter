@@ -54,6 +54,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
                 int chunkSize = Math.max(xChunks, zChunks);
                 if (chunkSize % 2 == 0) chunkSize++;
                 zoneManager.addSafeZone(level, chunkSize, center);
+                zoneManager.activeZoneInit(level);
                 Beyond.debugInfo("Safe zone initialized via structure at {}", safePos);
                 return;
             }
@@ -68,6 +69,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         data.setCenterPos(worldSpawn);
         data.setInitialized(1);
         zoneManager.addSafeZone(level, FALLBACK_CHUNK_SIZE, worldSpawn);
+        zoneManager.activeZoneInit(level);
         Beyond.debugInfo("Safe zone initialized via fallback at {}", safePos);
     }
 

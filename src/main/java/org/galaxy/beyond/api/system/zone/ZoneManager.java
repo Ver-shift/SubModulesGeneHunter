@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -77,7 +78,22 @@ public class ZoneManager implements IZoneManager {
             if (existing != null && existing.matches(ZoneType.Safe_Zone.mask())) continue;
             if (lzd.addZone(cp, ZoneType.Node_Zone)) changed = true;
         }
-        if (changed) syncLevelData(serverLevel);
+        if (changed) {
+            var rogueData = BeyondAPI.getBeyondDimensionData(serverLevel).getRogueData();
+            ChunkPos first = chunks.getFirst();
+            rogueData.getNodeDataMap().putIfAbsent(first,
+                    new org.galaxy.beyond.api.system.node.NodeData(randomNodeColor(serverLevel)));
+            syncLevelData(serverLevel);
+        }
+    }
+
+    private static final org.galaxy.beyond.api.system.node.NodeColor[] NODE_COLORS = {
+            org.galaxy.beyond.api.system.node.NodeColor.GREEN,
+            org.galaxy.beyond.api.system.node.NodeColor.ORANGE,
+            org.galaxy.beyond.api.system.node.NodeColor.RED
+    };
+    private static org.galaxy.beyond.api.system.node.NodeColor randomNodeColor(ServerLevel level) {
+        return NODE_COLORS[level.getRandom().nextInt(NODE_COLORS.length)];
     }
 
     // ---- Active Zone 初始化与扩展 ----
@@ -253,10 +269,8 @@ public class ZoneManager implements IZoneManager {
             if (oldZone != newZone) {
                 pd.getPlayerZoneData().setCurrentZone(newZone);
                 NeoForge.EVENT_BUS.post(new PlayerChangeZoneEvent(player, oldZone, newZone));
-                if (oldZone != ZoneType.Empty) {
-                    dispatch(oldZd, cap -> cap.playerChangeZone(player, oldZone, newZone));
-                    dispatch(newZd, cap -> cap.playerChangeZone(player, oldZone, newZone));
-                }
+                dispatch(oldZd, cap -> cap.playerChangeZone(player, oldZone, newZone));
+                dispatch(newZd, cap -> cap.playerChangeZone(player, oldZone, newZone));
             }
         }
     }
@@ -266,6 +280,20 @@ public class ZoneManager implements IZoneManager {
         if (player == null || pos == null) return;
         ServerLevel level = player.level();
         dispatch(getLZD(level).getZoneData(pos), cap -> cap.playerRightClickBlock(player, level.getBlockState(pos).getBlock()));
+    }
+
+    @Override
+    public void handlePlayerUseItem(ServerPlayer player, Item item) {
+        if (player == null) return;
+        ServerLevel level = player.level();
+        LevelZoneData lzd = getLZD(level);
+
+        // 尝试按位置查找，若区块未注册则回退到 ZoneType 级查找/创建
+        ZoneData zd = lzd.getZoneData(player.getOnPos());
+        if (zd == null) zd = lzd.getZoneData(ZoneType.Active_Zone);
+        if (zd == null) zd = lzd.getOrCreateZoneData(ZoneType.Active_Zone);
+
+        dispatch(zd, cap -> cap.playerUseItem(player, item));
     }
 
     @Override

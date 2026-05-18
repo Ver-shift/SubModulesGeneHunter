@@ -38,7 +38,7 @@ public class BeyondGlobalData implements IPersistedSerializable {
     @Persisted
     private ResourceKey<Level> rougeLevel = Level.OVERWORLD;
 
-    // Map由PersistedParser直接序列化，无需@DescSynced
+    // Map由PersistedParser直接序列化
     @Persisted
     @ReadOnlyManaged(serializeMethod = "dimensionDataMapSerialize", deserializeMethod = "dimensionDataMapDeserialize")
     private Map<ResourceKey<Level>, BeyondDimensionData> dimensionDataMap = new ConcurrentHashMap<>();

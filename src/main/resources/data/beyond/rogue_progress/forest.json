@@ -90,6 +90,25 @@
           "task": { "events": ["beyond:shop"] }
         }
       ]
+    },
+    {
+      "type": "Green_BossShop",
+      "events": [
+        { "weight": 1, "task": { "events": ["beyond:boss", "beyond:reward"] } }
+      ]
+    },
+    {
+      "type": "Orange_BossShop",
+      "events": [
+        { "weight": 2, "task": { "events": ["beyond:boss", "beyond:reward"] } },
+        { "weight": 1, "task": { "events": ["beyond:shop", "beyond:boss"] } }
+      ]
+    },
+    {
+      "type": "Red_BossShop",
+      "events": [
+        { "weight": 1, "task": { "events": ["beyond:boss", "beyond:boss"] } }
+      ]
     }
   ]
 }

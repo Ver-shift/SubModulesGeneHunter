@@ -26,13 +26,18 @@
   "beyond.rogue.waiting_players": "等待 %s 名玩家准备...",
   "beyond.rogue.ready_status": "就绪状态：%s/%s 名玩家已准备",
   "beyond.rogue.event_triggered": "肉鸽事件已触发：%s",
+  "beyond.definition.missing_encounter": "关卡数据包数据不完整，缺少遭遇类型 %s（关卡：%s）",
 
   "beyond.node.locked_triggered": "节点已激活！",
+  "beyond.node.enter_zone": "进入%s节点区域，点击节点方块开始探索",
   "beyond.node.solo_auto_start": "自动推进节点事件链...",
   "beyond.node.event_progress": "节点事件 #%s 执行中...",
   "beyond.node.encounter_resolved": "遭遇类型 %s 已解析",
   "beyond.node.no_encounter": "未找到遭遇数据，事件无法触发",
   "beyond.node.no_progress": "未加载关卡进度，事件无法推进",
+  "beyond.node.encounter_start": "遭遇开始：%s",
+  "beyond.node.event_trigger": "触发事件：%s (%s/%s)",
+  "beyond.node.progress_advance": "进度推进：%s/%s",
   "beyond.node.click_again": "再次点击节点方块继续推进",
   "beyond.node.pre_node_waiting": "准备中：%s/%s 名玩家已就绪，等待其他人...",
   "beyond.node.pre_node_all_ready": "全部玩家已准备！事件即将触发",
@@ -84,5 +89,25 @@
   "commands.beyond.config.safeZoneList.not_in_list": "%s 不在安全区列表中",
   "commands.beyond.config.safeZoneList.not_found": "找不到玩家 %s",
   "commands.beyond.config.safeZoneList.empty": "安全区玩家列表为空",
-  "commands.beyond.config.safeZoneList.list": "安全区玩家列表：%s"
+  "commands.beyond.config.safeZoneList.list": "安全区玩家列表：%s",
+
+  "beyond.encounter.green_event": "绿色事件",
+  "beyond.encounter.green_bonfire": "绿色篝火",
+  "beyond.encounter.green_bossshop": "绿色首领商店",
+  "beyond.encounter.orange_normalmonster": "橙色普通怪物",
+  "beyond.encounter.orange_normalshop": "橙色普通商店",
+  "beyond.encounter.orange_bossshop": "橙色首领商店",
+  "beyond.encounter.red_elitemonster": "红色精英怪物",
+  "beyond.encounter.red_cursedshop": "红色诅咒商店",
+  "beyond.encounter.red_bossshop": "红色首领商店",
+
+  "beyond.event.monster": "怪物",
+  "beyond.event.shop": "商店",
+  "beyond.event.boss": "首领",
+  "beyond.event.heal": "治疗",
+  "beyond.event.reward": "奖励",
+
+  "beyond.node.color.green": "绿色",
+  "beyond.node.color.orange": "橙色",
+  "beyond.node.color.red": "红色"
 }

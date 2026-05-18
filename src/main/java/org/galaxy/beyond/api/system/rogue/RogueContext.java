@@ -1,66 +1,47 @@
 package org.galaxy.beyond.api.system.rogue;
 
-import lombok.Getter;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.system.rogue.core.*;
+import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
+import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public class RogueContext {
+public class RogueContext implements IRogueContext {
 
-    private final IRogueNodeManager nodeManager;
-    @Getter
-    private final IPlayerRougeManager playerManager;
-    @Getter
-    private final ISceneManager sceneManager;
-    @Getter
-    private final ProgressManager progressManager;
-    private PhaseRunner runner;
-
-    public RogueContext(IRogueNodeManager nodeManager, IPlayerRougeManager playerManager,
-                        ISceneManager sceneManager, ProgressManager progressManager) {
-        this.nodeManager = nodeManager;
-        this.playerManager = playerManager;
-        this.sceneManager = sceneManager;
-        this.progressManager = progressManager;
+    @Override
+    public RoguePhase getPhase(ServerLevel level) {
+        return getRogueData(level).getPhase();
     }
 
-    void setRunner(PhaseRunner runner) {
-        this.runner = runner;
+    @Override
+    public void setPhase(ServerLevel level, RoguePhase phase) {
+        getRogueData(level).setPhase(phase);
     }
 
-    public void forceTo(ServerLevel level, RogueState state) {
-        if (runner != null) runner.forceState(level, state);
+    @Override
+    public PlayerPhase getPlayerPhase(ServerPlayer player) {
+        return BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
     }
 
-    public RogueData data(ServerLevel level) {
-        return BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData();
+    @Override
+    public void setPlayerPhase(ServerPlayer player, PlayerPhase phase) {
+        BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().setPhase(phase);
     }
 
-    public RogueState currentState(ServerLevel level) {
-        return data(level).getRogueState();
+    @Override
+    public void setAllPlayerPhase(ServerLevel level, PlayerPhase phase) {
+        for (ServerPlayer p : playersInRogue(level)) {
+            setPlayerPhase(p, phase);
+        }
     }
 
-    public void setState(ServerLevel level, RogueState state) {
-        data(level).setRogueState(state);
-    }
-
-    public RogueNodeData nodeData(ServerLevel level) {
-        return data(level).getRogueNodeData();
-    }
-
-    public void setNodeData(ServerLevel level, RogueNodeData nodeData) {
-        data(level).setRogueNodeData(nodeData);
-    }
-
-    public List<ServerPlayer> inGamePlayers(ServerLevel level) {
-        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-        List<ServerPlayer> result = new ArrayList<>();
+    @Override
+    public List<ServerPlayer> playersInRogue(ServerLevel level) {
+        var cfg = BeyondAPI.getGlobalData(level).getRogueConfig();
         var playerList = level.getServer().getPlayerList();
+        List<ServerPlayer> result = new ArrayList<>();
         for (UUID id : cfg.getRoguePlayerIds()) {
             ServerPlayer p = playerList.getPlayer(id);
             if (p != null) result.add(p);
@@ -68,37 +49,34 @@ public class RogueContext {
         return result;
     }
 
-    public boolean allPlayersMatch(ServerLevel level, PlayerRogueState state) {
-        var players = inGamePlayers(level);
-        if (players.isEmpty()) return false;
-        for (var p : players) {
-            if (playerManager.getState(p) != state) return false;
+    @Override
+    public boolean allPlayersMatchPhase(ServerLevel level, PlayerPhase phase) {
+        var ids = BeyondAPI.getGlobalData(level).getRogueConfig().getRoguePlayerIds();
+        if (ids.isEmpty()) return false;
+        for (UUID uuid : ids) {
+            ServerPlayer p = level.getServer().getPlayerList().getPlayer(uuid);
+            if (p == null || !getPlayerPhase(p).equals(phase)) return false;
         }
         return true;
     }
 
-    public boolean anyPlayerMatch(ServerLevel level, PlayerRogueState state) {
-        for (var p : inGamePlayers(level)) {
-            if (playerManager.getState(p) == state) return true;
-        }
-        return false;
+    @Override
+    public RogueData getRogueData(ServerLevel level) {
+        return BeyondAPI.getBeyondDimensionData(level).getRogueData();
     }
 
-    public void setAllPlayerState(ServerLevel level, PlayerRogueState state) {
-        for (var p : inGamePlayers(level)) {
-            playerManager.setState(p, state);
-        }
+    @Override
+    public RogueNodeData getRogueNodeData(ServerLevel level) {
+        return getRogueData(level).getRogueNodeData();
     }
 
+    @Override
     public long getGameSeed(ServerLevel level) {
-        return data(level).getGameSeed();
+        return getRogueData(level).getGameSeed();
     }
 
+    @Override
     public void setGameSeed(ServerLevel level, long seed) {
-        data(level).setGameSeed(seed);
-    }
-
-    public IRogueNodeManager node() {
-        return nodeManager;
+        getRogueData(level).setGameSeed(seed);
     }
 }

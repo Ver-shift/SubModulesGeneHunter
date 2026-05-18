@@ -2,7 +2,6 @@ package org.galaxy.beyond.api.system.zone;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.resources.Identifier;
@@ -14,10 +13,8 @@ import java.util.Objects;
 @Setter
 public class ZoneCapData implements IPersistedSerializable {
 
-    @DescSynced
     @Persisted
     private Identifier capTypeId;
-    @DescSynced
     @Persisted
     private int capLevel;
 

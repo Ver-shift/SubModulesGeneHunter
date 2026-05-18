@@ -3,8 +3,6 @@ package org.galaxy.beyond.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +18,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import org.galaxy.beyond.api.BeyondAPI;
 
 import javax.annotation.Nullable;
 
@@ -89,29 +86,12 @@ public class NodeBlock extends HorizontalDirectionalBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                           Player player, InteractionHand hand, BlockHitResult hitResult) {
-        return handleNodeUse(level, pos, player);
+        return InteractionResult.SUCCESS;
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                Player player, BlockHitResult hitResult) {
-        return handleNodeUse(level, pos, player);
-    }
-
-    private InteractionResult handleNodeUse(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.SUCCESS;
-        }
-
-        var rogueManager = BeyondAPI.getBeyondManager().getRogueManager();
-        var playerManager = rogueManager.getPlayerRougeManager();
-        if (!playerManager.isInRogue(serverPlayer)) {
-            serverPlayer.sendSystemMessage(Component.translatable("beyond.node.not_in_rogue"));
-            return InteractionResult.SUCCESS;
-        }
-
-        playerManager.clickNodeBlock(serverPlayer, pos);
-
         return InteractionResult.SUCCESS;
     }
 }

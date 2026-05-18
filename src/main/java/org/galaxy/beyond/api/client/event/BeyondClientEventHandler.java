@@ -12,9 +12,24 @@ import org.galaxy.beyond.api.client.render.SafeZoneBorderRenderer;
 @EventBusSubscriber(value = Dist.CLIENT)
 public class BeyondClientEventHandler {
 
-    private static final SafeZoneBorderRenderer safeZoneRenderer = new SafeZoneBorderRenderer();
-    private static final ActiveZoneBorderRenderer activeZoneRenderer = new ActiveZoneBorderRenderer();
-    private static final NodeBorderRenderer nodeBorderRenderer = new NodeBorderRenderer();
+    private static SafeZoneBorderRenderer safeZoneRenderer;
+    private static ActiveZoneBorderRenderer activeZoneRenderer;
+    private static NodeBorderRenderer nodeBorderRenderer;
+
+    private static SafeZoneBorderRenderer getSafeZoneRenderer() {
+        if (safeZoneRenderer == null) safeZoneRenderer = new SafeZoneBorderRenderer();
+        return safeZoneRenderer;
+    }
+
+    private static ActiveZoneBorderRenderer getActiveZoneRenderer() {
+        if (activeZoneRenderer == null) activeZoneRenderer = new ActiveZoneBorderRenderer();
+        return activeZoneRenderer;
+    }
+
+    private static NodeBorderRenderer getNodeBorderRenderer() {
+        if (nodeBorderRenderer == null) nodeBorderRenderer = new NodeBorderRenderer();
+        return nodeBorderRenderer;
+    }
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent.AfterTranslucentBlocks event) {
@@ -23,8 +38,8 @@ public class BeyondClientEventHandler {
 
         var cameraPos = event.getLevelRenderState().cameraRenderState.pos;
 
-        safeZoneRenderer.render(level, cameraPos, event.getPoseStack());
-        activeZoneRenderer.render(level, cameraPos, event.getPoseStack());
-        nodeBorderRenderer.render(level, cameraPos, event.getPoseStack());
+        getSafeZoneRenderer().render(level, cameraPos, event.getPoseStack());
+        getActiveZoneRenderer().render(level, cameraPos, event.getPoseStack());
+        getNodeBorderRenderer().render(level, cameraPos, event.getPoseStack());
     }
 }

@@ -10,7 +10,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
+import org.galaxy.beyond.api.init.BeyondPhaseInit;
+import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -20,7 +21,7 @@ import org.joml.Vector4f;
 
 import java.util.*;
 
-public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
+public class SafeZoneBorderRenderer {
 
     private static final float ALPHA = 0.65F;
 
@@ -46,11 +47,13 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
         return indices;
     }
 
-    private static void resolveColor(PlayerRogueState state, int[] out) {
-        switch (state) {
-            case LOBBY -> { out[0] = R_BLUE;  out[1] = G_BLUE;  out[2] = B_BLUE;  }
-            case PRE_ROGUE -> { out[0] = R_ORANGE; out[1] = G_ORANGE; out[2] = B_ORANGE; }
-            default -> { out[0] = R_RED;   out[1] = G_RED;   out[2] = B_RED;   }
+    private static void resolveColor(PlayerPhase phase, int[] out) {
+        if (phase == BeyondPhaseInit.PLAYER_LOBBY.get()) {
+            out[0] = R_BLUE;  out[1] = G_BLUE;  out[2] = B_BLUE;
+        } else if (phase == BeyondPhaseInit.PLAYER_PRE_ROGUE.get()) {
+            out[0] = R_ORANGE; out[1] = G_ORANGE; out[2] = B_ORANGE;
+        } else {
+            out[0] = R_RED;   out[1] = G_RED;   out[2] = B_RED;
         }
     }
 
@@ -64,7 +67,7 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
             var playerData = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get());
             if (playerData != null) {
                 int[] out = {R_BLUE, G_BLUE, B_BLUE};
-                resolveColor(playerData.getPlayerRogueData().getState(), out);
+                resolveColor(playerData.getPlayerRogueData().getPhase(), out);
                 targetR = out[0]; targetG = out[1]; targetB = out[2];
             }
         } catch (Exception ignored) {
@@ -78,7 +81,6 @@ public class SafeZoneBorderRenderer implements ISafeZoneBorderRenderer {
         currentB = currentB + (int)((targetB - currentB) * rate + 0.5f);
     }
 
-    @Override
     public void render(Level level, Vec3 cameraPos, PoseStack poseStack) {
         if (level == null) return;
 

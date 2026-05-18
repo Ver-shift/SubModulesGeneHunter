@@ -2,7 +2,6 @@ package org.galaxy.beyond.api.system.zone;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.DescSynced;
 import org.galaxy.beyond.api.init.BeyondZoneNodeCapInit;
 
 import java.util.List;
@@ -10,10 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ZoneData implements IPersistedSerializable {
 
-    @DescSynced
     @Persisted
     private ZoneType zoneType = ZoneType.Empty;
-    @DescSynced
     @Persisted(subPersisted = true)
     private final List<ZoneCapData> zoneCaps = new CopyOnWriteArrayList<>();
 
@@ -26,8 +23,20 @@ public class ZoneData implements IPersistedSerializable {
 
     private void initDefaultCaps() {
         switch (zoneType) {
-            case Safe_Zone -> addCap(BeyondZoneNodeCapInit.ALL_SAFE_ZONE.get());
-            case Node_Zone -> addCap(BeyondZoneNodeCapInit.ALL_NODE_ZONE.get());
+            case Safe_Zone -> {
+                addCap(BeyondZoneNodeCapInit.ALL_SAFE_ZONE.get());
+                addCap(BeyondZoneNodeCapInit.PROGRESS_START.get());
+                addCap(BeyondZoneNodeCapInit.PLAYER_IN_GAME.get());
+            }
+            case Node_Zone -> {
+                addCap(BeyondZoneNodeCapInit.ALL_NODE_ZONE.get());
+                addCap(BeyondZoneNodeCapInit.NODE_CAP.get());
+                addCap(BeyondZoneNodeCapInit.PLAYER_IN_GAME.get());
+            }
+            case Active_Zone -> {
+                addCap(BeyondZoneNodeCapInit.PROGRESS_START.get());
+                addCap(BeyondZoneNodeCapInit.PLAYER_IN_GAME.get());
+            }
         }
     }
 

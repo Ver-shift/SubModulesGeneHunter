@@ -3,6 +3,7 @@ package org.galaxy.beyond.api.system.zone;
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.ReadOnlyManaged;
+import com.lowdragmc.lowdraglib2.test.gametest.syncdata.MapSerializationGameTest;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -79,7 +80,6 @@ public class LevelZoneData implements IPersistedSerializable {
         getOrCreateZoneData(zoneType);
         return true;
     }
-
     public CompoundTag levelZoneDataSerialize(Map<ZoneType, ZoneData> m) {
         var keys = new ListTag();
         m.keySet().forEach(k -> keys.add(StringTag.valueOf(k.name())));
