@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.core.PlayerRogueState;
 
 /**
  * 用于启动游戏
@@ -19,19 +20,22 @@ public class LootBag extends Item {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        if (player instanceof ServerPlayer serverPlayer
-                && BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager().isInRogue(serverPlayer)
+        if (player instanceof ServerPlayer serverPlayer) {
+            var playerMgr = BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager();
 
-        ) {
-            BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager().useLootBag(serverPlayer);
-            if (!player.getAbilities().instabuild) {
-                player.getItemInHand(hand).shrink(1);
+            if (playerMgr.isInRogue(serverPlayer)) {
+                if (playerMgr.getState(serverPlayer) == PlayerRogueState.PRE_ROGUE) {
+                    player.sendSystemMessage(Component.translatable("beyond.rogue.already_ready"));
+                } else {
+                    playerMgr.useLootBag(serverPlayer);
+                    if (!player.getAbilities().instabuild) {
+                        player.getItemInHand(hand).shrink(1);
+                    }
+                }
+            } else {
+                player.sendSystemMessage(Component.translatable("beyond.rogue.not_in_game"));
             }
-        }else if (player instanceof ServerPlayer serverPlayer
-                && !BeyondAPI.getBeyondManager().getRogueManager().getPlayerRougeManager().isInRogue(serverPlayer)){
-            player.sendSystemMessage(Component.translatable("beyond.rogue.not_in_game"));
         }
-
 
         return super.use(level, player, hand);
     }

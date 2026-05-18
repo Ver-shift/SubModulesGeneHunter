@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.system.node.core.NodeState;
 
 import javax.annotation.Nullable;
 
@@ -90,6 +89,16 @@ public class NodeBlock extends HorizontalDirectionalBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                           Player player, InteractionHand hand, BlockHitResult hitResult) {
+        return handleNodeUse(level, pos, player);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                               Player player, BlockHitResult hitResult) {
+        return handleNodeUse(level, pos, player);
+    }
+
+    private InteractionResult handleNodeUse(Level level, BlockPos pos, Player player) {
         if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
@@ -101,13 +110,7 @@ public class NodeBlock extends HorizontalDirectionalBlock {
             return InteractionResult.SUCCESS;
         }
 
-        var nodeManager = rogueManager.getRogueNodeManager();
-        NodeState nodeState = nodeManager.getNodeState((net.minecraft.server.level.ServerLevel) level);
-
-        switch (nodeState) {
-            case LOCKED, PRE_NODE, PRE_EVENT, ON_EVENT -> playerManager.clickNodeBlock(serverPlayer);
-            case UNLOCKED -> serverPlayer.sendSystemMessage(Component.translatable("beyond.node.already_unlocked"));
-        }
+        playerManager.clickNodeBlock(serverPlayer, pos);
 
         return InteractionResult.SUCCESS;
     }

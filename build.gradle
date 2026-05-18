@@ -177,6 +177,27 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
+tasks.register('testNodeFlow', JavaExec) {
+    group = 'verification'
+    description = 'Runs dependency-free regression checks for the rogue node interaction state machine.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.galaxy.beyond.api.system.rogue.NodeInteractionFlowTest'
+}
+
+tasks.register('testRogueStartFlow', JavaExec) {
+    group = 'verification'
+    description = 'Runs dependency-free regression checks for rogue start readiness.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.galaxy.beyond.api.system.rogue.RogueStartFlowTest'
+}
+
+tasks.register('testActiveZoneExpansion', JavaExec) {
+    group = 'verification'
+    description = 'Runs dependency-free regression checks for active zone expansion planning.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.galaxy.beyond.api.system.zone.ActiveZoneExpansionPlannerTest'
+}
+
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {

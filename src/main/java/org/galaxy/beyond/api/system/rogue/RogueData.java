@@ -10,6 +10,8 @@ import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.system.rogue.core.RogueState;
 
 import java.util.Map;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
@@ -41,5 +43,8 @@ public class RogueData implements IPersistedSerializable {
     @DescSynced
     @Persisted
     private Map<ChunkPos, EncounterType> encounterAssignments = new ConcurrentHashMap<>();
+    @DescSynced
+    @Persisted
+    private List<ChunkPos> completedNodeChunks = new CopyOnWriteArrayList<>();
 
 }

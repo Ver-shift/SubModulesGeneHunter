@@ -120,27 +120,35 @@ public class ZoneManager implements IZoneManager {
         List<ChunkPos> selfList = nodeData.getNodeData().getNodeChunks();
         if (selfList.isEmpty()) return;
 
-        Set<ChunkPos> selfChunks = new HashSet<>(selfList);
-        var allNodes = ZoneHelper.filterByMask(entries, ZoneType.Node_Zone.mask());
-        ZoneHelper.Bounds nodeBounds = ZoneHelper.boundsOf(selfChunks);
+        var allNodes = entries.stream()
+                .filter(e -> e.getValue().matches(ZoneType.Node_Zone.mask()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+        var completedNodes = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld())
+                .getRogueData()
+                .getCompletedNodeChunks();
+        var plan = ActiveZoneExpansionPlanner.plan(
+                toPlannerChunks(selfList),
+                toPlannerChunks(allNodes),
+                toPlannerChunks(completedNodes),
+                CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get(),
+                CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get(),
+                CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get());
+        ZoneHelper.Bounds bounds = new ZoneHelper.Bounds(
+                plan.bounds().minX(),
+                plan.bounds().minZ(),
+                plan.bounds().maxX(),
+                plan.bounds().maxZ());
 
-        int radius   = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
-        int minConns = CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get();
-        int r = radius;
-
-        while (r < 200) {
-            ZoneHelper.Bounds b = nodeBounds.expanded(r);
-            Set<ChunkPos> others = allNodes.chunks().stream()
-                    .filter(b::contains)
-                    .collect(Collectors.toCollection(HashSet::new));
-            others.removeAll(selfChunks);
-
-            if (countClusters(others, b) >= minConns) {
-                if (fillActiveZone(serverLevel, entries, b)) syncLevelData(serverLevel);
-                return;
-            }
-            r++;
+        if (fillActiveZone(serverLevel, entries, bounds)) {
+            syncLevelData(serverLevel);
         }
+    }
+
+    private Set<ActiveZoneExpansionPlanner.Chunk> toPlannerChunks(Collection<ChunkPos> chunks) {
+        return chunks.stream()
+                .map(chunk -> new ActiveZoneExpansionPlanner.Chunk(chunk.x(), chunk.z()))
+                .collect(Collectors.toSet());
     }
 
     /** 将矩形区域内尚未归属任何 zone 的区块注册为 Active_Zone */

@@ -9,6 +9,8 @@ import org.galaxy.beyond.api.system.rogue.core.IRogueManager;
 import org.galaxy.beyond.api.system.rogue.core.IRogueNodeManager;
 import org.galaxy.beyond.api.system.rogue.definition.DefinitionManager;
 
+import java.util.List;
+
 public class RogueNodeManager implements IRogueNodeManager {
 
     private final IRogueManager rogueManager;
@@ -23,7 +25,6 @@ public class RogueNodeManager implements IRogueNodeManager {
         NodeState state = getNodeState(level);
         switch (state) {
             case PRE_EVENT -> handlePreEvent(level);
-            case ON_EVENT -> handleOnEvent(level);
             default -> {}
         }
     }
@@ -38,15 +39,25 @@ public class RogueNodeManager implements IRogueNodeManager {
             return;
         }
 
-        int idx = rogueManager.getProgressManager().getCurrentProgressIndex(level);
+        List<RogueEventType> events = enc.getEvents().getEvents();
+        if (events.isEmpty()) {
+            level.getServer().getPlayerList().broadcastSystemMessage(
+                    Component.translatable("beyond.node.no_encounter"), false);
+            return;
+        }
+
+        int idx = Math.max(0, Math.min(data.getCurrentEventIndex(), events.size() - 1));
+        if (idx != data.getCurrentEventIndex()) {
+            data.setCurrentEventIndex(idx);
+        }
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.node.event_progress", idx + 1), false);
 
-        // 执行事件链
         var ctx = new RogueEventType.Context(enc.getType(), level);
-        for (RogueEventType event : enc.getEvents().getEvents()) {
-            event.cast(ctx);
-        }
+        RogueEventType event = events.get(idx);
+        level.getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable("beyond.rogue.event_triggered", event.getId().toString()), false);
+        event.cast(ctx);
     }
 
     @Override
@@ -55,17 +66,42 @@ public class RogueNodeManager implements IRogueNodeManager {
         ChunkPos chunk = data.getNodeChunk();
         if (chunk == null) return;
 
-        // 查当前区块的遭遇类型
         EncounterType encType = rogueManager.getProgressManager().getEncounterType(level, chunk);
+        if (encType == null && data.getNodeData() != null) {
+            for (ChunkPos candidate : data.getNodeData().getNodeChunks()) {
+                encType = rogueManager.getProgressManager().getEncounterType(level, candidate);
+                if (encType != null) {
+                    data.setNodeChunk(candidate);
+                    break;
+                }
+            }
+        }
+        if (encType == null && data.getNodeData() != null && !data.getNodeData().getNodeChunks().isEmpty()) {
+            long seed = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getGameSeed();
+            rogueManager.getProgressManager().generateEncounterTypes(level, data.getNodeData().getNodeChunks(), seed);
+            for (ChunkPos candidate : data.getNodeData().getNodeChunks()) {
+                encType = rogueManager.getProgressManager().getEncounterType(level, candidate);
+                if (encType != null) {
+                    data.setNodeChunk(candidate);
+                    break;
+                }
+            }
+        }
         if (encType == null) return;
 
-        // 从定义中抽取事件
         EventTask task = definitionManager.resolveEvent(level, encType);
+
+        if (task == null || task.getEvents() == null || task.getEvents().isEmpty()) {
+            level.getServer().getPlayerList().broadcastSystemMessage(
+                    Component.translatable("beyond.node.no_encounter"), false);
+            return;
+        }
 
         EncounterData encData = new EncounterData();
         encData.setType(encType);
         encData.setEvents(task);
         data.setEncounterData(encData);
+        data.setCurrentEventIndex(0);
 
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.node.encounter_resolved", encType.name()), false);

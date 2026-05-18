@@ -16,6 +16,9 @@ public class RogueNodeData implements IPersistedSerializable {
     @DescSynced
     @Persisted(subPersisted = true)
     private EncounterData encounterData;
+    @DescSynced
+    @Persisted
+    private int currentEventIndex;
     @Persisted
     private ChunkPos nodeChunk;
 

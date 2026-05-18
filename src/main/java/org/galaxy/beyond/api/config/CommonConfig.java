@@ -28,6 +28,8 @@ public class CommonConfig {
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_NODES;
     /** 节点完成后向外拓展的初始半径（区块数） */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_EXPAND_RADIUS;
+    /** 节点完成后向外拓展时允许扫描的最大半径（区块数） */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS;
     /** 节点拓展后至少需要扫描到的其他未完成节点连接数 */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_CONNECTIONS;
 
@@ -60,6 +62,9 @@ public class CommonConfig {
         ACTIVE_ZONE_NODE_EXPAND_RADIUS = BUILDER
                 .comment("玩家完成节点事件后，以该节点为中心向外扩张的初始半径（区块数）。")
                 .defineInRange("nodeExpandRadius", 2, 1, 100);
+        ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS = BUILDER
+                .comment("玩家完成节点事件后，为寻找足够未完成节点允许扫描的最大半径（区块数）。")
+                .defineInRange("nodeExpandMaxRadius", 20, 1, 200);
         ACTIVE_ZONE_MIN_CONNECTIONS = BUILDER
                 .comment("节点扩张后至少需要扫描到的其他未完成节点连接数，防止玩家卡关。")
                 .defineInRange("minConnections", 2, 1, 100);
