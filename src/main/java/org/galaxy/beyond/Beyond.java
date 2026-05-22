@@ -7,7 +7,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.*;
-import org.galaxy.beyond.api.BeyondManager;
+import org.galaxy.beyond.api.system.BeyondManager;
 import org.galaxy.beyond.comand.BeyondCommand;
 import org.slf4j.Logger;
 
@@ -54,7 +54,7 @@ public class Beyond {
     public void newRegistry(IEventBus modEventBus) {
         modEventBus.addListener(BeyondRegistries::registerRegistries);
         BeyondRegistries.register(modEventBus);
-        BeyondZoneNodeCapInit.register(modEventBus);
+        BeyondRogueCapInit.register(modEventBus);
         BeyondPhaseInit.register(modEventBus);
         BeyondComponentInit.register(modEventBus);
         BeyondBlockInit.register(modEventBus);

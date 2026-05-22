@@ -14,8 +14,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.LevelData;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.init.BeyondMobEffectInit;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.BeyondPlayerData;
+import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondPlayerData;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -136,7 +136,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
     public void playerTick(ServerPlayer player) {
         if (!BeyondAPI.getGlobalData(player.level()).getRogueConfig().isDebugMode()) return;
 
-        var zone = BeyondAPI.getBeyondPlayerData(player).getPlayerZoneData().getCurrentZone();
+        var zone = BeyondAPI.getBeyondMobData(player).getZoneType();
         int level = switch (zone) {
             case Safe_Zone -> 1;
             case Node_Zone -> 2;

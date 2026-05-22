@@ -3,32 +3,34 @@ package org.galaxy.beyond.api.system.rogue.cap;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.system.zone.CapType;
-import org.galaxy.beyond.api.system.zone.ZoneCapType;
+import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.IRogueContext;
+import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
+import org.galaxy.beyond.api.system.rogue.core.RogueCap;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
+/**
+ * 玩家参战管理 Cap。
+ * <p>
+ * 维护肉鸽玩家列表和暂离玩家列表，通过 {@code changeZone} 事件自动添加/移除，
+ * 并通过 {@code @SubscribeEvent} 监听登录、登出、维度切换事件。
+ */
 @EventBusSubscriber
-public class PlayerInGameCap extends ZoneCapType {
+public class PlayerInGameCap extends RogueCap {
 
-    public static final Identifier ID = Identifier.parse(Beyond.MODID + ":player_in_game");
+    public static final Identifier ID = Beyond.asResource("player_in_game");
 
     public PlayerInGameCap() { super(ID); }
 
-    @Override public int getMaxLevel() { return 1; }
-    @Override public CapType getCapType() { return CapType.NORMAL; }
-
-    // ============================================================
-    // Zone 切换 → 列表切换
-    // ============================================================
-
     @Override
-    public void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to) {
+    public void changeZone(LivingEntity entity, ZoneType from, ZoneType to, IRogueContext ctx) {
+        if (!(entity instanceof ServerPlayer player)) return;
         var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
         if (to == ZoneType.Safe_Zone) {
             cfg.addSafeZonePlayer(player.getUUID());
@@ -36,10 +38,6 @@ public class PlayerInGameCap extends ZoneCapType {
             cfg.addRoguePlayer(player.getUUID());
         }
     }
-
-    // ============================================================
-    // 登出 → 暂离列表（保证多人判定正确）
-    // ============================================================
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
@@ -50,28 +48,19 @@ public class PlayerInGameCap extends ZoneCapType {
         }
     }
 
-    // ============================================================
-    // 登录 → 恢复退出前的列表状态
-    // ============================================================
-
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (!isRogueDimension(player)) return;
             var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-
-            // 读取持久化的列表状态恢复
-            boolean wasInRogue = cfg.getRoguePlayerIds().contains(player.getUUID());
-            boolean wasInSafe  = cfg.getSafeZonePlayerIds().contains(player.getUUID());
-            if (wasInRogue) { cfg.addRoguePlayer(player.getUUID()); return; }
-            if (wasInSafe)  { cfg.addSafeZonePlayer(player.getUUID()); return; }
-            cfg.addSafeZonePlayer(player.getUUID());
+            var phaseId = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhaseId();
+            if (!phaseId.equals(PlayerPhase.LOBBY.getId())) {
+                cfg.addRoguePlayer(player.getUUID());
+            } else {
+                cfg.addSafeZonePlayer(player.getUUID());
+            }
         }
     }
-
-    // ============================================================
-    // 维度切换
-    // ============================================================
 
     @SubscribeEvent
     public static void onPlayerChangeDim(PlayerEvent.PlayerChangedDimensionEvent event) {

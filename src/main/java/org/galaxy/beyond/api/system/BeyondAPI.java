@@ -1,9 +1,10 @@
-package org.galaxy.beyond.api;
+package org.galaxy.beyond.api.system;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.init.BeyondAttachmentInit;
@@ -36,6 +37,10 @@ public class BeyondAPI {
 
     public static BeyondPlayerData getBeyondPlayerData(ServerPlayer player) {
         return player.getData(BeyondAttachmentInit.PLAYER_DATA.get());
+    }
+
+    public static BeyondMobData getBeyondMobData(LivingEntity entity) {
+        return entity.getData(BeyondAttachmentInit.MOB_DATA.get());
     }
 
 

@@ -2,31 +2,31 @@ package org.galaxy.beyond.api.system.rogue;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib2.utils.PersistedParser;
+import com.mojang.serialization.MapCodec;
+import io.netty.buffer.ByteBuf;
 import lombok.Data;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//单个关卡的运行时数据，
 @Data
 public class ProgressType implements IPersistedSerializable {
+
     @Persisted
     private Identifier id;
 
-    //进度，从definition里面进行抽取
-    @Persisted(subPersisted = true)
+    @Persisted
     private List<SceneType> scenes = new ArrayList<>();
-    /**
-     * 当前关卡节点index，从0开始
-     */
     @Persisted
     private int scenesIndex;
-    /**
-     * 当前关卡能够遇见的遭遇以及内部的事件
-     */
-    @Persisted(subPersisted = true)
-    private List<EncounterData> encounters;
+    @Persisted
+    private List<EncounterData> encounters = new ArrayList<>();
+
+    public static final MapCodec<ProgressType> CODEC = PersistedParser.createMapCodec(ProgressType::new);
+    public static final StreamCodec<ByteBuf, ProgressType> STREAM_CODEC = PersistedParser.createStreamCodec(ProgressType::new);
 
     public ProgressType() {}
 

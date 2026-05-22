@@ -9,7 +9,8 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondGlobalData;
 import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
 import org.slf4j.Logger;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 
 /**
  * 在 /reload 时扫描 data/beyond/rogue_progress/ 下的所有 JSON，
- * 反序列化为 {@link ProgressDefinition} 并注入到 {@link org.galaxy.beyond.api.BeyondGlobalData}。
+ * 反序列化为 {@link ProgressDefinition} 并注入到 {@link BeyondGlobalData}。
  */
 public class ProgressDataPack extends SimplePreparableReloadListener<Map<Identifier, ProgressDefinition>> {
 

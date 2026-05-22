@@ -9,8 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.init.BeyondPhaseInit;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
@@ -48,9 +47,9 @@ public class SafeZoneBorderRenderer {
     }
 
     private static void resolveColor(PlayerPhase phase, int[] out) {
-        if (phase == BeyondPhaseInit.PLAYER_LOBBY.get()) {
+        if (phase == PlayerPhase.LOBBY) {
             out[0] = R_BLUE;  out[1] = G_BLUE;  out[2] = B_BLUE;
-        } else if (phase == BeyondPhaseInit.PLAYER_PRE_ROGUE.get()) {
+        } else if (phase == PlayerPhase.PRE_ROGUE) {
             out[0] = R_ORANGE; out[1] = G_ORANGE; out[2] = B_ORANGE;
         } else {
             out[0] = R_RED;   out[1] = G_RED;   out[2] = B_RED;

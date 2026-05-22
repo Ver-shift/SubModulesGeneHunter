@@ -60,8 +60,8 @@ public class CommonConfig {
                 .comment("初始活动区至少需要覆盖的未完成节点数量。")
                 .defineInRange("minNodes", 12, 1, 1000);
         ACTIVE_ZONE_NODE_EXPAND_RADIUS = BUILDER
-                .comment("玩家完成节点事件后，以该节点为中心向外扩张的初始半径（区块数）。")
-                .defineInRange("nodeExpandRadius", 2, 1, 100);
+                .comment("玩家完成节点事件后，以节点每个区块为中心向外扩张的半径（区块数）。")
+                .defineInRange("nodeExpandRadius", 6, 1, 100);
         ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS = BUILDER
                 .comment("玩家完成节点事件后，为寻找足够未完成节点允许扫描的最大半径（区块数）。")
                 .defineInRange("nodeExpandMaxRadius", 20, 1, 200);

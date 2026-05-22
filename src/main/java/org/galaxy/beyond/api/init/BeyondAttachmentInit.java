@@ -5,9 +5,9 @@ import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.BeyondGlobalData;
-import org.galaxy.beyond.api.BeyondPlayerData;
-import org.galaxy.beyond.api.network.FullSyncAttachmentHandler;
+import org.galaxy.beyond.api.system.BeyondGlobalData;
+import org.galaxy.beyond.api.system.BeyondMobData;
+import org.galaxy.beyond.api.system.BeyondPlayerData;
 
 import java.util.function.Supplier;
 
@@ -19,14 +19,21 @@ public class BeyondAttachmentInit {
             ATTACHMENT_TYPES.register("global_data",
                     () -> AttachmentType.builder(BeyondGlobalData::new)
                             .serialize(BeyondGlobalData.CODEC)
-                            .sync(new FullSyncAttachmentHandler<>(BeyondGlobalData.STREAM_CODEC, BeyondGlobalData::new))
+                            .sync(BeyondGlobalData.STREAM_CODEC)
                             .build());
 
     public static final Supplier<AttachmentType<BeyondPlayerData>> PLAYER_DATA =
             ATTACHMENT_TYPES.register("player_data",
                     () -> AttachmentType.builder(BeyondPlayerData::new)
                             .serialize(BeyondPlayerData.CODEC)
-                            .sync(new FullSyncAttachmentHandler<>(BeyondPlayerData.STREAM_CODEC, BeyondPlayerData::new))
+                            .sync(BeyondPlayerData.STREAM_CODEC)
+                            .build());
+
+    public static final Supplier<AttachmentType<BeyondMobData>> MOB_DATA =
+            ATTACHMENT_TYPES.register("mob_data",
+                    () -> AttachmentType.builder(BeyondMobData::new)
+                            .serialize(BeyondMobData.CODEC)
+                            .sync(BeyondMobData.STREAM_CODEC)
                             .build());
 
     public static void register(IEventBus eventBus) {

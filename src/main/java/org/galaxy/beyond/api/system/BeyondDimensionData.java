@@ -1,4 +1,4 @@
-package org.galaxy.beyond.api;
+package org.galaxy.beyond.api.system;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;

@@ -5,10 +5,15 @@ import org.galaxy.beyond.api.system.rogue.core.PhaseRunner;
 
 public class RogueManager {
 
-    private final RogueContext context = new RogueContext();
-    private final PhaseRunner phaseRunner = new PhaseRunner(context);
+    private final IRogueContext context;
+    private final PhaseRunner phaseRunner;
 
-    public RogueContext getContext() {
+    public RogueManager(IRogueContext context) {
+        this.context = context;
+        this.phaseRunner = new PhaseRunner(context);
+    }
+
+    public IRogueContext getContext() {
         return context;
     }
 

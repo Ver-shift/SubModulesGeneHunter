@@ -8,14 +8,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.random.Weighted;
-import org.galaxy.beyond.api.system.rogue.EncounterType;
-import org.galaxy.beyond.api.system.rogue.EventTask;
-import org.galaxy.beyond.api.system.rogue.SceneType;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Data
@@ -24,6 +20,29 @@ public class RogueDefinition implements IPersistedSerializable {
     @Persisted
     @ReadOnlyManaged(serializeMethod = "rogueProgressSerialize", deserializeMethod = "rogueProgressDeserialize")
     private final Map<Identifier, ProgressDefinition> rogueProgress = new HashMap<>();
+
+    // ============================================================
+    // 校验 + 获取
+    // ============================================================
+
+    public boolean hasProgress(Identifier id) {
+        return rogueProgress.containsKey(id);
+    }
+
+    public ProgressDefinition getProgress(Identifier id) {
+        return rogueProgress.get(id);
+    }
+
+    /** 校验 currentProgress 是否在 definition 中存在，不存在返回错误消息 */
+    public Component validateProgress(Identifier id) {
+        if (id == null) {
+            return Component.translatable("beyond.definition.progress_not_set");
+        }
+        if (!hasProgress(id)) {
+            return Component.translatable("beyond.definition.progress_not_found", id.toString());
+        }
+        return null;
+    }
 
     public CompoundTag rogueProgressSerialize(Map<Identifier, ProgressDefinition> m) {
         var keys = new ListTag();

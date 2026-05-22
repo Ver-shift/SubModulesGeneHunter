@@ -51,4 +51,11 @@ public enum ZoneType implements IPersistedSerializable {
         for (ZoneType t : rest) m |= t.mask;
         return m;
     }
+
+    @SuppressWarnings("unused")
+    private static ZoneType valueOfPersisted(String name) {
+        for (var v : values())
+            if (v.name.equals(name)) return v;
+        return Empty;
+    }
 }

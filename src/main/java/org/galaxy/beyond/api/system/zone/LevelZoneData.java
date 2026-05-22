@@ -3,17 +3,21 @@ package org.galaxy.beyond.api.system.zone;
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.ReadOnlyManaged;
-import com.lowdragmc.lowdraglib2.test.gametest.syncdata.MapSerializationGameTest;
+import com.lowdragmc.lowdraglib2.utils.PersistedParser;
+import com.mojang.serialization.MapCodec;
+import io.netty.buffer.ByteBuf;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.ChunkPos;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +27,9 @@ import java.util.Set;
  * 只允许从内部方法获取数据
  */
 public class LevelZoneData implements IPersistedSerializable {
+
+    public static final MapCodec<LevelZoneData> CODEC = PersistedParser.createMapCodec(LevelZoneData::new);
+    public static final StreamCodec<ByteBuf, LevelZoneData> STREAM_CODEC = PersistedParser.createStreamCodec(LevelZoneData::new);
 
     public LevelZoneData() {
     }
@@ -72,6 +79,10 @@ public class LevelZoneData implements IPersistedSerializable {
 
     public ZoneData getOrCreateZoneData(ZoneType zoneType) {
         return levelZoneData.computeIfAbsent(zoneType, k -> new ZoneData(k));
+    }
+
+    public Collection<ZoneData> allZoneData() {
+        return Collections.unmodifiableCollection(levelZoneData.values());
     }
 
     public boolean addZone(ChunkPos chunkPos, ZoneType zoneType) {

@@ -8,16 +8,14 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondAPI;
 
 @EventBusSubscriber
 public class BeyondManagerEventHandle {
@@ -68,21 +66,6 @@ public class BeyondManagerEventHandle {
             BeyondAPI.getBeyondManager().onChunkLoad(chunk);
         }
     }
-    @SubscribeEvent
-    public static void onUse(LivingEntityUseItemEvent.Start event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            BeyondAPI.getBeyondManager().getZoneManager().handlePlayerUseItem(player, event.getItem().getItem());
-        }
-    }
-
-
-    @SubscribeEvent
-    public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            BeyondAPI.getBeyondManager().onPlayerRightClickBlock(player, event.getPos());
-        }
-    }
-
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onServerStarted(ServerStartedEvent event) {
         Beyond.SERVER = event.getServer();

@@ -8,7 +8,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;

@@ -2,11 +2,12 @@ package org.galaxy.beyond.api.system.rogue;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class RogueContext implements IRogueContext {
 
@@ -21,6 +22,11 @@ public class RogueContext implements IRogueContext {
     }
 
     @Override
+    public void setPhase(ServerLevel level, Supplier<RoguePhase> supplier) {
+        setPhase(level, supplier.get());
+    }
+
+    @Override
     public PlayerPhase getPlayerPhase(ServerPlayer player) {
         return BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
     }
@@ -31,10 +37,20 @@ public class RogueContext implements IRogueContext {
     }
 
     @Override
+    public void setPlayerPhase(ServerPlayer player, Supplier<PlayerPhase> supplier) {
+        setPlayerPhase(player, supplier.get());
+    }
+
+    @Override
     public void setAllPlayerPhase(ServerLevel level, PlayerPhase phase) {
         for (ServerPlayer p : playersInRogue(level)) {
             setPlayerPhase(p, phase);
         }
+    }
+
+    @Override
+    public void setAllPlayerPhase(ServerLevel level, Supplier<PlayerPhase> supplier) {
+        setAllPlayerPhase(level, supplier.get());
     }
 
     @Override
@@ -55,7 +71,7 @@ public class RogueContext implements IRogueContext {
         if (ids.isEmpty()) return false;
         for (UUID uuid : ids) {
             ServerPlayer p = level.getServer().getPlayerList().getPlayer(uuid);
-            if (p == null || !getPlayerPhase(p).equals(phase)) return false;
+            if (p == null || getPlayerPhase(p) != phase) return false;
         }
         return true;
     }

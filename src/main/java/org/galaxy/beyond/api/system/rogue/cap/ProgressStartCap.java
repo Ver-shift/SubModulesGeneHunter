@@ -4,165 +4,248 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Items;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondItemInit;
-import org.galaxy.beyond.api.init.BeyondPhaseInit;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueContext;
+import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
+import org.galaxy.beyond.api.system.rogue.core.RogueCap;
+import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 import org.galaxy.beyond.api.system.rogue.player.RoguePlayerManager;
-import org.galaxy.beyond.api.system.zone.CapType;
-import org.galaxy.beyond.api.system.zone.ZoneCapType;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
 /**
- * 游戏启动能力 —— 流式步骤模式。
+ * 战利品袋流程 Cap。
+ * <p>
+ * 管理肉鸽开局流程：离开安全区 → 冷却检查 → 发放战利品袋 → 开袋装备 → PRE_ROGUE 就绪检测 → 推进到 INIT。
+ * <p>
+ * 通过 {@code @SubscribeEvent} 监听右键物品（战利品袋），
+ * 通过 {@code phaseTick} 轮询 PRE_ROGUE 就绪状态。
  */
-public class ProgressStartCap extends ZoneCapType {
+@EventBusSubscriber
+public class ProgressStartCap extends RogueCap {
 
-    public static final Identifier ID = Identifier.parse(Beyond.MODID + ":progress_start");
+    public static final Identifier ID = Beyond.asResource("progress_start");
 
-    private final IRogueContext ctx = new RogueContext();
+    private int preRogueTickCounter;
 
     public ProgressStartCap() { super(ID); }
 
-    @Override public int getMaxLevel() { return 1; }
-    @Override public CapType getCapType() { return CapType.NORMAL; }
+    // ============================================================
+    // Zone 事件
+    // ============================================================
 
-    public enum Step {
-        COOLDOWN, BAG_GIVEN, PRE_ROGUE_WAITING, GAME_STARTED, RECYCLED, NOT_IN_FLOW, ALREADY_READY
+    @Override
+    public void changeZone(LivingEntity entity, ZoneType from, ZoneType to, IRogueContext ctx) {
+        if (!(entity instanceof ServerPlayer player)) return;
+        if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
+            tryLeaveSafeZone(player);
+        } else if (from != ZoneType.Safe_Zone && to == ZoneType.Safe_Zone) {
+            returnToSafeZone(player, ctx);
+        }
     }
 
     // ============================================================
-    // Step 1-3：离开安全区 → 冷却检查 → 发袋
+    // Phase 事件
+    // ============================================================
+
+    @Override
+    public void phaseEnter(ServerLevel level, Phase from, Phase to, IRogueContext ctx) {
+        if (to == RoguePhase.PRE_ROGUE) {
+            preRogueTickCounter = 0;
+        }
+    }
+
+    @Override
+    public void phaseTick(ServerLevel level, Phase phase, IRogueContext ctx) {
+        if (phase != RoguePhase.PRE_ROGUE) return;
+
+        preRogueTickCounter++;
+        if (preRogueTickCounter % 20 != 0) return;
+
+        var players = ctx.playersInRogue(level);
+        if (players.isEmpty()) return;
+
+        int total = players.size();
+        int ready = countReady(level, ctx);
+        if (ready < total) {
+            for (var p : players) {
+                p.sendSystemMessage(Component.translatable("beyond.rogue.ready_status", ready, total));
+            }
+            return;
+        }
+
+        var progressId = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getCurrentProgress();
+        if (progressId == null) {
+            level.getServer().getPlayerList()
+                    .broadcastSystemMessage(Component.translatable("beyond.rogue.start.no_progress"), false);
+            return;
+        }
+        ctx.setPhase(level, RoguePhase.INIT);
+    }
+
+    // ============================================================
+    // 战利品袋使用 → @SubscribeEvent
+    // ============================================================
+
+    @SubscribeEvent
+    public static void onItemRightClick(PlayerInteractEvent.RightClickItem event) {
+        if (event.getEntity() instanceof ServerPlayer player
+                && event.getItemStack().is(BeyondItemInit.LOOT_BAG.get())) {
+            tryOpenLootBag(player, new RogueContext());
+        }
+    }
+
+    // ============================================================
+    // 离开安全区 → 冷却检查 → 发放战利品袋
     // ============================================================
 
     public Step tryLeaveSafeZone(ServerPlayer player) {
-        if (isInRogue(player)) return Step.NOT_IN_FLOW;
+        if (isInRogue(player)) return Step.NOT_IN_ROGUE;
 
         var data = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get())
                 .getPlayerRogueData();
         long now = player.level().getGameTime();
         long cd = CommonConfig.LOBBY_COOLDOWN_SECONDS.get() * 20L;
-        if (now - data.getLastLeaveSafeZoneTime() < cd) {
-            long remain = cd - (now - data.getLastLeaveSafeZoneTime());
+        if (data.getLastSafeZoneReturnTime() > 0 && now - data.getLastSafeZoneReturnTime() < cd) {
+            long remain = cd - (now - data.getLastSafeZoneReturnTime());
             player.sendSystemMessage(Component.translatable("beyond.info.leave_too_frequent", (remain + 19) / 20));
             return Step.COOLDOWN;
         }
 
         var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        if (cfg.getCurrentProgress() == null) {
+            player.sendSystemMessage(Component.translatable("beyond.rogue.start.no_progress"));
+            return Step.NO_PROGRESS;
+        }
+
         cfg.addRoguePlayer(player.getUUID());
         RoguePlayerManager.giveItem(player, BeyondItemInit.LOOT_BAG.get());
-        data.setLastLeaveSafeZoneTime(now);
         return Step.BAG_GIVEN;
     }
 
     // ============================================================
-    // Step 4-5：打开战利品袋 → 装备 → PreRogue
+    // 打开战利品袋 → 装备 → 全员就绪检测
     // ============================================================
 
-    public Step tryOpenLootBag(ServerPlayer player) {
-        if (!isInRogue(player)) return Step.NOT_IN_FLOW;
+    public static Step tryOpenLootBag(ServerPlayer player, IRogueContext ctx) {
+        // 不在肉鸽列表
+        if (!isInRogue(player)) return Step.NOT_IN_ROGUE;
 
-        PlayerPhase cur = ctx.getPlayerPhase(player);
-        if (cur == BeyondPhaseInit.PLAYER_PRE_ROGUE.get()
-                || cur == BeyondPhaseInit.PLAYER_ON_PROGRESS.get()) {
-            player.sendSystemMessage(Component.translatable("beyond.rogue.already_ready"));
-            return Step.ALREADY_READY;
+        PlayerPhase playerPhase = ctx.getPlayerPhase(player);
+
+        // 已经开过袋
+        if (playerPhase == PlayerPhase.PRE_ROGUE) {
+            player.sendSystemMessage(Component.translatable("beyond.rogue.already_opened"));
+            return Step.ALREADY_OPENED;
         }
 
-        RoguePlayerManager.giveItem(player, Items.IRON_SWORD);
-        ctx.setPlayerPhase(player, BeyondPhaseInit.PLAYER_PRE_ROGUE.get());
+        // 游戏已在进行中
+        if (playerPhase == PlayerPhase.ON_PROGRESS) {
+            player.sendSystemMessage(Component.translatable("beyond.rogue.game_in_progress"));
+            return Step.GAME_IN_PROGRESS;
+        }
 
+        // 全局 phase 已离开 PRE_ROGUE（游戏已由其他人触发开始）
         ServerLevel level = player.level();
+        RoguePhase globalPhase = ctx.getPhase(level);
+        if (globalPhase != RoguePhase.PRE_ROGUE && globalPhase != RoguePhase.LOBBY) {
+            player.sendSystemMessage(Component.translatable("beyond.rogue.game_already_started"));
+            return Step.GAME_ALREADY_STARTED;
+        }
+
+        // 首次开袋：给装备，设为 PRE_ROGUE
+        RoguePlayerManager.giveItem(player, Items.IRON_SWORD);
+        ctx.setPlayerPhase(player, PlayerPhase.PRE_ROGUE);
+
+        // 确保全局 phase 进入 PRE_ROGUE（第一个人开袋时触发）
+        if (globalPhase != RoguePhase.PRE_ROGUE) {
+            ctx.setPhase(level, RoguePhase.PRE_ROGUE);
+        }
+
         int total = ctx.playersInRogue(level).size();
-        int ready = countReady(level);
+        int ready = countReady(level, ctx);
         player.sendSystemMessage(Component.translatable("beyond.rogue.player_ready", ready, total));
 
         if (ready >= total) {
-            ctx.setPhase(level, BeyondPhaseInit.ROGUE_INIT.get());
-            return Step.GAME_STARTED;
+            ctx.setPhase(level, RoguePhase.INIT);
+            return Step.ALL_READY;
         }
+
         player.sendSystemMessage(Component.translatable("beyond.rogue.waiting_players", total - ready));
-        return Step.PRE_ROGUE_WAITING;
+        return Step.WAITING_OTHERS;
     }
 
     // ============================================================
-    // Step 6-7：全员就绪 → 关卡初始化
+    // 返回安全区 → 回收
     // ============================================================
 
-    public Step tryStartGame(ServerLevel level) {
-        if (countReady(level) < ctx.playersInRogue(level).size())
-            return Step.PRE_ROGUE_WAITING;
-        ctx.setPhase(level, BeyondPhaseInit.ROGUE_INIT.get());
-        return Step.GAME_STARTED;
-    }
-
-    // ============================================================
-    // 分支：返回安全区 → 回收
-    // ============================================================
-
-    public int returnToSafeZone(ServerPlayer player) {
+    public int returnToSafeZone(ServerPlayer player, IRogueContext ctx) {
         int val = RoguePlayerManager.clearInventory(player);
         if (val > 0) {
             player.sendSystemMessage(Component.translatable("beyond.info.back_to_safe_zone", val));
         }
-        ctx.setPlayerPhase(player, BeyondPhaseInit.PLAYER_LOBBY.get());
+        var data = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get())
+                .getPlayerRogueData();
+        data.setLastSafeZoneReturnTime(player.level().getGameTime());
+        ctx.setPlayerPhase(player, PlayerPhase.LOBBY);
         var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
         cfg.removeRoguePlayer(player.getUUID());
 
-        // 全体退出 → 重置全局 Phase
         if (cfg.getRoguePlayerIds().isEmpty()) {
-            ctx.setPhase(player.level(), BeyondPhaseInit.ROGUE_LOBBY.get());
+            ctx.setPhase(player.level(), RoguePhase.LOBBY);
         }
         return val;
-    }
-
-    // ============================================================
-    // 列表查询
-    // ============================================================
-
-    private static boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase()
-                != BeyondPhaseInit.PLAYER_LOBBY.get();
-    }
-
-    // ============================================================
-    // Cap 事件 hook
-    // ============================================================
-
-    @Override
-    public void playerChangeZone(ServerPlayer player, ZoneType from, ZoneType to) {
-        if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
-            tryLeaveSafeZone(player);
-        } else if (from != ZoneType.Safe_Zone && to == ZoneType.Safe_Zone) {
-            returnToSafeZone(player);
-        }
-    }
-
-    @Override
-    public void playerUseItem(ServerPlayer player, Item item) {
-        if (item == BeyondItemInit.LOOT_BAG.get()) {
-            tryOpenLootBag(player);
-        }
     }
 
     // ============================================================
     // 查询
     // ============================================================
 
-    public boolean isAllReady(ServerLevel level) {
-        return countReady(level) >= ctx.playersInRogue(level).size();
+    private static boolean isInRogue(ServerPlayer player) {
+        return BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig()
+                .getRoguePlayerIds().contains(player.getUUID());
     }
 
-    public int countReady(ServerLevel level) {
+    public static int countReady(ServerLevel level, IRogueContext ctx) {
         int c = 0;
         for (var p : ctx.playersInRogue(level))
-            if (ctx.getPlayerPhase(p) == BeyondPhaseInit.PLAYER_PRE_ROGUE.get()) c++;
+            if (ctx.getPlayerPhase(p) == PlayerPhase.PRE_ROGUE) c++;
         return c;
+    }
+
+    // ============================================================
+    // 结果枚举 —— 每个分支都有明确语义
+    // ============================================================
+
+    public enum Step {
+        /** 冷却中，离开安全区太频繁 */
+        COOLDOWN,
+        /** 未设置关卡 */
+        NO_PROGRESS,
+        /** 已发放战利品袋 */
+        BAG_GIVEN,
+        /** 不在肉鸽玩家列表中 */
+        NOT_IN_ROGUE,
+        /** 已经开过战利品袋 */
+        ALREADY_OPENED,
+        /** 游戏已在进行中 */
+        GAME_IN_PROGRESS,
+        /** 游戏已被其他玩家触发开始 */
+        GAME_ALREADY_STARTED,
+        /** 等待其他玩家开袋 */
+        WAITING_OTHERS,
+        /** 全员就绪，游戏开始 */
+        ALL_READY,
+        /** 已回收物品，返回安全区 */
+        RECYCLED
     }
 }

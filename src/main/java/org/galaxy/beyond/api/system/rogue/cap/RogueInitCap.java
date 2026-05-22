@@ -1,23 +1,32 @@
-package org.galaxy.beyond.api.system.rogue.phase.rogue;
+package org.galaxy.beyond.api.system.rogue.cap;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.BeyondAPI;
-import org.galaxy.beyond.api.init.BeyondPhaseInit;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
+import org.galaxy.beyond.api.system.rogue.core.Phase;
+import org.galaxy.beyond.api.system.rogue.core.RogueCap;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
 /**
- * ROGUE_INIT Phase：定义 → ProgressType 转化 + 关卡初始化。
+ * 肉鸽初始化 Cap。
+ * <p>
+ * 在 {@code ROGUE_INIT} phase 进入时执行关卡初始化：清空上局数据、生成种子、
+ * 将 ProgressDefinition 解析为运行时的 {@link ProgressType} 并推进到 {@code ROGUE_ON_PROGRESS}。
  */
-public class RogueInitPhase extends RoguePhase {
+public class RogueInitCap extends RogueCap {
 
-    public RogueInitPhase() { super(BeyondPhaseInit.R_INIT); }
+    public static final Identifier ID = Beyond.asResource("rogue_init");
+
+    public RogueInitCap() { super(ID); }
 
     @Override
-    public void enter(ServerLevel level, IRogueContext ctx) {
+    public void phaseEnter(ServerLevel level, Phase from, Phase to, IRogueContext ctx) {
+        if (to != RoguePhase.INIT) return;
+
         var globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
         var progressId = globalData.getRogueConfig().getCurrentProgress();
 
@@ -32,33 +41,25 @@ public class RogueInitPhase extends RoguePhase {
             return;
         }
 
-        // 重置上一局数据
         var rogueData = ctx.getRogueData(level);
         rogueData.setRogueNodeData(null);
         rogueData.setProgressIndex(0);
         rogueData.getEncounterAssignments().clear();
         rogueData.getCompletedNodeChunks().clear();
 
-        // 种子
         long seed = ctx.getGameSeed(level);
         if (seed == 0) {
             seed = level.getRandom().nextLong();
             ctx.setGameSeed(level, seed);
         }
 
-        // 定义 → ProgressType 转化
         ProgressType progressType = new ProgressType(progressId);
-        rogueData.setProgressType(progressType); // 先设 ID，resolveScenes 依赖它
-
+        rogueData.setProgressType(progressType);
         progressType.setScenes(Beyond.MANAGER.getDefinitionManager().resolveScenes(level));
 
         level.getServer().getPlayerList()
                 .broadcastSystemMessage(Component.translatable("beyond.rogue.start", progressId.toString()), false);
 
-        // 推进到 ON_PROGRESS
-        ctx.setPhase(level, BeyondPhaseInit.ROGUE_ON_PROGRESS.get());
+        ctx.setPhase(level, RoguePhase.ON_PROGRESS);
     }
-
-    @Override public void tick(ServerLevel level, IRogueContext ctx) {}
-    @Override public void exit(ServerLevel level, IRogueContext ctx) {}
 }

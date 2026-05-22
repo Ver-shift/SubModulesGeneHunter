@@ -1,12 +1,12 @@
-package org.galaxy.beyond.api;
+package org.galaxy.beyond.api.system;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
+import org.galaxy.beyond.api.system.rogue.RogueCapManager;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
@@ -18,6 +18,7 @@ public interface IBeyondManager {
     INodeManager getNodeManager();
     IStructureManager getStructureManager();
     ISafeZoneStructureManager getSafeZoneStructureManager();
+    RogueCapManager getRogueCapManager();
 
     //event handle
     void onLevelLoad(ServerLevel level);
@@ -35,6 +36,4 @@ public interface IBeyondManager {
     void onChunkLoad(LevelChunk chunk);
 
     void onServerStarted(MinecraftServer server);
-
-    void onPlayerRightClickBlock(ServerPlayer player, BlockPos pos);
 }

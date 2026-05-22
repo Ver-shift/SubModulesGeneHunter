@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import org.galaxy.beyond.api.BeyondAPI;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.init.BeyondAttachmentInit;
 
 import java.util.Set;
@@ -230,8 +230,9 @@ public class BeyondCommand {
                                                 .executes(ctx -> {
                                                     var id = Identifier.parse(StringArgumentType.getString(ctx, "value"));
                                                     var def = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueDefinition();
-                                                    if (!def.getRogueProgress().containsKey(id)) {
-                                                        ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.set.currentProgress.not_found", id.toString()));
+                                                    var error = def.validateProgress(id);
+                                                    if (error != null) {
+                                                        ctx.getSource().sendFailure(error);
                                                         return 0;
                                                     }
                                                     cfg(ctx).setCurrentProgress(id);

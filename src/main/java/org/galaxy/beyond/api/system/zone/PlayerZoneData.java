@@ -8,7 +8,5 @@ import lombok.Data;
 public class PlayerZoneData implements IPersistedSerializable {
 
     @Persisted
-    private ZoneType currentZone = ZoneType.Empty;
-    @Persisted
     private boolean safeZoneInitialized;
 }
