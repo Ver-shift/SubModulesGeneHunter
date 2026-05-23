@@ -71,6 +71,7 @@
   "commands.beyond.safezone.expand.success": "安全区已扩容至 %s 个区块范围",
   "commands.beyond.safezone.expand.odd": "区块大小必须为偶数",
   "commands.beyond.safezone.expand.locked": "安全区扩容失败：待覆盖区域内存在未解锁的节点，请先解锁所有节点",
+  "commands.beyond.activezone.expand.failed": "活动区拓张失败：已达到最大拓张距离，但仍未找到足够的未解锁节点，请检查配置或节点分布",
 
   "commands.beyond.config.set.debug": "调试模式已设为 %s",
   "commands.beyond.config.get.debug": "调试模式：%s",

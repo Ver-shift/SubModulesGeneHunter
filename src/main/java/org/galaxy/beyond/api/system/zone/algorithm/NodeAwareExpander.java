@@ -2,100 +2,135 @@ package org.galaxy.beyond.api.system.zone.algorithm;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
-import org.galaxy.beyond.api.system.zone.ZoneType;
+import org.galaxy.beyond.api.system.zone.LevelZoneData;
+import org.galaxy.beyond.api.system.zone.ZoneHelper;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * 节点感知扩张器 —— 圆形扩张 + 连通性判定。
  * <p>
- * 只有通过已 zone 区块（含新填的 Active_Zone）能走到节点组件时，
- * 才算"可达"；有空地隔开的节点不算，需要继续扩张。
+ * 从种子出发逐层外扩，每层通过 {@link #floodReachable} 判定节点组件是否可走通，
+ * 够数即停。
  */
 public class NodeAwareExpander {
 
-    private final CircularExpander expander = new CircularExpander();
     private final Function<Set<ChunkPos>, Set<Set<ChunkPos>>> componentGrouper;
+
+    @FunctionalInterface
+    public interface Function<T, R> { R apply(T t); }
 
     public NodeAwareExpander(Function<Set<ChunkPos>, Set<Set<ChunkPos>>> componentGrouper) {
         this.componentGrouper = componentGrouper;
     }
 
+    /**
+     * 逐层扩张直到通过本轮新拓张发现足够多的未完成节点组件。
+     * <p>
+     * 拓张前先做一次 flood fill 基线，排除掉当前已经可达的节点区块。
+     * 只统计"本轮拓张之前不可达、本轮拓张之后变为可达"的新节点组件。
+     *
+     * @return 实际扩张到的半径，若达到 maxRadius 仍未找到足够新节点则返回 -1
+     */
     public int expandUntilWrapped(ServerLevel level, Set<ChunkPos> seeds,
                                    Set<ChunkPos> uncompleted,
                                    int minConnections, int minRadius, int maxRadius,
-                                   BiFunction<ChunkPos, ZoneType, Boolean> setZone,
-                                   Function<ChunkPos, ZoneType> getZone) {
-        Set<Set<ChunkPos>> targetComponents = componentGrouper.apply(uncompleted);
-        int needed = targetComponents.isEmpty() ? 1
+                                   LevelZoneData lzd) {
+        // 拓张前基线：当前 zone 网络下已经可达的区块
+        Set<ChunkPos> beforeReachable = floodReachable(seeds, lzd);
+
+        // 过滤掉已可达的节点区块，只保留"等待本轮拓张发现"的
+        Set<ChunkPos> newTargets = new HashSet<>(uncompleted);
+        newTargets.removeAll(beforeReachable);
+
+        Set<Set<ChunkPos>> targetComponents = componentGrouper.apply(newTargets);
+        int needed = targetComponents.isEmpty() ? 0
                 : Math.min(minConnections, targetComponents.size());
 
-        Set<Set<ChunkPos>> reachable = new HashSet<>();
-        int actualRadius = maxRadius;
+        int actualRadius = -1;
 
-        for (int r = minRadius; r <= maxRadius; r++) {
-            // 填充圆形 Active_Zone
-            expander.expand(level, seeds, r, ZoneType.Active_Zone, setZone, getZone);
+        for (int r = 1; r <= maxRadius; r++) {
+            Set<ChunkPos> ring = ringOf(seeds, r);
+            for (ChunkPos p : ring)
+                if (!lzd.hasAny(p))
+                    lzd.addActive(p);
 
-            // 连通性检测：通过所有 zone 区块（含刚填的 Active_Zone），
-            // 从 seeds 出发能走到的节点组件才算"可达"
-            Set<ChunkPos> reachableChunks = floodReachable(seeds, getZone);
-            reachable.clear();
-            for (var comp : targetComponents) {
-                for (ChunkPos c : comp) {
-                    if (reachableChunks.contains(c)) {
-                        reachable.add(comp);
-                        break;
+            if (r >= minRadius) {
+                if (needed == 0) { actualRadius = r; break; }
+
+                Set<ChunkPos> reachable = floodReachable(seeds, lzd);
+                int reached = 0;
+                for (var comp : targetComponents) {
+                    for (ChunkPos c : comp)
+                        if (reachable.contains(c)) { reached++; break; }
+                }
+
+                if (reached >= needed) {
+                    // 计算已达组件中最远区块距 seeds 的距离，把圆推到完整包裹节点
+                    int furthest = 0;
+                    for (var comp : targetComponents) {
+                        if (comp.stream().noneMatch(reachable::contains)) continue;
+                        for (ChunkPos c : comp)
+                            furthest = Math.max(furthest, minDistToSeeds(seeds, c));
                     }
+                    actualRadius = Math.max(r, furthest);
+                    if (actualRadius > maxRadius) actualRadius = maxRadius;
+                    // 补填到 actualRadius
+                    for (int rr = r + 1; rr <= actualRadius; rr++) {
+                        Set<ChunkPos> extra = ringOf(seeds, rr);
+                        for (ChunkPos p : extra)
+                            if (!lzd.hasAny(p))
+                                lzd.addActive(p);
+                    }
+                    break;
                 }
             }
-
-            if (reachable.size() >= needed) {
-                actualRadius = r;
-                break;
-            }
         }
+
         return actualRadius;
     }
 
-    public boolean expandFixed(ServerLevel level, Set<ChunkPos> seeds, int radius,
-                                BiFunction<ChunkPos, ZoneType, Boolean> setZone,
-                                Function<ChunkPos, ZoneType> getZone) {
-        return expander.expand(level, seeds, radius, ZoneType.Active_Zone, setZone, getZone);
-    }
-
     /**
-     * 从 seeds 出发，沿已 zone 的区块 4 邻域 flood fill，
-     * 返回所有可达的区块（含 Node_Zone、Safe_Zone、Active_Zone）。
+     * 从 seeds 出发沿已 zone 区块 4 邻域 BFS，返回所有可走到的区块。
      */
-    public static Set<ChunkPos> floodReachable(Set<ChunkPos> seeds,
-                                                Function<ChunkPos, ZoneType> getZone) {
+    public static Set<ChunkPos> floodReachable(Set<ChunkPos> seeds, LevelZoneData lzd) {
         Set<ChunkPos> visited = new HashSet<>();
         Deque<ChunkPos> queue = new ArrayDeque<>();
         for (ChunkPos s : seeds) {
-            if (getZone.apply(s) != null) {
-                visited.add(s);
-                queue.add(s);
-            }
+            if (lzd.hasAny(s)) { visited.add(s); queue.add(s); }
         }
         while (!queue.isEmpty()) {
-            for (ChunkPos nb : neighbors4(queue.poll())) {
+            for (ChunkPos nb : ZoneHelper.neighbors4(queue.poll())) {
                 if (!visited.add(nb)) continue;
-                if (getZone.apply(nb) != null) queue.add(nb);
+                if (lzd.hasAny(nb)) queue.add(nb);
             }
         }
         return visited;
     }
 
-    private static List<ChunkPos> neighbors4(ChunkPos p) {
-        int cx = toInt(p), cz = toIntZ(p);
-        return List.of(
-                new ChunkPos(cx + 1, cz), new ChunkPos(cx - 1, cz),
-                new ChunkPos(cx, cz + 1), new ChunkPos(cx, cz - 1));
+    /** 圆的最外圈（半径 r 处的增量，不含内层） */
+    public static Set<ChunkPos> ringOf(Set<ChunkPos> seeds, int r) {
+        if (r == 0) return new HashSet<>(seeds);
+        Set<ChunkPos> outer = expandCircleMulti(seeds, r);
+        Set<ChunkPos> inner = expandCircleMulti(seeds, r - 1);
+        outer.removeAll(inner);
+        return outer;
     }
 
-    private static int toInt(ChunkPos p) { return p.getMinBlockX() >> 4; }
-    private static int toIntZ(ChunkPos p) { return p.getMinBlockZ() >> 4; }
+    private static Set<ChunkPos> expandCircleMulti(Set<ChunkPos> seeds, int r) {
+        Set<ChunkPos> result = new HashSet<>();
+        for (ChunkPos s : seeds) result.addAll(ZoneHelper.expandCircle(s, r));
+        return result;
+    }
+
+    /** 区块 c 到 seeds 集合的最近欧几里得距离（向上取整） */
+    private static int minDistToSeeds(Set<ChunkPos> seeds, ChunkPos c) {
+        int cx = c.x(), cz = c.z();
+        double minDist = Double.MAX_VALUE;
+        for (ChunkPos s : seeds) {
+            double dx = cx - s.x(), dz = cz - s.z();
+            minDist = Math.min(minDist, Math.sqrt(dx * dx + dz * dz));
+        }
+        return (int) Math.ceil(minDist);
+    }
 }

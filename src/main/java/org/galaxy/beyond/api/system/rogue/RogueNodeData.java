@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.ChunkPos;
+import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 
@@ -64,8 +65,9 @@ public class RogueNodeData implements IPersistedSerializable {
         return encounterData.getEvents() != null ? encounterData.getEvents().eventCount() : 0;
     }
 
-    /** ON_EVENT / PRE_EVENT → UNLOCKED：节点通关 */
+    /** ON_EVENT / PRE_EVENT → UNLOCKED：节点通关，颜色置蓝 */
     public void markUnlocked() {
         setNodePhase(NodePhase.UNLOCKED);
+        nodeData.setColor(NodeColor.BLUE);
     }
 }

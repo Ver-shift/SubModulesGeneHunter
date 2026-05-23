@@ -71,6 +71,7 @@
   "commands.beyond.safezone.expand.success": "Safe zone expanded to %s chunks",
   "commands.beyond.safezone.expand.odd": "Chunk size must be an even number",
   "commands.beyond.safezone.expand.locked": "Safe zone expansion failed: some nodes in the target area are still locked. Unlock them first.",
+  "commands.beyond.activezone.expand.failed": "Active zone expansion failed: max expansion distance reached, but not enough uncompleted nodes found. Check config or node distribution.",
 
   "commands.beyond.config.set.debug": "Debug mode set to %s",
   "commands.beyond.config.get.debug": "Debug mode: %s",
