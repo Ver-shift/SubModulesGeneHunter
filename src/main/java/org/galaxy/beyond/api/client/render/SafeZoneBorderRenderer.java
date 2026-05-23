@@ -6,13 +6,14 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.WorldBorderRenderer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
-import org.galaxy.beyond.api.system.zone.ZoneType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -35,18 +36,15 @@ public class SafeZoneBorderRenderer extends ZoneBorderRenderer {
     private int tgtR = R_BLUE, tgtG = G_BLUE, tgtB = B_BLUE;
 
     public void render(Level level, Vec3 cameraPos, PoseStack ps) {
-
-        if (true) return;
-
         if (level == null) return;
         var dimData = BeyondAPI.getBeyondDimensionData(level);
         if (dimData == null) return;
-        LevelZoneData zd = dimData.getLevelZoneData();
-        if (zd == null || !zd.hasZones()) return;
-
-        var safe = ZoneHelper.filterByMask(zd.getZoneEntries(), ZoneType.Safe_Zone.mask());
-        if (safe.isEmpty()) return;
-        ZoneHelper.Bounds b = safe.bounds();
+        LevelZoneData lzd = dimData.getLevelZoneData();
+        if (lzd == null || !lzd.hasZones()) return;
+//        WorldBorderRenderer
+        Set<ChunkPos> safeSet = lzd.safeChunks();
+        if (safeSet.isEmpty()) return;
+        ZoneHelper.Bounds b = ZoneHelper.boundsOf(safeSet);
         float halfHeight = (level.getMaxY() - level.getMinY()) * 0.5f;
 
         double bx1 = b.minX() * 16.0, bx2 = (b.maxX() + 1) * 16.0;

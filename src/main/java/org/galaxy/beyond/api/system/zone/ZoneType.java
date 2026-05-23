@@ -1,61 +1,34 @@
 package org.galaxy.beyond.api.system.zone;
 
-import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-
 /**
- * 区域类型枚举，每个类型携带一个 bitmask 值，用于快速位运算。
- * <pre>{@code
- *   Safe_Zone  = 0b0001 (1)
- *   Node_Zone  = 0b0010 (2)
- *   Active_Zone= 0b0100 (4)
- *   Empty      = 0b0000 (0)
- * }</pre>
- * 可通过 {@code ZoneType.of(mask)} 组合多个类型进行批量匹配。
+ * 区域类型 —— 三种独立存储，同一区块可叠加多种类型。
  */
-public enum ZoneType implements IPersistedSerializable {
-    Safe_Zone("safe_zone", (byte) 1),
-    Node_Zone("node_zone", (byte) 2),
-    Active_Zone("active_zone", (byte) 4),
-    Empty("empty", (byte) 0);
+public enum ZoneType {
+    Safe_Zone,
+    Node_Zone,
+    Active_Zone,
+    Empty;
 
-    ZoneType(final String name, final byte mask) {
-        this.name = name;
-        this.mask = mask;
+    /** 兼容旧 API 的位掩码匹配 */
+    public boolean matches(byte mask) {
+        if (this == Safe_Zone)  return (mask & 1) != 0;
+        if (this == Node_Zone)  return (mask & 2) != 0;
+        if (this == Active_Zone)return (mask & 4) != 0;
+        return false;
     }
 
-    @Persisted
-    private final String name;
-    private final byte mask;
-
-    public String getName() {
-        return name;
-    }
-
-    /** 返回位掩码值，用于快速位运算判断类型组合。 */
     public byte mask() {
-        return mask;
+        return (byte) switch (this) {
+            case Safe_Zone   -> 1;
+            case Node_Zone   -> 2;
+            case Active_Zone -> 4;
+            default          -> 0;
+        };
     }
 
-    /** 判断当前类型是否被 targetMask 包含（按位与）。 */
-    public boolean matches(byte targetMask) {
-        return (this.mask & targetMask) != 0;
-    }
-
-    /**
-     * 将多个 ZoneType 合并为一个 bitmask。
-     * <pre>{@code ZoneType.of(Safe_Zone, Node_Zone)}</pre>
-     */
     public static byte of(ZoneType first, ZoneType... rest) {
-        byte m = first.mask;
-        for (ZoneType t : rest) m |= t.mask;
+        byte m = first.mask();
+        for (ZoneType t : rest) m |= t.mask();
         return m;
-    }
-
-    @SuppressWarnings("unused")
-    private static ZoneType valueOfPersisted(String name) {
-        for (var v : values())
-            if (v.name.equals(name)) return v;
-        return Empty;
     }
 }

@@ -142,8 +142,15 @@ public class NodeCap extends RogueCap {
                 .getRoguePlayerIds().contains(player.getUUID());
     }
 
-    private static final NodeColor[] COLORS = { NodeColor.GREEN, NodeColor.ORANGE, NodeColor.RED };
     private static NodeColor randomNodeColor(ServerLevel level) {
-        return COLORS[level.getRandom().nextInt(COLORS.length)];
+        int g = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_GREEN_WEIGHT.get();
+        int o = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_ORANGE_WEIGHT.get();
+        int r = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_RED_WEIGHT.get();
+        int total = g + o + r;
+        if (total <= 0) return NodeColor.ORANGE;
+        int roll = level.getRandom().nextInt(total);
+        if (roll < g) return NodeColor.GREEN;
+        if (roll < g + o) return NodeColor.ORANGE;
+        return NodeColor.RED;
     }
 }

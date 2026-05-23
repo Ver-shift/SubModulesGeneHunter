@@ -38,7 +38,8 @@ public abstract class ZoneBorderRenderer {
     }
 
     /** 统一渲染管线：子类只需提供颜色和 cameraPos */
-    protected void drawBorder(String label, float r, float g, float b, float alpha, double offsetX, double offsetY, double offsetZ) {
+    protected void drawBorder(String label, float r, float g, float b, float alpha,
+                              double offsetX, double offsetY, double offsetZ, int firstVertex, int indexCount) {
         if (indexCount == 0) return;
         var ctx = RenderHelper.captureRenderContext();
         GpuBuffer indexBuffer = this.indices.getBuffer(indexCount);
@@ -56,9 +57,15 @@ public abstract class ZoneBorderRenderer {
                 .createRenderPass(() -> label, ctx.colorTarget(), OptionalInt.empty(), ctx.depthTarget(), OptionalDouble.empty())) {
             RenderHelper.bindPassState(renderPass, ctx, dynamicTransforms, indexBuffer, this.indices, this.vertexBuffer);
             renderPass.drawMultipleIndexed(
-                    List.of(new RenderPass.Draw<>(0, this.vertexBuffer, indexBuffer, this.indices.type(), 0, indexCount, 0)),
+                    List.of(new RenderPass.Draw<>(firstVertex, this.vertexBuffer, indexBuffer, this.indices.type(), 0, indexCount, 0)),
                     null, null, Collections.emptyList(), this);
         }
+    }
+
+    /** 默认 firstVertex=0 */
+    protected void drawBorder(String label, float r, float g, float b, float alpha,
+                              double offsetX, double offsetY, double offsetZ) {
+        drawBorder(label, r, g, b, alpha, offsetX, offsetY, offsetZ, 0, indexCount);
     }
 
     public void invalidate() {
