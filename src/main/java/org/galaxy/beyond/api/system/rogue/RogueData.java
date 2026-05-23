@@ -55,9 +55,6 @@ public class RogueData implements IPersistedSerializable {
     private final Map<ChunkPos, EncounterType> encounterAssignments = new ConcurrentHashMap<>();
 
     @Persisted
-    private List<ChunkPos> completedNodeChunks = new CopyOnWriteArrayList<>();
-
-    @Persisted
     @ReadOnlyManaged(serializeMethod = "rogueCapDataSerialize", deserializeMethod = "rogueCapDataDeserialize")
     private final List<RogueCapData> rogueCapData = new CopyOnWriteArrayList<>();
     /** 节点区域 → NodeData（发现时创建，带颜色，跨局持久） */
@@ -100,6 +97,22 @@ public class RogueData implements IPersistedSerializable {
 
     public void setPhase(RoguePhase phase) {
         this.phaseId = phase.getId();
+    }
+
+    // ---- 行为方法 ----
+
+    /** 进度+1，返回 true 表示所有 scene 已完成 */
+    public boolean advanceProgress() {
+        progressIndex++;
+        return progressType != null && progressType.getScenes().size() > 0
+                && progressIndex >= progressType.getScenes().size();
+    }
+
+    /** 新一局开始时重置运行时状态 */
+    public void resetProgressState() {
+        setRogueNodeData(null);
+        setProgressIndex(0);
+        getEncounterAssignments().clear();
     }
 
     @SuppressWarnings("unused")

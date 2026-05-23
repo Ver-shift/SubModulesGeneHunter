@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.NeoForge;
-import org.galaxy.beyond.api.event.custom.PlayerChangeZoneEvent;
+import org.galaxy.beyond.api.event.custom.LivingChangeZoneEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
@@ -45,7 +45,7 @@ public class RogueCapManager {
 
             if (oldZone != newZone) {
                 mobData.setZoneType(newZone);
-                NeoForge.EVENT_BUS.post(new PlayerChangeZoneEvent(player, oldZone, newZone));
+                NeoForge.EVENT_BUS.post(new LivingChangeZoneEvent(player, oldZone, newZone));
                 dispatchChangeZone(caps, player, oldZone, newZone);
             }
         }

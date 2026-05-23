@@ -1,8 +1,5 @@
 package org.galaxy.beyond.api.client.render;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.world.level.ChunkPos;
@@ -12,108 +9,83 @@ import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.*;
 
-public class ActiveZoneBorderRenderer {
+/**
+ * 不规则活跃区域渲染 —— 逐区块暴露面，形成凹凸轮廓。
+ */
+public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
 
-    private static final int R = 220, G = 220, B = 220;
-    private static final float ALPHA = 0.35F;
+    private static final float R = 220f / 255f, G = 220f / 255f, B = 220f / 255f, A = 0.35f;
 
-    private GpuBuffer vertexBuffer;
-    private RenderSystem.AutoStorageIndexBuffer indices;
-    private boolean needsRebuild = true;
-    private double lastMinX, lastMinZ, lastMaxX, lastMaxZ;
+    private int lastHash;
 
-    private RenderSystem.AutoStorageIndexBuffer getIndices() {
-        if (indices == null) {
-            indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-        }
-        return indices;
-    }
-
-    public void render(Level level, Vec3 cameraPos, PoseStack poseStack) {
+    public void render(Level level, Vec3 cameraPos, PoseStack ps) {
         if (level == null) return;
-
         var dimData = BeyondAPI.getBeyondDimensionData(level);
         if (dimData == null) return;
         LevelZoneData zd = dimData.getLevelZoneData();
-        if (zd == null) return;
+        if (zd == null || !zd.hasZones()) return;
 
-        Set<Map.Entry<ChunkPos, ZoneType>> zones = zd.getZoneEntries();
-        if (!zd.hasZones()) return;
-
-        var active = ZoneHelper.filterByMask(zones, ZoneType.Active_Zone.mask());
+        var active = ZoneHelper.filterByMask(zd.getZoneEntries(), ZoneType.Active_Zone.mask());
         if (active.isEmpty()) return;
-        ZoneHelper.Bounds b = active.bounds();
 
-        double bx1 = b.minX() * 16.0, bx2 = (b.maxX() + 1) * 16.0;
-        double bz1 = b.minZ() * 16.0, bz2 = (b.maxZ() + 1) * 16.0;
-        float halfHeight = (float) (level.getMaxY() - level.getMinY()) * 0.5F;
-
-        if (needsRebuild || bx1 != lastMinX || bz1 != lastMinZ || bx2 != lastMaxX || bz2 != lastMaxZ) {
-            rebuildBuffer(bx1, bz1, bx2, bz2, halfHeight);
-            lastMinX = bx1;
-            lastMinZ = bz1;
-            lastMaxX = bx2;
-            lastMaxZ = bz2;
+        Set<ChunkPos> activeSet = active.chunks();
+        int hash = activeSet.hashCode();
+        if (needsRebuild || hash != lastHash) {
+            rebuildBuffer(activeSet, (float) level.getMinY(), (float) level.getMaxY());
+            lastHash = hash;
             needsRebuild = false;
         }
 
-        float red = R / 255.0F, green = G / 255.0F, blue = B / 255.0F;
-        float offset = (float) (System.currentTimeMillis() % 3000L) / 3000.0F;
-
-        var ctx = RenderHelper.captureRenderContext();
-        var indices = getIndices();
-        GpuBuffer indexBuffer = indices.getBuffer(24);
-        GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms()
-                .writeTransform(
-                        RenderSystem.getModelViewMatrix(),
-                        new Vector4f(red, green, blue, ALPHA),
-                        new Vector3f((float) (lastMinX - cameraPos.x), (float) -cameraPos.y, (float) (lastMinZ - cameraPos.z)),
-                        new Matrix4f().translation(offset, offset, 0.0F)
-                );
-
-        try (RenderPass renderPass = RenderSystem.getDevice()
-                .createCommandEncoder()
-                .createRenderPass(() -> "Active zone border", ctx.colorTarget(), OptionalInt.empty(), ctx.depthTarget(), OptionalDouble.empty())) {
-            RenderHelper.bindPassState(renderPass, ctx, dynamicTransforms, indexBuffer, indices, this.vertexBuffer);
-
-            List<RenderPass.Draw<ActiveZoneBorderRenderer>> draws = new ArrayList<>(4);
-            for (int side = 0; side < 4; side++) {
-                draws.add(new RenderPass.Draw<>(0, this.vertexBuffer, indexBuffer, indices.type(), 6 * side, 6, 0));
-            }
-            renderPass.drawMultipleIndexed(draws, null, null, Collections.emptyList(), this);
-        }
+        drawBorder("Active zone border", R, G, B, A, -cameraPos.x, -cameraPos.y, -cameraPos.z);
     }
 
-    private void rebuildBuffer(double minX, double minZ, double maxX, double maxZ, float halfHeight) {
-        float width = (float) (maxX - minX);
-        float depth = (float) (maxZ - minZ);
-        int vertexSize = DefaultVertexFormat.POSITION_TEX.getVertexSize();
-        int vertexCount = 16;
-
-        if (this.vertexBuffer == null) {
-            this.vertexBuffer = RenderSystem.getDevice()
-                    .createBuffer(() -> "Active zone border vbo",
-                            GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
-                            (long) vertexCount * vertexSize);
-        }
-
-        try (ByteBufferBuilder byteBuf = ByteBufferBuilder.exactlySized(vertexCount * vertexSize)) {
-            BufferBuilder builder = new BufferBuilder(byteBuf, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            RenderHelper.writeBoxWalls(builder, width, depth, halfHeight);
-            try (MeshData meshData = builder.buildOrThrow()) {
-                RenderSystem.getDevice().createCommandEncoder()
-                        .writeToBuffer(this.vertexBuffer.slice(), meshData.vertexBuffer());
-            }
-        }
+    @Override
+    protected void rebuildBuffer() {
+        // called by render inline
     }
 
-    public void invalidate() {
-        this.needsRebuild = true;
+    private void rebuildBuffer(Set<ChunkPos> activeSet, float worldMinY, float worldMaxY) {
+        record Wall(float atX, float atZ, float sMin, float sMax, boolean xFixed) {}
+        List<Wall> walls = new ArrayList<>();
+
+        for (ChunkPos c : activeSet) {
+            int cx = c.getMinBlockX() >> 4, cz = c.getMinBlockZ() >> 4;
+            float x0 = cx * 16f, z0 = cz * 16f, x1 = x0 + 16f, z1 = z0 + 16f;
+
+            if (!activeSet.contains(new ChunkPos(cx + 1, cz))) walls.add(new Wall(x1, 0, z0, z1, true));
+            if (!activeSet.contains(new ChunkPos(cx - 1, cz))) walls.add(new Wall(x0, 0, z0, z1, true));
+            if (!activeSet.contains(new ChunkPos(cx, cz + 1))) walls.add(new Wall(0, z1, x0, x1, false));
+            if (!activeSet.contains(new ChunkPos(cx, cz - 1))) walls.add(new Wall(0, z0, x0, x1, false));
+        }
+
+        indexCount = walls.size() * 6;
+        if (indexCount == 0) return;
+        ensureBuffer(walls.size() * 4);
+
+        try (ByteBufferBuilder bb = ByteBufferBuilder.exactlySized(walls.size() * 4 * DefaultVertexFormat.POSITION_TEX.getVertexSize())) {
+            BufferBuilder builder = new BufferBuilder(bb, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            float bottom = worldMinY + 1f, top = worldMaxY;
+
+            for (Wall w : walls) {
+                if (w.xFixed()) {
+                    builder.addVertex(w.atX(), bottom, w.sMin()).setUv(0, 0);
+                    builder.addVertex(w.atX(), bottom, w.sMax()).setUv(0, 1);
+                    builder.addVertex(w.atX(), top, w.sMax()).setUv(1, 1);
+                    builder.addVertex(w.atX(), top, w.sMin()).setUv(1, 0);
+                } else {
+                    builder.addVertex(w.sMin(), bottom, w.atZ()).setUv(0, 0);
+                    builder.addVertex(w.sMax(), bottom, w.atZ()).setUv(0, 1);
+                    builder.addVertex(w.sMax(), top, w.atZ()).setUv(1, 1);
+                    builder.addVertex(w.sMin(), top, w.atZ()).setUv(1, 0);
+                }
+            }
+
+            try (MeshData md = builder.buildOrThrow()) {
+                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.vertexBuffer.slice(), md.vertexBuffer());
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
+import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueCapManager;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
@@ -19,6 +20,7 @@ public interface IBeyondManager {
     IStructureManager getStructureManager();
     ISafeZoneStructureManager getSafeZoneStructureManager();
     RogueCapManager getRogueCapManager();
+    IRogueContext getRogueContext();
 
     //event handle
     void onLevelLoad(ServerLevel level);

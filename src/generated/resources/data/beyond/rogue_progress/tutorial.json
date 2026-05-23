@@ -1,0 +1,154 @@
+{
+  "encounters": [
+    {
+      "type": "Green_Event",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:monster",
+              "beyond:reward"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Green_Bonfire",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:heal"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Green_BossShop",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:shop",
+              "beyond:boss",
+              "beyond:reward"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Orange_NormalMonster",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:monster",
+              "beyond:reward"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Orange_NormalShop",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:shop"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Orange_BossShop",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:shop",
+              "beyond:boss",
+              "beyond:reward"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Red_EliteMonster",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:monster",
+              "beyond:reward"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Red_CursedShop",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:shop"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "type": "Red_BossShop",
+      "events": [
+        {
+          "task": {
+            "eventIds": [
+              "beyond:shop",
+              "beyond:boss",
+              "beyond:reward"
+            ]
+          },
+          "weight": 1
+        }
+      ]
+    }
+  ],
+  "sceneRolls": [
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 1
+        }
+      ],
+      "order": 1
+    },
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 2
+        },
+        {
+          "scene": "REPOSE",
+          "weight": 1
+        }
+      ],
+      "order": 2
+    }
+  ]
+}

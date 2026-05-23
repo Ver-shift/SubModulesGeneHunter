@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import org.galaxy.beyond.api.init.BeyondPhaseInit;
+import org.galaxy.beyond.api.init.BeyondEventInit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class EventTask implements IPersistedSerializable {
     public List<RogueEventType> getEventInstances() {
         List<RogueEventType> result = new ArrayList<>();
         for (Identifier id : eventIds) {
-            RogueEventType e = BeyondPhaseInit.getRogueEventType(id);
+            RogueEventType e = BeyondEventInit.get(id);
             if (e != null) result.add(e);
         }
         return result;

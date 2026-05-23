@@ -42,10 +42,7 @@ public class RogueInitCap extends RogueCap {
         }
 
         var rogueData = ctx.getRogueData(level);
-        rogueData.setRogueNodeData(null);
-        rogueData.setProgressIndex(0);
-        rogueData.getEncounterAssignments().clear();
-        rogueData.getCompletedNodeChunks().clear();
+        rogueData.resetProgressState();
 
         long seed = ctx.getGameSeed(level);
         if (seed == 0) {

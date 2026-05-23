@@ -52,13 +52,13 @@ public class CommonConfig {
         BUILDER.comment("活动区域配置").push("active_zone");
         ACTIVE_ZONE_MIN_EXPAND = BUILDER
                 .comment("安全区向外最小拓展距离（区块数），确保初始活动区有足够的空间。")
-                .defineInRange("minExpand", 3, 1, 100);
+                .defineInRange("minExpand", 5, 1, 100);
         ACTIVE_ZONE_MAX_EXPAND = BUILDER
                 .comment("安全区向外最大拓展距离（区块数），超过仍未满足节点数量则以当前范围注册活动区。")
-                .defineInRange("maxExpand", 20, 1, 200);
+                .defineInRange("maxExpand", 100, 1, 500);
         ACTIVE_ZONE_MIN_NODES = BUILDER
                 .comment("初始活动区至少需要覆盖的未完成节点数量。")
-                .defineInRange("minNodes", 12, 1, 1000);
+                .defineInRange("minNodes", 3, 1, 1000);
         ACTIVE_ZONE_NODE_EXPAND_RADIUS = BUILDER
                 .comment("玩家完成节点事件后，以节点每个区块为中心向外扩张的半径（区块数）。")
                 .defineInRange("nodeExpandRadius", 6, 1, 100);

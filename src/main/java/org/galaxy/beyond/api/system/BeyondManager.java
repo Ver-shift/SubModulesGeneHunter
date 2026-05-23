@@ -23,6 +23,7 @@ import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
 public class BeyondManager implements IBeyondManager {
 
+    @Getter
     private final IRogueContext rogueContext = new RogueContext();
 
     @Getter

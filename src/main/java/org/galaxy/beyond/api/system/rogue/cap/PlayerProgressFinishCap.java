@@ -120,10 +120,18 @@ public class PlayerProgressFinishCap extends RogueCap {
 
     private void teleportAllToSafeZone(List<ServerPlayer> players) {
         var dimData = BeyondAPI.getBeyondDimensionData(activeLevel);
-        if (dimData == null) return;
+        if (dimData == null) {
+            activeLevel.getServer().getPlayerList().broadcastSystemMessage(
+                    Component.translatable("beyond.settle.teleport_failed"), false);
+            return;
+        }
 
         BlockPos spawnPos = dimData.getSafeZoneStructureData().getSpawnPos();
-        if (spawnPos.equals(BlockPos.ZERO)) return;
+        if (spawnPos.equals(BlockPos.ZERO)) {
+            activeLevel.getServer().getPlayerList().broadcastSystemMessage(
+                    Component.translatable("beyond.settle.teleport_failed"), false);
+            return;
+        }
 
         for (var p : players) {
             p.teleportTo(activeLevel, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
@@ -131,6 +139,8 @@ public class PlayerProgressFinishCap extends RogueCap {
             var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
             cfg.removeRoguePlayer(p.getUUID());
         }
+        activeLevel.getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable("beyond.settle.teleport_success"), false);
     }
 
     // ============================================================

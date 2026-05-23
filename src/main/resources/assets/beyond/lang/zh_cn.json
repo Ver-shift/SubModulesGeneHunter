@@ -70,6 +70,7 @@
   "commands.beyond.home.not_found": "安全区未初始化，找不到出生点",
   "commands.beyond.safezone.expand.success": "安全区已扩容至 %s 个区块范围",
   "commands.beyond.safezone.expand.odd": "区块大小必须为偶数",
+  "commands.beyond.safezone.expand.locked": "安全区扩容失败：待覆盖区域内存在未解锁的节点，请先解锁所有节点",
 
   "commands.beyond.config.set.debug": "调试模式已设为 %s",
   "commands.beyond.config.get.debug": "调试模式：%s",
@@ -101,5 +102,20 @@
   "commands.beyond.config.safeZoneList.not_in_list": "%s 不在安全区列表中",
   "commands.beyond.config.safeZoneList.not_found": "找不到玩家 %s",
   "commands.beyond.config.safeZoneList.empty": "安全区玩家列表为空",
-  "commands.beyond.config.safeZoneList.list": "安全区玩家列表：%s"
+  "commands.beyond.config.safeZoneList.list": "安全区玩家列表：%s",
+
+  "beyond.event.monster.spawn": "怪物出现了！击败它们来推进探索",
+  "beyond.event.boss.spawn": "首领出现了！击败它来通关此节点",
+  "beyond.event.shop.spawn": "一个商人出现在附近，快去交易吧",
+  "beyond.event.heal.trigger": "恢复之光降临！",
+  "beyond.event.heal.player": "你恢复了部分生命值",
+  "beyond.event.reward.grant": "获得了 3 个铁锭作为战利品！",
+
+  "beyond.node.zone_expanded": "可探索区域已扩张，寻找下一个节点继续冒险吧",
+
+  "beyond.node.game_not_started": "关卡尚未开始，请先离开安全区触发关卡！",
+  "beyond.event.not_cleared": "当前事件尚未完成，请先击败所有敌人！",
+
+  "beyond.settle.teleport_success": "传送回安全区成功！",
+  "beyond.settle.teleport_failed": "传送失败：安全区出生点未初始化，请联系管理员"
 }

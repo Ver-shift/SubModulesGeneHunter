@@ -1,8 +1,5 @@
 package org.galaxy.beyond.api.client.render;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.world.level.ChunkPos;
@@ -12,157 +9,87 @@ import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.*;
 
-public class NodeBorderRenderer {
+/**
+ * Safe_Zone / Node_Zone 边框渲染 —— 连通分量矩形盒子。
+ * Active_Zone 由 {@link ActiveZoneBorderRenderer} 单独处理（不规则墙体）。
+ */
+public class NodeBorderRenderer extends ZoneBorderRenderer {
 
-    private static final int VERTICES_PER_BOX = 16;
-    private static final int FACES_PER_BOX = 4;
+    private static final float HALF_HEIGHT = 192f;
+    private static final int BOX_VERTICES = 16;
 
-    private GpuBuffer vertexBuffer;
-    private RenderSystem.AutoStorageIndexBuffer indices;
-    private boolean needsRebuild = true;
-    private int lastEntryHash;
-    private int totalVertices;
-    private List<BoxInfo> boxInfos = List.of();
+    private int lastHash;
+    private final List<BoxDraw> boxes = new ArrayList<>();
 
-    private record BoxInfo(ZoneType type, double worldMinX, double worldMinZ, int boxIndex) {}
+    private record BoxDraw(double minX, double minZ, float r, float g, float b, float a) {}
 
-    private RenderSystem.AutoStorageIndexBuffer getIndices() {
-        if (indices == null) {
-            indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-        }
-        return indices;
-    }
+    public void render(Level level, Vec3 cameraPos, PoseStack ps) {
+        if(true) return;
 
-    public void render(Level level, Vec3 cameraPos, PoseStack poseStack) {
         if (level == null) return;
-
         var dimData = BeyondAPI.getBeyondDimensionData(level);
         if (dimData == null) return;
+        LevelZoneData zd = dimData.getLevelZoneData();
+        if (zd == null || !zd.hasZones()) return;
 
-        LevelZoneData zoneData = dimData.getLevelZoneData();
-        if (zoneData == null) return;
-
-        Set<Map.Entry<ChunkPos, ZoneType>> entries = zoneData.getZoneEntries();
-        if (!zoneData.hasZones()) return;
-
-        int currentHash = entries.hashCode();
-        if (needsRebuild || currentHash != lastEntryHash) {
+        Set<Map.Entry<ChunkPos, ZoneType>> entries = zd.getZoneEntries();
+        int hash = entries.hashCode();
+        if (needsRebuild || hash != lastHash) {
             rebuild(entries);
-            lastEntryHash = currentHash;
+            lastHash = hash;
             needsRebuild = false;
         }
-
-        if (boxInfos.isEmpty()) return;
-
-        var ctx = RenderHelper.captureRenderContext();
-        var indices = getIndices();
-        GpuBuffer indexBuffer = indices.getBuffer(totalVertices);
-        float offset = (float) (System.currentTimeMillis() % 3000L) / 3000.0F;
-
-        for (BoxInfo box : boxInfos) {
-            float[] rgb = colorFor(box.type());
-            float red = rgb[0], green = rgb[1], blue = rgb[2], alpha = rgb[3];
-
-            GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms()
-                    .writeTransform(
-                            RenderSystem.getModelViewMatrix(),
-                            new Vector4f(red, green, blue, alpha),
-                            new Vector3f((float) (box.worldMinX() - cameraPos.x),
-                                    (float) -cameraPos.y,
-                                    (float) (box.worldMinZ() - cameraPos.z)),
-                            new Matrix4f().translation(offset, offset, 0.0F)
-                    );
-
-            try (RenderPass renderPass = RenderSystem.getDevice()
-                    .createCommandEncoder()
-                    .createRenderPass(() -> "Node border " + box.type().getName(),
-                            ctx.colorTarget(), OptionalInt.empty(),
-                            ctx.depthTarget(), OptionalDouble.empty())) {
-                RenderHelper.bindPassState(renderPass, ctx, dynamicTransforms, indexBuffer, indices, this.vertexBuffer);
-
-                List<RenderPass.Draw<NodeBorderRenderer>> draws = new ArrayList<>(FACES_PER_BOX);
-                for (int side = 0; side < FACES_PER_BOX; side++) {
-                    int faceIndex = (box.boxIndex() * FACES_PER_BOX + side) * 6;
-                    draws.add(new RenderPass.Draw<>(0, this.vertexBuffer, indexBuffer, indices.type(), faceIndex, 6, 0));
-                }
-                renderPass.drawMultipleIndexed(draws, null, null, Collections.emptyList(), this);
-            }
+        for (BoxDraw box : boxes) {
+            drawBorder("Node zone", box.r(), box.g(), box.b(), box.a(),
+                    box.minX() - cameraPos.x, -cameraPos.y, box.minZ() - cameraPos.z);
         }
-    }
-
-    private static float[] colorFor(ZoneType type) {
-        return switch (type) {
-            case Safe_Zone -> new float[]{64 / 255.0F, 120 / 255.0F, 220 / 255.0F, 0.55F};  // blue
-            case Node_Zone -> new float[]{255 / 255.0F, 165 / 255.0F, 0 / 255.0F, 0.55F};    // orange
-            case Active_Zone -> new float[]{255 / 255.0F, 255 / 255.0F, 255 / 255.0F, 0.15F}; // faint white
-            case Empty -> new float[]{180 / 255.0F, 180 / 255.0F, 180 / 255.0F, 0.55F};       // gray
-        };
     }
 
     private void rebuild(Set<Map.Entry<ChunkPos, ZoneType>> entries) {
-        // 按 ZoneType 分组，固定顺序
         Map<ZoneType, Set<ChunkPos>> grouped = new TreeMap<>(Comparator.comparing(ZoneType::ordinal));
-        for (var e : entries) {
-            grouped.computeIfAbsent(e.getValue(), k -> new HashSet<>()).add(e.getKey());
-        }
+        for (var e : entries)
+            if (e.getValue() == ZoneType.Node_Zone) // 只画节点区
+                grouped.computeIfAbsent(e.getValue(), k -> new HashSet<>()).add(e.getKey());
 
-        // 每个类型的每个连通分量 → 独立的包围盒
-        List<BoxInfo> infos = new ArrayList<>();
+        boxes.clear();
         List<ZoneHelper.Bounds> allBounds = new ArrayList<>();
-
-        for (var groupEntry : grouped.entrySet()) {
-            ZoneType type = groupEntry.getKey();
-            var components = ZoneHelper.findConnectedComponents(groupEntry.getValue());
-            for (Set<ChunkPos> comp : components) {
+        for (var ge : grouped.entrySet()) {
+            for (var comp : ZoneHelper.findConnectedComponents(ge.getValue())) {
                 ZoneHelper.Bounds b = ZoneHelper.boundsOf(comp);
                 allBounds.add(b);
-                infos.add(new BoxInfo(type, b.minX() * 16.0, b.minZ() * 16.0, infos.size()));
+                float[] c = colorFor(ge.getKey());
+                boxes.add(new BoxDraw(b.minX() * 16.0, b.minZ() * 16.0, c[0], c[1], c[2], c[3]));
             }
         }
 
-        this.boxInfos = List.copyOf(infos);
+        int totalVerts = allBounds.size() * BOX_VERTICES;
+        if (totalVerts == 0) return;
+        ensureBuffer(totalVerts);
 
-        // 构建顶点 buffer
-        totalVertices = allBounds.size() * VERTICES_PER_BOX;
-        int vertexSize = DefaultVertexFormat.POSITION_TEX.getVertexSize();
-        int totalBoxes = allBounds.size();
-
-        if (this.vertexBuffer != null) {
-            this.vertexBuffer.close();
-        }
-        this.vertexBuffer = RenderSystem.getDevice()
-                .createBuffer(() -> "Node border vbo",
-                        GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
-                        (long) totalVertices * vertexSize);
-
-        try (ByteBufferBuilder byteBuf = ByteBufferBuilder.exactlySized(totalVertices * vertexSize)) {
-            BufferBuilder builder = new BufferBuilder(byteBuf, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-            float top = 320.0F, bottom = -64.0F;
-            float halfHeight = (top - bottom) * 0.5F;
-
-            for (ZoneHelper.Bounds b : allBounds) {
-                double bx1 = b.minX() * 16.0, bz1 = b.minZ() * 16.0;
-                double bx2 = (b.maxX() + 1) * 16.0, bz2 = (b.maxZ() + 1) * 16.0;
-                float width = (float) (bx2 - bx1);
-                float depth = (float) (bz2 - bz1);
-                RenderHelper.writeBoxWalls(builder, width, depth, halfHeight);
+        try (ByteBufferBuilder bb = ByteBufferBuilder.exactlySized(totalVerts * DefaultVertexFormat.POSITION_TEX.getVertexSize())) {
+            BufferBuilder builder = new BufferBuilder(bb, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            for (var b : allBounds) {
+                float w = (float)((b.maxX() + 1) * 16.0 - b.minX() * 16.0);
+                float d = (float)((b.maxZ() + 1) * 16.0 - b.minZ() * 16.0);
+                RenderHelper.writeBoxWalls(builder, w, d, HALF_HEIGHT);
             }
-
-            try (MeshData meshData = builder.buildOrThrow()) {
-                RenderSystem.getDevice().createCommandEncoder()
-                        .writeToBuffer(this.vertexBuffer.slice(), meshData.vertexBuffer());
+            try (MeshData md = builder.buildOrThrow()) {
+                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.vertexBuffer.slice(), md.vertexBuffer());
             }
         }
+        indexCount = allBounds.size() * 24;
     }
 
-    public void invalidate() {
-        this.needsRebuild = true;
+    private static float[] colorFor(ZoneType t) {
+        return switch (t) {
+            case Safe_Zone -> new float[]{64/255f, 120/255f, 220/255f, 0.55f};
+            case Node_Zone -> new float[]{255/255f, 165/255f, 0/255f, 0.55f};
+            default -> new float[]{180/255f, 180/255f, 180/255f, 0.55f};
+        };
     }
+
+    @Override protected void rebuildBuffer() {}
 }

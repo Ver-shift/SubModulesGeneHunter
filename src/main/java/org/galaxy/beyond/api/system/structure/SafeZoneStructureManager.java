@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -31,7 +30,8 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         if (!level.dimension().equals(BeyondAPI.getGlobalData(level).getRogueConfig().getRogueDimension())) return;
 
         var data = BeyondAPI.getBeyondDimensionData(level).getSafeZoneStructureData();
-        if (data.getInitialized() >= 1) return;
+        if (data.getInitialized() >= 1 && !data.getSpawnPos().equals(BlockPos.ZERO)) return;
+        if (data.getSpawnPos().equals(BlockPos.ZERO)) data.setInitialized(0);
 
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         var zoneManager = BeyondAPI.getBeyondManager().getZoneManager();
@@ -222,6 +222,6 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
     }
 
     public static boolean isValidGround(BlockState state) {
-        return state.is(Blocks.DIRT_PATH);
+        return state.blocksMotion();
     }
 }

@@ -56,6 +56,7 @@ public class Beyond {
         BeyondRegistries.register(modEventBus);
         BeyondRogueCapInit.register(modEventBus);
         BeyondPhaseInit.register(modEventBus);
+        BeyondEventInit.register(modEventBus);
         BeyondComponentInit.register(modEventBus);
         BeyondBlockInit.register(modEventBus);
         BeyondItemInit.register(modEventBus);

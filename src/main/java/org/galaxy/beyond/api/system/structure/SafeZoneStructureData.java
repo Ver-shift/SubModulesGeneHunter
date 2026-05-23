@@ -15,10 +15,40 @@ public class SafeZoneStructureData implements IPersistedSerializable {
     @Persisted
     private int initialized;
     @Persisted
-    private BlockPos spawnPos = BlockPos.ZERO;
+    private int spawnX;
     @Persisted
-    private BlockPos centerPos = BlockPos.ZERO;
+    private int spawnY;
+    @Persisted
+    private int spawnZ;
+    @Persisted
+    private int centerX;
+    @Persisted
+    private int centerY;
+    @Persisted
+    private int centerZ;
 
     public static final MapCodec<SafeZoneStructureData> CODEC = PersistedParser.createMapCodec(SafeZoneStructureData::new);
     public static final StreamCodec<ByteBuf, SafeZoneStructureData> STREAM_CODEC = PersistedParser.createStreamCodec(SafeZoneStructureData::new);
+
+    // ---- BlockPos 辅助 ----
+
+    public BlockPos getSpawnPos() {
+        return new BlockPos(spawnX, spawnY, spawnZ);
+    }
+
+    public void setSpawnPos(BlockPos pos) {
+        this.spawnX = pos.getX();
+        this.spawnY = pos.getY();
+        this.spawnZ = pos.getZ();
+    }
+
+    public BlockPos getCenterPos() {
+        return new BlockPos(centerX, centerY, centerZ);
+    }
+
+    public void setCenterPos(BlockPos pos) {
+        this.centerX = pos.getX();
+        this.centerY = pos.getY();
+        this.centerZ = pos.getZ();
+    }
 }

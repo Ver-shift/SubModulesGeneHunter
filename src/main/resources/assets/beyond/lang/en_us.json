@@ -70,6 +70,7 @@
   "commands.beyond.home.not_found": "Safe zone not initialized, spawn point not found",
   "commands.beyond.safezone.expand.success": "Safe zone expanded to %s chunks",
   "commands.beyond.safezone.expand.odd": "Chunk size must be an even number",
+  "commands.beyond.safezone.expand.locked": "Safe zone expansion failed: some nodes in the target area are still locked. Unlock them first.",
 
   "commands.beyond.config.set.debug": "Debug mode set to %s",
   "commands.beyond.config.get.debug": "Debug mode: %s",
@@ -101,5 +102,20 @@
   "commands.beyond.config.safeZoneList.not_in_list": "%s is not in safe zone list",
   "commands.beyond.config.safeZoneList.not_found": "Player %s not found",
   "commands.beyond.config.safeZoneList.empty": "Safe zone player list is empty",
-  "commands.beyond.config.safeZoneList.list": "Safe zone player list: %s"
+  "commands.beyond.config.safeZoneList.list": "Safe zone player list: %s",
+
+  "beyond.event.monster.spawn": "Monsters appear! Defeat them to advance",
+  "beyond.event.boss.spawn": "The Boss appears! Defeat it to clear this node",
+  "beyond.event.shop.spawn": "A merchant has arrived nearby, trade quickly!",
+  "beyond.event.heal.trigger": "A healing light descends!",
+  "beyond.event.heal.player": "You recovered some health",
+  "beyond.event.reward.grant": "Received 3 iron ingots as reward!",
+
+  "beyond.node.zone_expanded": "Active zone expanded! Find the next node to continue your adventure",
+
+  "beyond.node.game_not_started": "The game has not started yet. Leave the safe zone first!",
+  "beyond.event.not_cleared": "The current event is not yet completed. Defeat all enemies first!",
+
+  "beyond.settle.teleport_success": "Teleported back to safe zone successfully!",
+  "beyond.settle.teleport_failed": "Teleport failed: Safe zone spawn not initialized, contact admin"
 }
