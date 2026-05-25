@@ -6,7 +6,7 @@ import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition.*;
 
 import java.util.List;
 
-import static org.galaxy.beyond.api.datagen.RogueProgressProvider.*;
+import static org.galaxy.beyond.api.datagen.custom.RogueProgressProvider.*;
 
 /**
  * 森林关卡 —— 3 场景，加权遭遇池。
@@ -20,15 +20,16 @@ public class ForestProgress extends TutorialProgress {
     @Override
     protected List<SceneRoll> scenes() {
         return List.of(
-                SceneRoll.of(1,
-                        SceneEntry.of(SceneType.HARVEST, 5),
-                        SceneEntry.of(SceneType.REPOSE, 1)),
-                SceneRoll.of(2,
-                        SceneEntry.of(SceneType.HARVEST, 3),
-                        SceneEntry.of(SceneType.REPOSE, 2)),
-                SceneRoll.of(3,
-                        SceneEntry.of(SceneType.HARVEST, 1),
-                        SceneEntry.of(SceneType.CLIMAX, 1))
+                SceneRoll.of(1,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(2,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(3,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(4,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(5,  SceneEntry.of(SceneType.REPOSE, 1)),
+                SceneRoll.of(6,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(7,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(8,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(9,  SceneEntry.of(SceneType.HARVEST, 1)),
+                SceneRoll.of(10, SceneEntry.of(SceneType.CLIMAX, 1))
         );
     }
 

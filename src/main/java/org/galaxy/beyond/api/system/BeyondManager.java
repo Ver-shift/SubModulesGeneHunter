@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.node.NodeManager;
 import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
@@ -44,14 +45,14 @@ public class BeyondManager implements IBeyondManager {
     @Override
     public void onLevelLoad(ServerLevel level) {
         safeZoneStructureManager.initialize(level);
-        BeyondAPI.getBeyondDimensionData(level).getRogueData().initDefaultCaps();
+        BeyondAPI.getRogueData(level).initDefaultCaps();
     }
 
     @Override
     public void levelTick(ServerLevel level) {
         rogueCapManager.tickZoneEvents(level);
 
-        if (level.dimension().equals(BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getRogueDimension())) {
+        if (level.dimension().equals(CommonConfig.getRogueDimension())) {
             rogueManager.tick(level);
         }
     }
@@ -87,10 +88,6 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void onServerStarted(MinecraftServer server) {
-        var globalData = BeyondAPI.getGlobalData(server.overworld());
-        if (globalData != null) {
-            globalData.getRogueConfig().reset();
-        }
         definitionManager.onServerStarted(server);
     }
 }

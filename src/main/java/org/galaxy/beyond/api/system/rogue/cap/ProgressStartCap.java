@@ -83,8 +83,7 @@ public class ProgressStartCap extends RogueCap {
             return;
         }
 
-        var progressId = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getCurrentProgress();
-        if (progressId == null) {
+        if (!ctx.getRogueData(level).hasProgressId()) {
             level.getServer().getPlayerList()
                     .broadcastSystemMessage(Component.translatable("beyond.rogue.start.no_progress"), false);
             return;
@@ -111,8 +110,7 @@ public class ProgressStartCap extends RogueCap {
     public Step tryLeaveSafeZone(ServerPlayer player) {
         if (isInRogue(player)) return Step.NOT_IN_ROGUE;
 
-        var data = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get())
-                .getPlayerRogueData();
+        var data = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData();
         long now = player.level().getGameTime();
         long cd = CommonConfig.LOBBY_COOLDOWN_SECONDS.get() * 20L;
         if (data.getLastSafeZoneReturnTime() > 0 && now - data.getLastSafeZoneReturnTime() < cd) {
@@ -121,13 +119,14 @@ public class ProgressStartCap extends RogueCap {
             return Step.COOLDOWN;
         }
 
-        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-        if (cfg.getCurrentProgress() == null) {
+        var rogueData = BeyondAPI.getRogueData(player.level());
+        if (!rogueData.hasProgressId()) {
             player.sendSystemMessage(Component.translatable("beyond.rogue.start.no_progress"));
             return Step.NO_PROGRESS;
         }
 
-        cfg.addRoguePlayer(player.getUUID());
+        rogueData.addRoguePlayer(player.getUUID());
+        BeyondAPI.syncGlobalData((ServerLevel) player.level());
         RoguePlayerManager.giveItem(player, BeyondItemInit.LOOT_BAG.get());
         return Step.BAG_GIVEN;
     }
@@ -193,14 +192,16 @@ public class ProgressStartCap extends RogueCap {
         if (val > 0) {
             player.sendSystemMessage(Component.translatable("beyond.info.back_to_safe_zone", val));
         }
-        var data = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get())
-                .getPlayerRogueData();
+        var data = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData();
         data.setLastSafeZoneReturnTime(player.level().getGameTime());
         ctx.setPlayerPhase(player, PlayerPhase.LOBBY);
-        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-        cfg.removeRoguePlayer(player.getUUID());
+        var rogueData = ctx.getRogueData(player.level());
+        rogueData.removeRoguePlayer(player.getUUID());
+        BeyondAPI.syncGlobalData(player.level());
 
-        if (cfg.getRoguePlayerIds().isEmpty()) {
+        if (rogueData.getRoguePlayerIds().isEmpty()) {
+            rogueData.setProgressActive(false);
+            BeyondAPI.syncGlobalData(player.level());
             ctx.setPhase(player.level(), RoguePhase.LOBBY);
         }
         return val;
@@ -211,7 +212,7 @@ public class ProgressStartCap extends RogueCap {
     // ============================================================
 
     private static boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig()
+        return BeyondAPI.getRogueData(player.level())
                 .getRoguePlayerIds().contains(player.getUUID());
     }
 

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "beyond:block/placeholder"
+    "all": "beyond:block/node_block"
   }
 }

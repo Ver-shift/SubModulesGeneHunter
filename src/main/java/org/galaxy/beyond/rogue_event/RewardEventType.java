@@ -24,8 +24,7 @@ public class RewardEventType extends RogueEventType {
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.event.reward.grant"), false);
 
-        var rogueIds = BeyondAPI.getGlobalData(Beyond.OVERWORLD)
-                .getRogueConfig().getRoguePlayerIds();
+        var rogueIds = BeyondAPI.getRogueData(context.level()).getRoguePlayerIds();
 
         level.getServer().getPlayerList().getPlayers().stream()
                 .filter(p -> rogueIds.contains(p.getUUID()))

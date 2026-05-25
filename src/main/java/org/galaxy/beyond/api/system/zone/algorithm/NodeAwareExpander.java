@@ -56,7 +56,18 @@ public class NodeAwareExpander {
                     lzd.addActive(p);
 
             if (r >= minRadius) {
-                if (needed == 0) { actualRadius = r; break; }
+                if (needed == 0) {
+                    // 无待包裹节点时继续扩张，确保覆盖邻近结构点位
+                    int explorationR = Math.max(minRadius * 2, 40);
+                    for (int rr = r + 1; rr <= explorationR && rr <= maxRadius; rr++) {
+                        Set<ChunkPos> extra = ringOf(seeds, rr);
+                        for (ChunkPos p : extra)
+                            if (!lzd.hasAny(p))
+                                lzd.addActive(p);
+                    }
+                    actualRadius = Math.min(explorationR, maxRadius);
+                    break;
+                }
 
                 Set<ChunkPos> reachable = floodReachable(seeds, lzd);
                 int reached = 0;

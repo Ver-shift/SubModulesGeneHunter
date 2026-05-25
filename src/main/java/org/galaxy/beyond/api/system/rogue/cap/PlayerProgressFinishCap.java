@@ -13,6 +13,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
+import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
@@ -89,6 +90,8 @@ public class PlayerProgressFinishCap extends RogueCap {
 
         if (done >= total) {
             teleportAllToSafeZone(players);
+            activeCtx.getRogueData(activeLevel).setProgressActive(false);
+            BeyondAPI.syncGlobalData(activeLevel);
             activeCtx.setPhase(activeLevel, RoguePhase.LOBBY);
             for (var p : players)
                 activeCtx.setPlayerPhase(p, PlayerPhase.LOBBY);
@@ -119,14 +122,7 @@ public class PlayerProgressFinishCap extends RogueCap {
     // ============================================================
 
     private void teleportAllToSafeZone(List<ServerPlayer> players) {
-        var dimData = BeyondAPI.getBeyondDimensionData(activeLevel);
-        if (dimData == null) {
-            activeLevel.getServer().getPlayerList().broadcastSystemMessage(
-                    Component.translatable("beyond.settle.teleport_failed"), false);
-            return;
-        }
-
-        BlockPos spawnPos = dimData.getSafeZoneStructureData().getSpawnPos();
+        BlockPos spawnPos = BeyondAPI.getSafeZoneStructureData(activeLevel).getSpawnPos();
         if (spawnPos.equals(BlockPos.ZERO)) {
             activeLevel.getServer().getPlayerList().broadcastSystemMessage(
                     Component.translatable("beyond.settle.teleport_failed"), false);
@@ -136,9 +132,10 @@ public class PlayerProgressFinishCap extends RogueCap {
         for (var p : players) {
             p.teleportTo(activeLevel, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
                     java.util.Set.of(), p.getYRot(), p.getXRot(), true);
-            var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-            cfg.removeRoguePlayer(p.getUUID());
+            var rogueData = BeyondAPI.getRogueData(activeLevel);
+            rogueData.removeRoguePlayer(p.getUUID());
         }
+        BeyondAPI.syncGlobalData(activeLevel);
         activeLevel.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.settle.teleport_success"), false);
     }
@@ -148,7 +145,7 @@ public class PlayerProgressFinishCap extends RogueCap {
     // ============================================================
 
     private static PlayerProgressFinishCap findActive(ServerLevel level) {
-        var caps = BeyondAPI.getBeyondDimensionData(level).getRogueData().getRogueCapData();
+        var caps = BeyondAPI.getRogueData(level).getRogueCapData();
         for (var cd : caps) {
             if (cd.getCap() instanceof PlayerProgressFinishCap cap && cap.activeLevel != null)
                 return cap;

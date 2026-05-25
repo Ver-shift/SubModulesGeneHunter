@@ -4,6 +4,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.datagen.custom.BeyondProgressGen;
+import org.galaxy.beyond.api.datagen.data.BeyondModelProvider;
 
 @EventBusSubscriber(modid = Beyond.MODID)
 public class BeyondDataGenerator {
@@ -15,7 +17,6 @@ public class BeyondDataGenerator {
         var lookup = event.getLookupProvider();
 
         gen.addProvider(true, new BeyondProgressGen(output, lookup));
-        gen.addProvider(true, new BeyondBlockStateProvider(output));
-        gen.addProvider(true, new BeyondItemModelProvider(output));
+        event.createProvider(BeyondModelProvider::new);
     }
 }

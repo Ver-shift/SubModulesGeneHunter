@@ -19,9 +19,14 @@ public class ProgressType implements IPersistedSerializable {
     private Identifier id;
 
     @Persisted
+    private boolean active;
+
+    @Persisted
     private List<SceneType> scenes = new ArrayList<>();
+
     @Persisted
     private int scenesIndex;
+
     @Persisted
     private List<EncounterData> encounters = new ArrayList<>();
 
@@ -32,5 +37,22 @@ public class ProgressType implements IPersistedSerializable {
 
     public ProgressType(Identifier id) {
         this.id = id;
+    }
+
+    public int getClampedScenesIndex() {
+        if (scenes.isEmpty()) {
+            return 0;
+        }
+        return Math.clamp(scenesIndex, 0, scenes.size() - 1);
+    }
+
+    /** Scene +1，返回 true 表示所有 scene 已完成。 */
+    public boolean advanceScene() {
+        scenesIndex++;
+        return !scenes.isEmpty() && scenesIndex >= scenes.size();
+    }
+
+    public void resetSceneIndex() {
+        scenesIndex = 0;
     }
 }

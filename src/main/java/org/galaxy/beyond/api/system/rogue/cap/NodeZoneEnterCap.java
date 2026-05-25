@@ -28,13 +28,12 @@ public class NodeZoneEnterCap extends RogueCap {
         if (!(entity instanceof ServerPlayer player)) return;
         if (to != ZoneType.Node_Zone) return;
 
-        var data = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get())
-                .getPlayerRogueData();
+        var data = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData();
         long now = player.level().getGameTime();
         if (now - data.getLastNodeEnterTime() < ENTER_COOLDOWN_TICKS) return;
         data.setLastNodeEnterTime(now);
 
-        var rogueData = BeyondAPI.getBeyondDimensionData(player.level()).getRogueData();
+        var rogueData = BeyondAPI.getRogueData(player.level());
         ChunkPos at = ChunkPos.containing(player.getOnPos());
         var nodeData = rogueData.findNodeData(at);
         if (nodeData == null) return;

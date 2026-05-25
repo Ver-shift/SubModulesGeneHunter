@@ -1,20 +1,19 @@
 package org.galaxy.beyond.comand;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.init.BeyondAttachmentInit;
+import org.galaxy.beyond.api.system.rogue.RogueData;
 
 import java.util.Set;
 import java.util.UUID;
@@ -32,13 +31,13 @@ public class BeyondCommand {
                                     ServerPlayer player = source.getPlayerOrException();
                                     ServerLevel level = (ServerLevel) player.level();
 
-                                    var dimData = BeyondAPI.getBeyondDimensionData(level);
-                                    if (dimData == null || dimData.getSafeZoneStructureData().getInitialized() < 1) {
+                                    var safeZone = BeyondAPI.getSafeZoneStructureData(level);
+                                    if (safeZone == null || safeZone.getInitialized() < 1) {
                                         source.sendFailure(Component.translatable("commands.beyond.home.not_found"));
                                         return 0;
                                     }
 
-                                    BlockPos spawnPos = dimData.getSafeZoneStructureData().getSpawnPos();
+                                    BlockPos spawnPos = safeZone.getSpawnPos();
                                     if (spawnPos.equals(BlockPos.ZERO)) {
                                         source.sendFailure(Component.translatable("commands.beyond.home.not_found"));
                                         return 0;
@@ -80,142 +79,6 @@ public class BeyondCommand {
                                 )
                         )
                         .then(Commands.literal("config")
-                                // ---- debug ----
-                                .then(Commands.literal("debug")
-                                        .then(Commands.argument("value", BoolArgumentType.bool())
-                                                .executes(ctx -> {
-                                                    boolean v = BoolArgumentType.getBool(ctx, "value");
-                                                    var cfg = cfg(ctx);
-                                                    cfg.setDebugMode(v);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.set.debug", v),
-                                                            true);
-                                                    syncCfg();
-                                                    return 1;
-                                                })
-                                        )
-                                        .executes(ctx -> {
-                                                    boolean v = cfg(ctx).isDebugMode();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.debug", v),
-                                                            false);
-                                                    return 1;
-                                        })
-                                )
-                                // ---- safeZoneSize ----
-                                .then(Commands.literal("safeZoneSize")
-                                        .then(Commands.argument("value", IntegerArgumentType.integer(4, 256))
-                                                .executes(ctx -> {
-                                                    int v = IntegerArgumentType.getInteger(ctx, "value");
-                                                    cfg(ctx).setSafeZoneSize(v);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.set.safeZoneSize", v),
-                                                            true);
-                                                    syncCfg();
-                                                    return 1;
-                                                })
-                                        )
-                                        .executes(ctx -> {
-                                                    int v = cfg(ctx).getSafeZoneSize();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.safeZoneSize", v),
-                                                            false);
-                                                    return 1;
-                                        })
-                                )
-                                // ---- minNodeExpandCount ----
-                                .then(Commands.literal("minNodeExpandCount")
-                                        .then(Commands.argument("value", IntegerArgumentType.integer(1, 1000))
-                                                .executes(ctx -> {
-                                                    int v = IntegerArgumentType.getInteger(ctx, "value");
-                                                    cfg(ctx).setMinNodeExpandCount(v);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.set.minNodeExpandCount", v),
-                                                            true);
-                                                    syncCfg();
-                                                    return 1;
-                                                })
-                                        )
-                                        .executes(ctx -> {
-                                                    int v = cfg(ctx).getMinNodeExpandCount();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.minNodeExpandCount", v),
-                                                            false);
-                                                    return 1;
-                                        })
-                                )
-                                // ---- minNodeExpandChunks ----
-                                .then(Commands.literal("minNodeExpandChunks")
-                                        .then(Commands.argument("value", IntegerArgumentType.integer(1, 100))
-                                                .executes(ctx -> {
-                                                    int v = IntegerArgumentType.getInteger(ctx, "value");
-                                                    cfg(ctx).setMinNodeExpandChunks(v);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.set.minNodeExpandChunks", v),
-                                                            true);
-                                                    syncCfg();
-                                                    return 1;
-                                                })
-                                        )
-                                        .executes(ctx -> {
-                                                    int v = cfg(ctx).getMinNodeExpandChunks();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.minNodeExpandChunks", v),
-                                                            false);
-                                                    return 1;
-                                        })
-                                )
-                                // ---- maxNodeExpandRange ----
-                                .then(Commands.literal("maxNodeExpandRange")
-                                        .then(Commands.argument("value", IntegerArgumentType.integer(1, 200))
-                                                .executes(ctx -> {
-                                                    int v = IntegerArgumentType.getInteger(ctx, "value");
-                                                    cfg(ctx).setMaxNodeExpandRange(v);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.set.maxNodeExpandRange", v),
-                                                            true);
-                                                    syncCfg();
-                                                    return 1;
-                                                })
-                                        )
-                                        .executes(ctx -> {
-                                                    int v = cfg(ctx).getMaxNodeExpandRange();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.maxNodeExpandRange", v),
-                                                            false);
-                                                    return 1;
-                                        })
-                                )
-                                // ---- rogueDimension ----
-                                .then(Commands.literal("rogueDimension")
-                                        .then(Commands.argument("value", StringArgumentType.string())
-                                                .suggests((ctx, builder) -> {
-                                                    for (var level : ctx.getSource().getServer().getAllLevels()) {
-                                                        builder.suggest("\"" + level.dimension().identifier().toString() + "\"");
-                                                    }
-                                                    return builder.buildFuture();
-                                                })
-                                                .executes(ctx -> {
-                                                    String s = StringArgumentType.getString(ctx, "value");
-                                                    var id = Identifier.parse(s);
-                                                    var rk = net.minecraft.resources.ResourceKey.create(Registries.DIMENSION, id);
-                                                    cfg(ctx).setRogueDimension(rk);
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.set.rogueDimension", s),
-                                                            true);
-                                                    syncCfg();
-                                                    return 1;
-                                                })
-                                        )
-                                        .executes(ctx -> {
-                                                    var rk = cfg(ctx).getRogueDimension();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.rogueDimension",
-                                                                    rk.identifier().toString()),
-                                                            false);
-                                                    return 1;
-                                        })
-                                )
                                 // ---- currentProgress ----
                                 .then(Commands.literal("currentProgress")
                                         .then(Commands.argument("value", StringArgumentType.string())
@@ -229,22 +92,22 @@ public class BeyondCommand {
                                                 })
                                                 .executes(ctx -> {
                                                     var id = Identifier.parse(StringArgumentType.getString(ctx, "value"));
-                                                    var def = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueDefinition();
+                                                    var def = BeyondAPI.getRogueDefinition(BeyondAPI.getOverWorld());
                                                     var error = def.validateProgress(id);
                                                     if (error != null) {
                                                         ctx.getSource().sendFailure(error);
                                                         return 0;
                                                     }
-                                                    cfg(ctx).setCurrentProgress(id);
+                                                    getRogueData().setProgressId(id);
+                                                    syncRogueData();
                                                     ctx.getSource().sendSuccess(
                                                             () -> Component.translatable("commands.beyond.config.set.currentProgress", id.toString()),
                                                             true);
-                                                    syncCfg();
                                                     return 1;
                                                 })
                                         )
                                         .executes(ctx -> {
-                                                    var id = cfg(ctx).getCurrentProgress();
+                                                    var id = getRogueData().getProgressId();
                                                     ctx.getSource().sendSuccess(
                                                             () -> Component.translatable("commands.beyond.config.get.currentProgress",
                                                                     id != null ? id.toString() : "-"),
@@ -269,14 +132,14 @@ public class BeyondCommand {
                                                                 ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.playerList.not_found", name));
                                                                 return 0;
                                                             }
-                                                            boolean added = cfg(ctx).addRoguePlayer(player.getUUID());
+                                                            boolean added = getRogueData().addRoguePlayer(player.getUUID());
+                                                            if (added) syncRogueData();
                                                             ctx.getSource().sendSuccess(
                                                                     () -> Component.translatable(added
                                                                                     ? "commands.beyond.config.playerList.added"
                                                                                     : "commands.beyond.config.playerList.already_exists",
                                                                             name),
                                                                     true);
-                                                            syncCfg();
                                                             return 1;
                                                         })
                                                 )
@@ -284,7 +147,7 @@ public class BeyondCommand {
                                         .then(Commands.literal("remove")
                                                 .then(Commands.argument("player", StringArgumentType.word())
                                                         .suggests((ctx, builder) -> {
-                                                            for (UUID id : cfg(ctx).getRoguePlayerIds()) {
+                                                            for (UUID id : getRogueData().getRoguePlayerIds()) {
                                                                 builder.suggest(id.toString());
                                                             }
                                                             return builder.buildFuture();
@@ -301,21 +164,21 @@ public class BeyondCommand {
                                                                 }
                                                                 id = player.getUUID();
                                                             }
-                                                            boolean removed = cfg(ctx).removeRoguePlayer(id);
+                                                            boolean removed = getRogueData().removeRoguePlayer(id);
+                                                            if (removed) syncRogueData();
                                                             ctx.getSource().sendSuccess(
                                                                     () -> Component.translatable(removed
                                                                                     ? "commands.beyond.config.playerList.removed"
                                                                                     : "commands.beyond.config.playerList.not_in_list",
                                                                             input),
                                                                     true);
-                                                            syncCfg();
                                                             return 1;
                                                         })
                                                 )
                                         )
                                         .then(Commands.literal("list")
                                                 .executes(ctx -> {
-                                                    Set<UUID> ids = cfg(ctx).getRoguePlayerIds();
+                                                    Set<UUID> ids = getRogueData().getRoguePlayerIds();
                                                     if (ids.isEmpty()) {
                                                         ctx.getSource().sendSuccess(
                                                                 () -> Component.translatable("commands.beyond.config.playerList.empty"),
@@ -352,7 +215,8 @@ public class BeyondCommand {
                                                                 ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.safeZoneList.not_found", name));
                                                                 return 0;
                                                             }
-                                                            boolean added = cfg(ctx).addSafeZonePlayer(player.getUUID());
+                                                            boolean added = getRogueData().addSafeZonePlayer(player.getUUID());
+                                                            if (added) syncRogueData();
                                                             ctx.getSource().sendSuccess(
                                                                     () -> Component.translatable(added
                                                                                     ? "commands.beyond.config.safeZoneList.added"
@@ -366,7 +230,7 @@ public class BeyondCommand {
                                         .then(Commands.literal("remove")
                                                 .then(Commands.argument("player", StringArgumentType.word())
                                                         .suggests((ctx, builder) -> {
-                                                            for (UUID id : cfg(ctx).getSafeZonePlayerIds()) {
+                                                            for (UUID id : getRogueData().getSafeZonePlayerIds()) {
                                                                 builder.suggest(id.toString());
                                                             }
                                                             return builder.buildFuture();
@@ -383,7 +247,8 @@ public class BeyondCommand {
                                                                 }
                                                                 id = player.getUUID();
                                                             }
-                                                            boolean removed = cfg(ctx).removeSafeZonePlayer(id);
+                                                            boolean removed = getRogueData().removeSafeZonePlayer(id);
+                                                            if (removed) syncRogueData();
                                                             ctx.getSource().sendSuccess(
                                                                     () -> Component.translatable(removed
                                                                                     ? "commands.beyond.config.safeZoneList.removed"
@@ -396,7 +261,7 @@ public class BeyondCommand {
                                         )
                                         .then(Commands.literal("list")
                                                 .executes(ctx -> {
-                                                    Set<UUID> ids = cfg(ctx).getSafeZonePlayerIds();
+                                                    Set<UUID> ids = getRogueData().getSafeZonePlayerIds();
                                                     if (ids.isEmpty()) {
                                                         ctx.getSource().sendSuccess(
                                                                 () -> Component.translatable("commands.beyond.config.safeZoneList.empty"),
@@ -416,29 +281,15 @@ public class BeyondCommand {
                                                 })
                                         )
                                 )
-                                // ---- reset ----
-                                .then(Commands.literal("reset")
-                                        .executes(ctx -> {
-                                                    cfg(ctx).reset();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.reset"),
-                                                            true);
-                                                    return 1;
-                                        })
-                                )
                         )
         );
     }
 
-    private static org.galaxy.beyond.api.config.RogueConfig cfg(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {
-        return BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+    private static RogueData getRogueData() {
+        return BeyondAPI.getRogueData(BeyondAPI.getOverWorld());
     }
 
-    private static void syncCfg() {
-        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-        if (cfg.isDirty()) {
-            BeyondAPI.getOverWorld().syncData(BeyondAttachmentInit.GLOBAL_DATA.get());
-            cfg.markSynced();
-        }
+    private static void syncRogueData() {
+        BeyondAPI.syncGlobalData(BeyondAPI.getOverWorld());
     }
 }

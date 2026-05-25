@@ -37,9 +37,7 @@ public class SafeZoneBorderRenderer extends ZoneBorderRenderer {
 
     public void render(Level level, Vec3 cameraPos, PoseStack ps) {
         if (level == null) return;
-        var dimData = BeyondAPI.getBeyondDimensionData(level);
-        if (dimData == null) return;
-        LevelZoneData lzd = dimData.getLevelZoneData();
+        LevelZoneData lzd = BeyondAPI.getLevelZoneData(level);
         if (lzd == null || !lzd.hasZones()) return;
 //        WorldBorderRenderer
         Set<ChunkPos> safeSet = lzd.safeChunks();
@@ -77,8 +75,7 @@ public class SafeZoneBorderRenderer extends ZoneBorderRenderer {
         var player = Minecraft.getInstance().player;
         if (player == null) { tgtR=R_BLUE; tgtG=G_BLUE; tgtB=B_BLUE; return; }
         try {
-            var phase = player.getData(org.galaxy.beyond.api.init.BeyondAttachmentInit.PLAYER_DATA.get())
-                    .getPlayerRogueData().getPhase();
+            var phase = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
             if (phase == PlayerPhase.LOBBY)          { tgtR=R_BLUE; tgtG=G_BLUE; tgtB=B_BLUE; }
             else if (phase == PlayerPhase.PRE_ROGUE)  { tgtR=R_ORANGE; tgtG=G_ORANGE; tgtB=B_ORANGE; }
             else                                      { tgtR=R_RED; tgtG=G_RED; tgtB=B_RED; }

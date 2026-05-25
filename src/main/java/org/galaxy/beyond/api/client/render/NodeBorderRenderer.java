@@ -26,15 +26,13 @@ public class NodeBorderRenderer extends ZoneBorderRenderer {
 
     public void render(Level level, Vec3 cameraPos, PoseStack ps) {
         if (level == null) return;
-        var dimData = BeyondAPI.getBeyondDimensionData(level);
-        if (dimData == null) return;
-        LevelZoneData lzd = dimData.getLevelZoneData();
+        LevelZoneData lzd = BeyondAPI.getLevelZoneData(level);
         if (lzd == null || !lzd.hasZones()) return;
 
         Set<ChunkPos> nodeSet = lzd.nodeChunks();
         if (nodeSet.isEmpty()) return;
 
-        List<NodeData> nodeDatas = BeyondAPI.getBeyondDimensionData(level).getRogueData().getNodeDatas();
+        List<NodeData> nodeDatas = BeyondAPI.getRogueData(level).getNodeDatas();
         int hash = nodeDatas.hashCode();
         if (needsRebuild || hash != lastHash) {
             rebuild(nodeSet, nodeDatas,

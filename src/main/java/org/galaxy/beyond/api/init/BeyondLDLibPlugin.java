@@ -7,7 +7,6 @@ import com.lowdragmc.lowdraglib2.syncdata.accessor.direct.CustomDirectAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
-import org.galaxy.beyond.api.config.RogueConfig;
 import org.galaxy.beyond.api.system.BeyondDimensionData;
 import org.galaxy.beyond.api.system.BeyondGlobalData;
 import org.galaxy.beyond.api.system.BeyondMobData;
@@ -119,12 +118,6 @@ public class BeyondLDLibPlugin implements ILDLibPlugin {
         AccessorRegistries.registerAccessor(CustomDirectAccessor.builder(BeyondMobData.class)
                 .codec(BeyondMobData.CODEC.codec())
                 .streamCodec(BeyondMobData.STREAM_CODEC)
-                .codecMark()
-                .build());
-
-        AccessorRegistries.registerAccessor(CustomDirectAccessor.builder(RogueConfig.class)
-                .codec(RogueConfig.CODEC.codec())
-                .streamCodec(RogueConfig.STREAM_CODEC)
                 .codecMark()
                 .build());
 

@@ -1,4 +1,4 @@
-package org.galaxy.beyond.api.datagen;
+package org.galaxy.beyond.api.datagen.custom;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

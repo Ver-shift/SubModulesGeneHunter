@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beyond:item/placeholder"
+    "layer0": "beyond:item/loot_bag"
   }
 }

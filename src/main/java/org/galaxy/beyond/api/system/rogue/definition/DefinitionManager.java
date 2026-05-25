@@ -29,7 +29,7 @@ public class DefinitionManager implements IDefinitionManager {
         List<Identifier> allEventIds = new ArrayList<>();
 
         BeyondGlobalData globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
-        ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getProgressType();
+        ProgressType currentProgress = BeyondAPI.getProgressType(BeyondAPI.getOverWorld());
         if (currentProgress.getId() == null) return new EventTask(allEventIds);
         var def = globalData.getRogueDefinition();
         var error = def.validateProgress(currentProgress.getId());
@@ -70,7 +70,7 @@ public class DefinitionManager implements IDefinitionManager {
     @Override
     public List<SceneType> resolveScenes(ServerLevel level) {
         BeyondGlobalData globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
-        ProgressType currentProgress = BeyondAPI.getBeyondDimensionData(BeyondAPI.getOverWorld()).getRogueData().getProgressType();
+        ProgressType currentProgress = BeyondAPI.getProgressType(BeyondAPI.getOverWorld());
         if (currentProgress.getId() == null) return List.of();
         var def = globalData.getRogueDefinition();
         var error = def.validateProgress(currentProgress.getId());

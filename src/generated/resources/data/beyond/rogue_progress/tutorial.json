@@ -140,15 +140,29 @@
     {
       "entries": [
         {
-          "scene": "HARVEST",
-          "weight": 2
-        },
-        {
           "scene": "REPOSE",
           "weight": 1
         }
       ],
       "order": 2
+    },
+    {
+      "entries": [
+        {
+          "scene": "CLIMAX",
+          "weight": 1
+        }
+      ],
+      "order": 3
+    },
+    {
+      "entries": [
+        {
+          "scene": "CLIMAX",
+          "weight": 1
+        }
+      ],
+      "order": 4
     }
   ]
 }

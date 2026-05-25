@@ -1,12 +1,15 @@
 package org.galaxy.beyond.api.system.zone;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.config.CommonConfig;
-import org.galaxy.beyond.api.init.BeyondAttachmentInit;
 import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
@@ -21,22 +24,26 @@ public class ZoneManager implements IZoneManager {
 
     private final NodeAwareExpander nodeExpander = new NodeAwareExpander(this::groupComponents);
 
+    private static final TagKey<Structure> NODE_STRUCTURE_TAG =
+            TagKey.create(Registries.STRUCTURE, Identifier.fromNamespaceAndPath("beyond", "node_structure"));
+
     @Override
     public void onChunkLoad(ChunkAccess chunk) {
         if (!(chunk.getLevel() instanceof ServerLevel sl)) return;
-        var dimData = BeyondAPI.getBeyondDimensionData(sl);
-        if (dimData.getSafeZoneStructureData().getInitialized() < 1) return;
+        if (BeyondAPI.getSafeZoneStructureData(sl).getInitialized() < 1) return;
         var sm = BeyondAPI.getBeyondManager().getStructureManager();
         BlockPos wp = new BlockPos(chunk.getPos().x() << 4, 0, chunk.getPos().z() << 4);
-        if (sm.hasAnyStructure(sl, wp)) addNodeZone(sl, wp);
+        if (sm.hasStructureByTag(sl, wp, NODE_STRUCTURE_TAG)) addNodeZone(sl, wp);
     }
 
-    private LevelZoneData getLZD(ServerLevel l) { return BeyondAPI.getBeyondDimensionData(l).getLevelZoneData(); }
-    private void syncLD(ServerLevel l) { l.syncData(BeyondAttachmentInit.GLOBAL_DATA.get()); }
+    private LevelZoneData getLZD(ServerLevel l) { return BeyondAPI.getLevelZoneData(l); }
+    private void syncLD(ServerLevel l) { BeyondAPI.syncGlobalData(l); }
 
     @Override
     public boolean addZone(ServerLevel level, ChunkPos pos, ZoneType type) {
-        return getLZD(level).addZone(pos, type);
+        boolean changed = getLZD(level).addZone(pos, type);
+        if (changed) syncLD(level);
+        return changed;
     }
 
     // ---- Safe Zone ----
@@ -49,7 +56,7 @@ public class ZoneManager implements IZoneManager {
         Set<ChunkPos> targets = ZoneHelper.expandSquare(cc, radius);
 
         if (!lzd.safeChunks().isEmpty()) {
-            var rogueData = BeyondAPI.getBeyondDimensionData(level).getRogueData();
+            var rogueData = BeyondAPI.getRogueData(level);
             for (ChunkPos p : targets) {
                 if (!lzd.isNode(p)) continue;
                 var nd = rogueData.findNodeData(p);
@@ -81,7 +88,7 @@ public class ZoneManager implements IZoneManager {
             if (lzd.addNode(cp)) changed = true;
         }
         if (changed) {
-            var rogueData = BeyondAPI.getBeyondDimensionData(level).getRogueData();
+            var rogueData = BeyondAPI.getRogueData(level);
             var nd = new NodeData(randomNodeColor(level));
             for (ChunkPos cp : chunks) if (cp != null) nd.addChunkPos(cp);
             if (!nd.getNodeChunks().isEmpty()) rogueData.addNodeData(nd);
@@ -127,6 +134,10 @@ public class ZoneManager implements IZoneManager {
 
         Set<ChunkPos> seeds = new HashSet<>(list);
         LevelZoneData lzd = getLZD(level);
+
+        // 主动扫描附近的结构点位，预注册节点区域（无需等待区块加载）
+        discoverNearbyStructures(level, seeds);
+
         Set<ChunkPos> nodeChunks = lzd.nodeChunks();
         Set<ChunkPos> uncompleted = getUncompletedNodes(level, nodeChunks);
 
@@ -140,6 +151,20 @@ public class ZoneManager implements IZoneManager {
                     net.minecraft.network.chat.Component.translatable("commands.beyond.activezone.expand.failed"), false);
         } else if (r >= minR) {
             syncLD(level);
+        }
+    }
+
+    /** 在种子区块周围主动扫描节点结构，预注册节点区域（无需等待区块加载）。 */
+    private void discoverNearbyStructures(ServerLevel level, Set<ChunkPos> seeds) {
+        int scanRadius = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
+        for (ChunkPos seed : seeds) {
+            BlockPos center = seed.getMiddleBlockPosition(0);
+            for (int pass = 0; pass < 20; pass++) {
+                var pos = level.findNearestMapStructure(NODE_STRUCTURE_TAG, center, scanRadius, false);
+                if (pos == null) break;
+                addNodeZone(level, pos);
+                center = pos.offset(16, 0, 16);
+            }
         }
     }
 
@@ -168,7 +193,7 @@ public class ZoneManager implements IZoneManager {
     }
 
     private static Set<ChunkPos> getUncompletedNodes(ServerLevel level, Set<ChunkPos> nodeChunks) {
-        var rogueData = BeyondAPI.getBeyondDimensionData(level).getRogueData();
+        var rogueData = BeyondAPI.getRogueData(level);
         Set<ChunkPos> uncompleted = new HashSet<>(nodeChunks);
         for (NodeData nd : rogueData.getNodeDatas()) {
             if (nd.getPhase() == NodePhase.UNLOCKED) {

@@ -1,14 +1,13 @@
 package org.galaxy.beyond.api.system.rogue.cap;
 
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
@@ -31,20 +30,23 @@ public class PlayerInGameCap extends RogueCap {
     @Override
     public void changeZone(LivingEntity entity, ZoneType from, ZoneType to, IRogueContext ctx) {
         if (!(entity instanceof ServerPlayer player)) return;
-        var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+        var rogueData = BeyondAPI.getRogueData(entity.level());
+        boolean changed = false;
         if (to == ZoneType.Safe_Zone) {
-            cfg.addSafeZonePlayer(player.getUUID());
+            changed = rogueData.addSafeZonePlayer(player.getUUID());
         } else if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
-            cfg.addRoguePlayer(player.getUUID());
+            changed = rogueData.addRoguePlayer(player.getUUID());
         }
+        if (changed) BeyondAPI.syncGlobalData(player.level());
     }
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-            cfg.removeRoguePlayer(player.getUUID());
-            cfg.removeSafeZonePlayer(player.getUUID());
+            var rogueData = BeyondAPI.getRogueData(player.level());
+            boolean changed = rogueData.removeRoguePlayer(player.getUUID());
+            changed |= rogueData.removeSafeZonePlayer(player.getUUID());
+            if (changed) BeyondAPI.syncGlobalData(player.level());
         }
     }
 
@@ -52,31 +54,34 @@ public class PlayerInGameCap extends RogueCap {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             if (!isRogueDimension(player)) return;
-            var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
+            var rogueData = BeyondAPI.getRogueData(player.level());
             var phaseId = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhaseId();
+            boolean changed;
             if (!phaseId.equals(PlayerPhase.LOBBY.getId())) {
-                cfg.addRoguePlayer(player.getUUID());
+                changed = rogueData.addRoguePlayer(player.getUUID());
             } else {
-                cfg.addSafeZonePlayer(player.getUUID());
+                changed = rogueData.addSafeZonePlayer(player.getUUID());
             }
+            if (changed) BeyondAPI.syncGlobalData(player.level());
         }
     }
 
     @SubscribeEvent
     public static void onPlayerChangeDim(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            var cfg = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig();
-            ResourceKey<Level> rogueDim = cfg.getRogueDimension();
-            if (event.getTo().equals(rogueDim)) cfg.addSafeZonePlayer(player.getUUID());
+            var rogueDim = CommonConfig.getRogueDimension();
+            var rogueData = BeyondAPI.getRogueData(BeyondAPI.getOverWorld());
+            boolean changed = false;
+            if (event.getTo().equals(rogueDim)) changed = rogueData.addSafeZonePlayer(player.getUUID());
             if (event.getFrom().equals(rogueDim) && !event.getTo().equals(rogueDim)) {
-                cfg.removeRoguePlayer(player.getUUID());
-                cfg.removeSafeZonePlayer(player.getUUID());
+                changed |= rogueData.removeRoguePlayer(player.getUUID());
+                changed |= rogueData.removeSafeZonePlayer(player.getUUID());
             }
+            if (changed) BeyondAPI.syncGlobalData(BeyondAPI.getOverWorld());
         }
     }
 
     private static boolean isRogueDimension(ServerPlayer player) {
-        return player.level().dimension()
-                .equals(BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig().getRogueDimension());
+        return player.level().dimension().equals(CommonConfig.getRogueDimension());
     }
 }

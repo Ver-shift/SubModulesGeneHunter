@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.event.custom.RogueEncounterEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.init.BeyondAttachmentInit;
 import org.galaxy.beyond.api.system.rogue.*;
 
 import java.util.List;
@@ -33,6 +32,7 @@ public class RogueEncounterRunner {
 
     public void handleLocked(ServerPlayer player) {
         nodeData.prepareForEncounter();
+        BeyondAPI.syncGlobalData(level);
         ctx.setPlayerPhase(player, PlayerPhase.PRE_NODE);
         player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
     }
@@ -53,6 +53,7 @@ public class RogueEncounterRunner {
         encData.setType(encType);
         encData.setEvents(task);
         nodeData.startEncounter(encData);
+        BeyondAPI.syncGlobalData(level);
         ctx.setAllPlayerPhase(level, PlayerPhase.ON_EVENT);
 
         level.getServer().getPlayerList().broadcastSystemMessage(
@@ -75,6 +76,7 @@ public class RogueEncounterRunner {
     public boolean tryReadyPreEvent() {
         if (countPreEvent() < ctx.playersInRogue(level).size()) return false;
         nodeData.setNodePhase(NodePhase.ON_EVENT);
+        BeyondAPI.syncGlobalData(level);
         ctx.setAllPlayerPhase(level, PlayerPhase.ON_EVENT);
         return true;
     }
@@ -107,6 +109,7 @@ public class RogueEncounterRunner {
 
         int eventCount = nodeData.eventCount();
         boolean isLast = nodeData.advanceToNextEvent();
+        BeyondAPI.syncGlobalData(level);
 
         var ids = encData.getEvents().getEvents();
         String eventPath = nodeData.getCurrentEventIndex() < ids.size()
@@ -141,16 +144,18 @@ public class RogueEncounterRunner {
 
         var rogueData = ctx.getRogueData(level);
         boolean allDone = rogueData.advanceProgress();
+        BeyondAPI.syncGlobalData(level);
 
-        int current = rogueData.getProgressIndex();
-        int totalScenes = rogueData.getProgressType() != null ? rogueData.getProgressType().getScenes().size() : 0;
+        var progressType = rogueData.getProgressType();
+        int current = progressType != null ? progressType.getScenesIndex() : 0;
+        int totalScenes = progressType != null ? progressType.getScenes().size() : 0;
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.node.unlocked"), false);
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.node.progress_advance", current, totalScenes), false);
 
         BeyondAPI.getBeyondManager().getZoneManager().addActiveZone(level, nodeData);
-        level.syncData(BeyondAttachmentInit.GLOBAL_DATA.get());
+        BeyondAPI.syncGlobalData(level);
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.node.zone_expanded"), false);
 
@@ -171,17 +176,17 @@ public class RogueEncounterRunner {
 
     private EncounterType resolveEncounter() {
         var rogueData = ctx.getRogueData(level);
-        var map = rogueData.getEncounterAssignments();
-        for (var c : nodeData.getNodeChunks()) {
-            var et = map.get(c);
-            if (et != null) { nodeData.setNodeChunk(c); return et; }
+        var encData = nodeData.getEncounterData();
+        if (encData != null && encData.getType() != null) {
+            return encData.getType();
         }
         var pt = rogueData.getProgressType();
         if (pt == null || pt.getScenes().isEmpty()) return null;
-        int idx = rogueData.getProgressIndex();
-        if (idx >= pt.getScenes().size()) idx = pt.getScenes().size() - 1;
+        int idx = pt.getClampedScenesIndex();
         var et = EncounterType.from(nodeData.getNodeData().getColor(), pt.getScenes().get(idx));
-        if (et != null) map.put(nodeData.getNodeChunk(), et);
+        if (et != null && encData != null) {
+            encData.setType(et);
+        }
         return et;
     }
 

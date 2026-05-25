@@ -90,11 +90,11 @@ public class RogueCapManager {
     // ============================================================
 
     private List<RogueCapData> getCaps(ServerLevel level) {
-        return BeyondAPI.getBeyondDimensionData(level).getRogueData().getRogueCapData();
+        return BeyondAPI.getRogueData(level).getRogueCapData();
     }
 
     private static LevelZoneData getLZD(ServerLevel level) {
-        return BeyondAPI.getBeyondDimensionData(level).getLevelZoneData();
+        return BeyondAPI.getLevelZoneData(level);
     }
 
     private void dispatchLevelTick(List<RogueCapData> caps, ServerLevel level) {

@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,7 +17,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import lombok.Data;
-import org.galaxy.beyond.api.config.RogueConfig;
 import org.galaxy.beyond.api.system.random.RogueRandom;
 import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
 
@@ -31,9 +31,6 @@ public class BeyondGlobalData implements IPersistedSerializable {
 
     @Persisted(subPersisted = true)
     private RogueRandom rogueRandom = new RogueRandom();
-
-    @Persisted(subPersisted = true)
-    private RogueConfig rogueConfig = new RogueConfig();
 
     @Persisted
     private ResourceKey<Level> rougeLevel = Level.OVERWORLD;
@@ -52,18 +49,29 @@ public class BeyondGlobalData implements IPersistedSerializable {
 
     public CompoundTag dimensionDataMapSerialize(Map<ResourceKey<Level>, BeyondDimensionData> m) {
         var keys = new ListTag();
-        m.keySet().forEach(k -> keys.add(StringTag.valueOf(k.identifier().toString())));
+        var values = new ListTag();
+        for (var e : m.entrySet()) {
+            keys.add(StringTag.valueOf(e.getKey().identifier().toString()));
+            BeyondDimensionData.CODEC_DIRECT.encodeStart(NbtOps.INSTANCE, e.getValue())
+                    .result().ifPresent(values::add);
+        }
         var c = new CompoundTag();
         c.put("keys", keys);
+        c.put("values", values);
         return c;
     }
 
     public Map<ResourceKey<Level>, BeyondDimensionData> dimensionDataMapDeserialize(CompoundTag c) {
         var m = new ConcurrentHashMap<ResourceKey<Level>, BeyondDimensionData>();
         var keys = c.getListOrEmpty("keys");
-        for (Tag e : keys) {
-            var loc = Identifier.parse(e.asString().orElse(""));
-            m.put(ResourceKey.create(Registries.DIMENSION, loc), new BeyondDimensionData());
+        var values = c.getListOrEmpty("values");
+        for (int i = 0; i < keys.size(); i++) {
+            Tag key = keys.get(i);
+            var loc = Identifier.parse(key.asString().orElse(""));
+            BeyondDimensionData data = i < values.size()
+                    ? BeyondDimensionData.CODEC_DIRECT.parse(NbtOps.INSTANCE, values.get(i)).result().orElseGet(BeyondDimensionData::new)
+                    : new BeyondDimensionData();
+            m.put(ResourceKey.create(Registries.DIMENSION, loc), data);
         }
         return m;
     }

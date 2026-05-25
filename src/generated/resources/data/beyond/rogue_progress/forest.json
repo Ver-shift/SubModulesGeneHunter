@@ -179,10 +179,6 @@
       "entries": [
         {
           "scene": "HARVEST",
-          "weight": 5
-        },
-        {
-          "scene": "REPOSE",
           "weight": 1
         }
       ],
@@ -192,11 +188,7 @@
       "entries": [
         {
           "scene": "HARVEST",
-          "weight": 3
-        },
-        {
-          "scene": "REPOSE",
-          "weight": 2
+          "weight": 1
         }
       ],
       "order": 2
@@ -206,13 +198,72 @@
         {
           "scene": "HARVEST",
           "weight": 1
-        },
+        }
+      ],
+      "order": 3
+    },
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 1
+        }
+      ],
+      "order": 4
+    },
+    {
+      "entries": [
+        {
+          "scene": "REPOSE",
+          "weight": 1
+        }
+      ],
+      "order": 5
+    },
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 1
+        }
+      ],
+      "order": 6
+    },
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 1
+        }
+      ],
+      "order": 7
+    },
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 1
+        }
+      ],
+      "order": 8
+    },
+    {
+      "entries": [
+        {
+          "scene": "HARVEST",
+          "weight": 1
+        }
+      ],
+      "order": 9
+    },
+    {
+      "entries": [
         {
           "scene": "CLIMAX",
           "weight": 1
         }
       ],
-      "order": 3
+      "order": 10
     }
   ]
 }

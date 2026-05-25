@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
-import org.galaxy.beyond.api.system.rogue.ProgressType;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
@@ -28,7 +27,8 @@ public class RogueInitCap extends RogueCap {
         if (to != RoguePhase.INIT) return;
 
         var globalData = BeyondAPI.getGlobalData(BeyondAPI.getOverWorld());
-        var progressId = globalData.getRogueConfig().getCurrentProgress();
+        var rogueData = ctx.getRogueData(level);
+        var progressId = rogueData.getProgressId();
 
         if (progressId == null) {
             level.getServer().getPlayerList()
@@ -41,7 +41,6 @@ public class RogueInitCap extends RogueCap {
             return;
         }
 
-        var rogueData = ctx.getRogueData(level);
         rogueData.resetProgressState();
 
         long seed = ctx.getGameSeed(level);
@@ -50,9 +49,11 @@ public class RogueInitCap extends RogueCap {
             ctx.setGameSeed(level, seed);
         }
 
-        ProgressType progressType = new ProgressType(progressId);
-        rogueData.setProgressType(progressType);
+        var progressType = rogueData.getProgressType();
+        progressType.setId(progressId);
+        progressType.setActive(true);
         progressType.setScenes(Beyond.MANAGER.getDefinitionManager().resolveScenes(level));
+        BeyondAPI.syncGlobalData(level);
 
         level.getServer().getPlayerList()
                 .broadcastSystemMessage(Component.translatable("beyond.rogue.start", progressId.toString()), false);

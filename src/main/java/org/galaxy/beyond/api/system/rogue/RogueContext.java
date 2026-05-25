@@ -19,6 +19,7 @@ public class RogueContext implements IRogueContext {
     @Override
     public void setPhase(ServerLevel level, RoguePhase phase) {
         getRogueData(level).setPhase(phase);
+        BeyondAPI.syncGlobalData(level);
     }
 
     @Override
@@ -34,6 +35,7 @@ public class RogueContext implements IRogueContext {
     @Override
     public void setPlayerPhase(ServerPlayer player, PlayerPhase phase) {
         BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().setPhase(phase);
+        BeyondAPI.syncPlayerData(player);
     }
 
     @Override
@@ -55,10 +57,10 @@ public class RogueContext implements IRogueContext {
 
     @Override
     public List<ServerPlayer> playersInRogue(ServerLevel level) {
-        var cfg = BeyondAPI.getGlobalData(level).getRogueConfig();
+        var rogueData = getRogueData(level);
         var playerList = level.getServer().getPlayerList();
         List<ServerPlayer> result = new ArrayList<>();
-        for (UUID id : cfg.getRoguePlayerIds()) {
+        for (UUID id : rogueData.getRoguePlayerIds()) {
             ServerPlayer p = playerList.getPlayer(id);
             if (p != null) result.add(p);
         }
@@ -67,7 +69,7 @@ public class RogueContext implements IRogueContext {
 
     @Override
     public boolean allPlayersMatchPhase(ServerLevel level, PlayerPhase phase) {
-        var ids = BeyondAPI.getGlobalData(level).getRogueConfig().getRoguePlayerIds();
+        var ids = getRogueData(level).getRoguePlayerIds();
         if (ids.isEmpty()) return false;
         for (UUID uuid : ids) {
             ServerPlayer p = level.getServer().getPlayerList().getPlayer(uuid);
@@ -78,7 +80,7 @@ public class RogueContext implements IRogueContext {
 
     @Override
     public RogueData getRogueData(ServerLevel level) {
-        return BeyondAPI.getBeyondDimensionData(level).getRogueData();
+        return BeyondAPI.getRogueData(level);
     }
 
     @Override
@@ -94,5 +96,6 @@ public class RogueContext implements IRogueContext {
     @Override
     public void setGameSeed(ServerLevel level, long seed) {
         getRogueData(level).setGameSeed(seed);
+        BeyondAPI.syncGlobalData(level);
     }
 }

@@ -2,10 +2,13 @@ package org.galaxy.beyond.api.system.structure;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
@@ -22,6 +25,17 @@ public class StructureManager implements IStructureManager {
     @Override
     public boolean hasAnyStructure(ServerLevel level, Vec3i pos) {
         return !getAllStarts(level, pos).isEmpty();
+    }
+
+    @Override
+    public boolean hasStructureByTag(ServerLevel level, Vec3i pos, TagKey<Structure> tag) {
+        var cp = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
+        var registry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+        return !level.structureManager().startsForStructure(cp, structure ->
+                registry.get(registry.getId(structure))
+                        .map(holder -> holder.is(tag))
+                        .orElse(false)
+        ).isEmpty();
     }
 
     @Override

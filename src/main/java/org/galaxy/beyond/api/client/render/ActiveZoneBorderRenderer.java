@@ -21,9 +21,7 @@ public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
 
     public void render(Level level, Vec3 cameraPos, PoseStack ps) {
         if (level == null) return;
-        var dimData = BeyondAPI.getBeyondDimensionData(level);
-        if (dimData == null) return;
-        LevelZoneData lzd = dimData.getLevelZoneData();
+        LevelZoneData lzd = BeyondAPI.getLevelZoneData(level);
         if (lzd == null || !lzd.hasZones()) return;
 
         Set<ChunkPos> activeSet = lzd.activeChunks();

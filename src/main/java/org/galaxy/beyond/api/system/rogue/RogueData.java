@@ -11,8 +11,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
@@ -21,10 +19,12 @@ import org.galaxy.beyond.api.init.BeyondRogueCapInit;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 public class RogueData implements IPersistedSerializable {
@@ -48,19 +48,18 @@ public class RogueData implements IPersistedSerializable {
     private long gameSeed;
 
     @Persisted
-    private int progressIndex;
-
-    @Persisted
-    @ReadOnlyManaged(serializeMethod = "encounterMapSerialize", deserializeMethod = "encounterMapDeserialize")
-    private final Map<ChunkPos, EncounterType> encounterAssignments = new ConcurrentHashMap<>();
-
-    @Persisted
     @ReadOnlyManaged(serializeMethod = "rogueCapDataSerialize", deserializeMethod = "rogueCapDataDeserialize")
     private final List<RogueCapData> rogueCapData = new CopyOnWriteArrayList<>();
     /** 节点区域 → NodeData（发现时创建，带颜色，跨局持久） */
     @Persisted
     @ReadOnlyManaged(serializeMethod = "nodeDatasSerialize", deserializeMethod = "nodeDatasDeserialize")
     private final List<NodeData> nodeDatas = new CopyOnWriteArrayList<>();
+
+    @Persisted
+    private List<String> roguePlayerIdStrings = new ArrayList<>();
+
+    @Persisted
+    private List<String> safeZonePlayerIdStrings = new ArrayList<>();
 
     /** 按区块查找 NodeData */
     public NodeData findNodeData(ChunkPos pos) {
@@ -73,6 +72,88 @@ public class RogueData implements IPersistedSerializable {
     public void addNodeData(NodeData nd) {
         ChunkPos key = nd.getNodeChunks().isEmpty() ? null : new ChunkPos(ChunkPos.getX(nd.getNodeChunks().getFirst()), ChunkPos.getZ(nd.getNodeChunks().getFirst()));
         if (key != null && findNodeData(key) == null) nodeDatas.add(nd);
+    }
+
+    // ---- 当前进度 ----
+
+    public ProgressType getProgressType() {
+        if (progressType == null) {
+            progressType = new ProgressType();
+        }
+        return progressType;
+    }
+
+    public void setProgressType(ProgressType progressType) {
+        this.progressType = progressType != null ? progressType : new ProgressType();
+    }
+
+    public Identifier getProgressId() {
+        return getProgressType().getId();
+    }
+
+    public void setProgressId(Identifier progressId) {
+        getProgressType().setId(progressId);
+    }
+
+    public boolean hasProgressId() {
+        return getProgressId() != null;
+    }
+
+    public void setProgressActive(boolean active) {
+        getProgressType().setActive(active);
+    }
+
+    // ---- 肉鸽玩家列表 ----
+
+    public Set<UUID> getRoguePlayerIds() {
+        return toStringSet(roguePlayerIdStrings);
+    }
+
+    public boolean addRoguePlayer(UUID playerId) {
+        String s = playerId.toString();
+        if (roguePlayerIdStrings.contains(s)) return false;
+        safeZonePlayerIdStrings.remove(s);
+        return roguePlayerIdStrings.add(s);
+    }
+
+    public boolean removeRoguePlayer(UUID playerId) {
+        return roguePlayerIdStrings.remove(playerId.toString());
+    }
+
+    public boolean isRoguePlayer(UUID playerId) {
+        return roguePlayerIdStrings.contains(playerId.toString());
+    }
+
+    // ---- 安全区玩家列表 ----
+
+    public Set<UUID> getSafeZonePlayerIds() {
+        return toStringSet(safeZonePlayerIdStrings);
+    }
+
+    public boolean addSafeZonePlayer(UUID playerId) {
+        String s = playerId.toString();
+        if (safeZonePlayerIdStrings.contains(s)) return false;
+        roguePlayerIdStrings.remove(s);
+        return safeZonePlayerIdStrings.add(s);
+    }
+
+    public boolean removeSafeZonePlayer(UUID playerId) {
+        return safeZonePlayerIdStrings.remove(playerId.toString());
+    }
+
+    public boolean isSafeZonePlayer(UUID playerId) {
+        return safeZonePlayerIdStrings.contains(playerId.toString());
+    }
+
+    private static Set<UUID> toStringSet(List<String> strings) {
+        Set<UUID> set = new LinkedHashSet<>();
+        for (String s : strings) {
+            try {
+                set.add(UUID.fromString(s));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return set;
     }
 
     /** 首次加载时初始化全局默认 cap 列表，已存在则跳过。 */
@@ -103,16 +184,13 @@ public class RogueData implements IPersistedSerializable {
 
     /** 进度+1，返回 true 表示所有 scene 已完成 */
     public boolean advanceProgress() {
-        progressIndex++;
-        return progressType != null && progressType.getScenes().size() > 0
-                && progressIndex >= progressType.getScenes().size();
+        return getProgressType().advanceScene();
     }
 
     /** 新一局开始时重置运行时状态 */
     public void resetProgressState() {
         setRogueNodeData(null);
-        setProgressIndex(0);
-        getEncounterAssignments().clear();
+        getProgressType().resetSceneIndex();
     }
 
     @SuppressWarnings("unused")
@@ -159,33 +237,6 @@ public class RogueData implements IPersistedSerializable {
                     .result().ifPresent(list::add);
         }
         return list;
-    }
-
-    @SuppressWarnings("unused")
-    private CompoundTag encounterMapSerialize(Map<ChunkPos, EncounterType> m) {
-        CompoundTag tag = new CompoundTag();
-        ListTag keys = new ListTag();
-        ListTag values = new ListTag();
-        for (var e : m.entrySet()) {
-            keys.add(StringTag.valueOf(e.getKey().x() + "," + e.getKey().z()));
-            values.add(StringTag.valueOf(e.getValue().name()));
-        }
-        tag.put("keys", keys);
-        tag.put("values", values);
-        return tag;
-    }
-
-    @SuppressWarnings("unused")
-    private Map<ChunkPos, EncounterType> encounterMapDeserialize(CompoundTag tag) {
-        Map<ChunkPos, EncounterType> m = new ConcurrentHashMap<>();
-        ListTag keys = tag.getListOrEmpty("keys");
-        ListTag values = tag.getListOrEmpty("values");
-        for (int i = 0; i < keys.size() && i < values.size(); i++) {
-            String[] parts = keys.get(i).asString().orElse("0,0").split(",");
-            m.put(new ChunkPos(Integer.parseInt(parts[0]), Integer.parseInt(parts[1])),
-                    EncounterType.valueOf(values.get(i).asString().orElse("Green_Event")));
-        }
-        return m;
     }
 
 }

@@ -122,11 +122,12 @@ public class NodeCap extends RogueCap {
         next.setNodeData(nodeData);
         next.setNodeChunk(clickedChunk);
         rogueData.setRogueNodeData(next);
+        BeyondAPI.syncGlobalData(level);
         return next;
     }
 
     private static List<ChunkPos> findNodeCluster(ServerLevel level, ChunkPos seed) {
-        var entries = BeyondAPI.getBeyondDimensionData(level).getLevelZoneData().getZoneEntries();
+        var entries = BeyondAPI.getLevelZoneData(level).getZoneEntries();
         var nodeChunks = entries.stream()
                 .filter(e -> e.getValue().matches(ZoneType.Node_Zone.mask()))
                 .map(Map.Entry::getKey)
@@ -138,7 +139,7 @@ public class NodeCap extends RogueCap {
     }
 
     private static boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getGlobalData(BeyondAPI.getOverWorld()).getRogueConfig()
+        return BeyondAPI.getRogueData(player.level())
                 .getRoguePlayerIds().contains(player.getUUID());
     }
 

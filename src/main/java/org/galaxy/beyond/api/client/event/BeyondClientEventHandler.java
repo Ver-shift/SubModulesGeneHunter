@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import org.galaxy.beyond.api.client.render.ActiveZoneBorderRenderer;
 import org.galaxy.beyond.api.client.render.NodeBorderRenderer;
 import org.galaxy.beyond.api.client.render.SafeZoneBorderRenderer;
@@ -32,7 +32,7 @@ public class BeyondClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onRenderLevelStage(RenderLevelStageEvent.AfterTranslucentBlocks event) {
+    public static void onSubmitCustomGeometry(SubmitCustomGeometryEvent event) {
         var level = Minecraft.getInstance().level;
         if (level == null) return;
         var cameraPos = event.getLevelRenderState().cameraRenderState.pos;

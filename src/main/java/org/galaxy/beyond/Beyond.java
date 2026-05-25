@@ -16,6 +16,7 @@ import com.mojang.logging.LogUtils;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
+import org.galaxy.beyond.api.client.gui.BeyondConfigScreen;
 
 /**
  * 关卡系统，在mc中呈现肉鸽玩法。
@@ -37,6 +38,7 @@ public class Beyond {
         MANAGER = new BeyondManager();
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+        BeyondConfigScreen.register(modContainer);
         newRegistry(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(BeyondCommand::register);

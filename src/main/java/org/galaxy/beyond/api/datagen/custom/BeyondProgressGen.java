@@ -1,4 +1,4 @@
-package org.galaxy.beyond.api.datagen;
+package org.galaxy.beyond.api.datagen.custom;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;

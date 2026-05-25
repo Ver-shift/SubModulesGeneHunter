@@ -18,7 +18,7 @@ public class CommonConfig {
     public static final ModConfigSpec.BooleanValue DEBUG_MODE;
 
     /** 肉鸽玩法生效的维度，格式为 "namespace:path"，如 "minecraft:overworld" */
-    private static final ModConfigSpec.ConfigValue<String> ROGUE_DIMENSION;
+    public static final ModConfigSpec.ConfigValue<String> ROGUE_DIMENSION;
 
     /** 安全区向外最小拓展距离（区块数） */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_EXPAND;
