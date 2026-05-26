@@ -51,13 +51,13 @@ public class ZoneHelper {
         return new Bounds(minX, minZ, maxX, maxZ);
     }
 
-    // ---- 掩码过滤（兼容旧 API，用于渲染器） ----
+    // ---- 类型过滤（用于渲染器） ----
 
-    public static FilteredChunks filterByMask(Set<Map.Entry<ChunkPos, ZoneType>> entries, byte mask) {
+    public static FilteredChunks filterByType(Set<Map.Entry<ChunkPos, ZoneType>> entries, ZoneType type) {
         Set<ChunkPos> chunks = new HashSet<>();
         int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
         for (var e : entries) {
-            if (!e.getValue().matches(mask)) continue;
+            if (e.getValue() != type) continue;
             ChunkPos p = e.getKey();
             chunks.add(p);
             if (p.x() < minX) minX = p.x(); if (p.x() > maxX) maxX = p.x();

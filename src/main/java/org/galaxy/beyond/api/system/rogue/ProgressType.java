@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import org.galaxy.beyond.Beyond;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +16,10 @@ import java.util.List;
 @Data
 public class ProgressType implements IPersistedSerializable {
 
+    public static final Identifier DEFAULT_ID = Beyond.asResource("tutorial");
+
     @Persisted
-    private Identifier id;
+    private Identifier id = DEFAULT_ID;
 
     @Persisted
     private boolean active;
@@ -36,7 +39,18 @@ public class ProgressType implements IPersistedSerializable {
     public ProgressType() {}
 
     public ProgressType(Identifier id) {
-        this.id = id;
+        setId(id);
+    }
+
+    public Identifier getId() {
+        if (id == null) {
+            id = DEFAULT_ID;
+        }
+        return id;
+    }
+
+    public void setId(Identifier id) {
+        this.id = id != null ? id : DEFAULT_ID;
     }
 
     public int getClampedScenesIndex() {

@@ -6,6 +6,7 @@ import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ChunkPos;
@@ -16,6 +17,9 @@ import java.util.List;
 
 @Data
 public class NodeData implements IPersistedSerializable {
+
+    @Persisted
+    private long nodeKey;
 
     @Persisted
     private NodeColor color = NodeColor.EMPTY;
@@ -54,6 +58,22 @@ public class NodeData implements IPersistedSerializable {
 
     public void addChunkPos(ChunkPos pos) {
         nodeChunks.add(pack(pos));
+        ensureNodeKey();
+    }
+
+    public boolean addChunkPosIfAbsent(ChunkPos pos) {
+        long packed = pack(pos);
+        if (nodeChunks.contains(packed)) return false;
+        nodeChunks.add(packed);
+        ensureNodeKey();
+        return true;
+    }
+
+    public boolean addPackedChunkIfAbsent(long packed) {
+        if (nodeChunks.contains(packed)) return false;
+        nodeChunks.add(packed);
+        ensureNodeKey();
+        return true;
     }
 
     public boolean containsChunk(ChunkPos pos) {
@@ -66,5 +86,46 @@ public class NodeData implements IPersistedSerializable {
 
     public void setPhase(NodePhase phase) {
         this.phaseId = phase.getId();
+    }
+
+    public long ensureNodeKey() {
+        if (nodeKey == 0L && !nodeChunks.isEmpty()) {
+            nodeKey = nodeChunks.getFirst();
+        }
+        return nodeKey;
+    }
+
+    public NodeData copy() {
+        NodeData copy = new NodeData();
+        copy.nodeKey = ensureNodeKey();
+        copy.color = color;
+        copy.phaseId = phaseId;
+        copy.nodeChunks = new ArrayList<>(nodeChunks);
+        return copy;
+    }
+
+    public static void writeFull(FriendlyByteBuf buf, NodeData data) {
+        data.ensureNodeKey();
+        buf.writeLong(data.nodeKey);
+        NodeColor.STREAM_CODEC.encode(buf, data.color);
+        buf.writeUtf(data.phaseId.toString());
+        buf.writeVarInt(data.nodeChunks.size());
+        for (long chunk : data.nodeChunks) {
+            buf.writeLong(chunk);
+        }
+    }
+
+    public static NodeData readFull(FriendlyByteBuf buf) {
+        NodeData data = new NodeData();
+        data.nodeKey = buf.readLong();
+        data.color = NodeColor.STREAM_CODEC.decode(buf);
+        data.phaseId = Identifier.parse(buf.readUtf());
+        int size = buf.readVarInt();
+        data.nodeChunks = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            data.nodeChunks.add(buf.readLong());
+        }
+        data.ensureNodeKey();
+        return data;
     }
 }

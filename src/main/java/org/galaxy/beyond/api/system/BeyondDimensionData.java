@@ -10,16 +10,12 @@ import lombok.Data;
 import net.minecraft.network.codec.StreamCodec;
 import org.galaxy.beyond.api.system.rogue.RogueData;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
-import org.galaxy.beyond.api.system.zone.LevelZoneData;
 
 @Data
 public class BeyondDimensionData implements IPersistedSerializable {
 
     @Persisted(subPersisted = true)
     private RogueData rogueData = new RogueData();
-
-    @Persisted(subPersisted = true)
-    private LevelZoneData levelZoneData = new LevelZoneData();
 
     @Persisted(subPersisted = true)
     private SafeZoneStructureData safeZoneStructureData = new SafeZoneStructureData();

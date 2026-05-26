@@ -31,7 +31,8 @@ public class RogueEncounterRunner {
     // ============================================================
 
     public void handleLocked(ServerPlayer player) {
-        nodeData.prepareForEncounter();
+        nodeData.prepareForEncounter(level);
+        BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
         ctx.setPlayerPhase(player, PlayerPhase.PRE_NODE);
         player.sendSystemMessage(Component.translatable("beyond.node.locked_triggered"));
@@ -52,7 +53,8 @@ public class RogueEncounterRunner {
         EncounterData encData = new EncounterData();
         encData.setType(encType);
         encData.setEvents(task);
-        nodeData.startEncounter(encData);
+        nodeData.startEncounter(level, encData);
+        BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
         ctx.setAllPlayerPhase(level, PlayerPhase.ON_EVENT);
 
@@ -75,7 +77,8 @@ public class RogueEncounterRunner {
 
     public boolean tryReadyPreEvent() {
         if (countPreEvent() < ctx.playersInRogue(level).size()) return false;
-        nodeData.setNodePhase(NodePhase.ON_EVENT);
+        nodeData.setNodePhase(level, NodePhase.ON_EVENT);
+        BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
         ctx.setAllPlayerPhase(level, PlayerPhase.ON_EVENT);
         return true;
@@ -108,7 +111,8 @@ public class RogueEncounterRunner {
         }
 
         int eventCount = nodeData.eventCount();
-        boolean isLast = nodeData.advanceToNextEvent();
+        boolean isLast = nodeData.advanceToNextEvent(level);
+        BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
 
         var ids = encData.getEvents().getEvents();
@@ -140,10 +144,11 @@ public class RogueEncounterRunner {
 
     private void unlockNode() {
         var encData = nodeData.getEncounterData();
-        nodeData.markUnlocked();
+        nodeData.markUnlocked(level);
 
         var rogueData = ctx.getRogueData(level);
         boolean allDone = rogueData.advanceProgress();
+        BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
 
         var progressType = rogueData.getProgressType();

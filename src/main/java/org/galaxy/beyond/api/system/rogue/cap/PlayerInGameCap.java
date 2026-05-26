@@ -17,7 +17,7 @@ import org.galaxy.beyond.api.system.zone.ZoneType;
 /**
  * 玩家参战管理 Cap。
  * <p>
- * 维护肉鸽玩家列表和暂离玩家列表，通过 {@code changeZone} 事件自动添加/移除，
+ * 维护肉鸽玩家列表和暂离玩家列表，通过 {@code changeZone} 事件维护安全区状态，
  * 并通过 {@code @SubscribeEvent} 监听登录、登出、维度切换事件。
  */
 @EventBusSubscriber
@@ -34,8 +34,7 @@ public class PlayerInGameCap extends RogueCap {
         boolean changed = false;
         if (to == ZoneType.Safe_Zone) {
             changed = rogueData.addSafeZonePlayer(player.getUUID());
-        } else if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
-            changed = rogueData.addRoguePlayer(player.getUUID());
+            changed |= rogueData.removeRoguePlayer(player.getUUID());
         }
         if (changed) BeyondAPI.syncGlobalData(player.level());
     }

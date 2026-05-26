@@ -106,16 +106,17 @@ public class NodeCap extends RogueCap {
         List<ChunkPos> cluster = findNodeCluster(level, clickedChunk);
         NodeData nodeData = null;
         for (ChunkPos c : cluster) {
-            nodeData = rogueData.findNodeData(c);
+            nodeData = BeyondAPI.findNodeData(level, c);
             if (nodeData != null) break;
         }
         if (nodeData == null) {
             nodeData = new NodeData(randomNodeColor(level));
             cluster.forEach(nodeData::addChunkPos);
-            rogueData.addNodeData(nodeData);
+            BeyondAPI.getLargeLevelData(level).addNodeData(nodeData);
         } else {
-            nodeData.getNodeChunks().clear();
-            cluster.forEach(nodeData::addChunkPos);
+            NodeData updated = nodeData.copy();
+            cluster.forEach(updated::addChunkPosIfAbsent);
+            BeyondAPI.getLargeLevelData(level).addOrUpdateNodeData(updated);
         }
 
         RogueNodeData next = new RogueNodeData();
@@ -129,7 +130,7 @@ public class NodeCap extends RogueCap {
     private static List<ChunkPos> findNodeCluster(ServerLevel level, ChunkPos seed) {
         var entries = BeyondAPI.getLevelZoneData(level).getZoneEntries();
         var nodeChunks = entries.stream()
-                .filter(e -> e.getValue().matches(ZoneType.Node_Zone.mask()))
+                .filter(e -> e.getValue() == ZoneType.Node_Zone)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
         for (var comp : ZoneHelper.findConnectedComponents(nodeChunks)) {

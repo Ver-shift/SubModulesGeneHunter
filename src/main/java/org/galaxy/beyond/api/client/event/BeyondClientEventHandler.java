@@ -4,7 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.client.gui.scene.SceneUILayer;
 import org.galaxy.beyond.api.client.render.ActiveZoneBorderRenderer;
 import org.galaxy.beyond.api.client.render.NodeBorderRenderer;
 import org.galaxy.beyond.api.client.render.SafeZoneBorderRenderer;
@@ -29,6 +32,13 @@ public class BeyondClientEventHandler {
     private static ActiveZoneBorderRenderer getActiveZoneRenderer() {
         if (activeZoneRenderer == null) activeZoneRenderer = new ActiveZoneBorderRenderer();
         return activeZoneRenderer;
+    }
+
+    @SubscribeEvent
+    public static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+
+
+        event.registerAboveAll(Beyond.asResource("scene_ui"), new SceneUILayer());
     }
 
     @SubscribeEvent

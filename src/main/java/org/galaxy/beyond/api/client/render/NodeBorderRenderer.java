@@ -32,7 +32,7 @@ public class NodeBorderRenderer extends ZoneBorderRenderer {
         Set<ChunkPos> nodeSet = lzd.nodeChunks();
         if (nodeSet.isEmpty()) return;
 
-        List<NodeData> nodeDatas = BeyondAPI.getRogueData(level).getNodeDatas();
+        List<NodeData> nodeDatas = BeyondAPI.getNodeDatas(level);
         int hash = nodeDatas.hashCode();
         if (needsRebuild || hash != lastHash) {
             rebuild(nodeSet, nodeDatas,

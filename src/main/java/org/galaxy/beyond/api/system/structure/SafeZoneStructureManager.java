@@ -131,7 +131,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         var zoneEntries = levelZoneData.getZoneEntries();
         if (!levelZoneData.hasZones()) return;
 
-        var safe = ZoneHelper.filterByMask(zoneEntries, ZoneType.Safe_Zone.mask());
+        var safe = ZoneHelper.filterByType(zoneEntries, ZoneType.Safe_Zone);
         if (safe.isEmpty()) return;
         ZoneHelper.Bounds b = safe.bounds();
         BlockPos center = new BlockPos((b.minX() + b.maxX() + 1) * 8, 0, (b.minZ() + b.maxZ() + 1) * 8);

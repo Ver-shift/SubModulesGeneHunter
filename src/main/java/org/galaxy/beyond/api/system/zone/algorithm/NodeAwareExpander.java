@@ -36,6 +36,14 @@ public class NodeAwareExpander {
                                    Set<ChunkPos> uncompleted,
                                    int minConnections, int minRadius, int maxRadius,
                                    LevelZoneData lzd) {
+        return expandUntilWrapped(level, seeds, uncompleted, minConnections, minRadius, maxRadius, lzd, lzd::addActive);
+    }
+
+    public int expandUntilWrapped(ServerLevel level, Set<ChunkPos> seeds,
+                                   Set<ChunkPos> uncompleted,
+                                   int minConnections, int minRadius, int maxRadius,
+                                   LevelZoneData lzd,
+                                   java.util.function.Predicate<ChunkPos> addActiveChunk) {
         // 拓张前基线：当前 zone 网络下已经可达的区块
         Set<ChunkPos> beforeReachable = floodReachable(seeds, lzd);
 
@@ -53,7 +61,7 @@ public class NodeAwareExpander {
             Set<ChunkPos> ring = ringOf(seeds, r);
             for (ChunkPos p : ring)
                 if (!lzd.hasAny(p))
-                    lzd.addActive(p);
+                    addActiveChunk.test(p);
 
             if (r >= minRadius) {
                 if (needed == 0) {
@@ -63,7 +71,7 @@ public class NodeAwareExpander {
                         Set<ChunkPos> extra = ringOf(seeds, rr);
                         for (ChunkPos p : extra)
                             if (!lzd.hasAny(p))
-                                lzd.addActive(p);
+                                addActiveChunk.test(p);
                     }
                     actualRadius = Math.min(explorationR, maxRadius);
                     break;
@@ -91,7 +99,7 @@ public class NodeAwareExpander {
                         Set<ChunkPos> extra = ringOf(seeds, rr);
                         for (ChunkPos p : extra)
                             if (!lzd.hasAny(p))
-                                lzd.addActive(p);
+                                addActiveChunk.test(p);
                     }
                     break;
                 }

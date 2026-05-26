@@ -2,16 +2,16 @@ package org.galaxy.beyond.api.client.gui.scene;
 
 import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Clip;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Transform2D;
-import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
-import com.lowdragmc.lowdraglib2.gui.ui.elements.Scene;
+import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
 import com.lowdragmc.lowdraglib2.math.interpolate.Eases;
-import dev.vfyjxf.taffy.style.AlignItems;
+import com.lowdragmc.lowdraglib2.syncdata.ISubscription;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,6 +27,9 @@ public class SceneLine extends UIElement{
 
     private final ProgressType progressType;
     private final List<SceneEntry> sceneEntries;
+    private int lastScenesIndex = -1;
+    private float currentOffsetY;
+    private ISubscription scrollAnimation = () -> {};
 
     public SceneLine(ProgressType progressType) {
         this.progressType = progressType;
@@ -35,7 +38,12 @@ public class SceneLine extends UIElement{
             layout.widthPercent(100);
             layout.heightPercent(100);
             layout.flexDirection(FlexDirection.COLUMN);
+
         });
+        this.style(layout -> {
+            layout.clip(Clip.SCISSOR);
+        });
+
 
         sceneEntries = new ArrayList<>();
         for (SceneType sceneType : progressType.getScenes()) {
@@ -45,11 +53,54 @@ public class SceneLine extends UIElement{
             this.addChild(scene);
         }
         Beyond.debugInfo("已经加载了" + sceneEntries.size()+ "节点");
+        addEventListener(UIEvents.TICK, event -> updateScrollPosition());
     }
 
     @Override
     protected void drawBackgroundAdditional(IGUIContext context) {
         //在中间渲染一个半透明的薄膜
+    }
+
+    private void updateScrollPosition() {
+        if (sceneEntries.isEmpty()) {
+            return;
+        }
+
+        float entryHeight = sceneEntries.getFirst().getSizeHeight();
+        if (entryHeight <= 0) {
+            return;
+        }
+
+        int scenesIndex = clampedScenesIndex();
+        float targetOffsetY = -scenesIndex * entryHeight;
+        if (lastScenesIndex < 0) {
+            applyScrollOffset(targetOffsetY);
+        } else if (scenesIndex != lastScenesIndex) {
+            animateScrollOffset(targetOffsetY);
+        } else if (Float.compare(targetOffsetY, currentOffsetY) != 0) {
+            applyScrollOffset(targetOffsetY);
+        }
+        lastScenesIndex = scenesIndex;
+    }
+
+    private int clampedScenesIndex() {
+        int lastIndex = sceneEntries.size() - 1;
+        return Math.clamp(progressType.getScenesIndex(), 0, lastIndex);
+    }
+
+    private void applyScrollOffset(float offsetY) {
+        scrollAnimation.unsubscribe();
+        currentOffsetY = offsetY;
+        style(style -> style.transform2D(new Transform2D().translate(0, offsetY)));
+    }
+
+    private void animateScrollOffset(float offsetY) {
+        scrollAnimation.unsubscribe();
+        currentOffsetY = offsetY;
+        animation(anim -> scrollAnimation = anim.duration(0.35f)
+                .ease(Eases.QUAD_IN_OUT)
+                .style(PropertyRegistry.TRANSFORM_2D, new Transform2D().translate(0, offsetY))
+                .start());
     }
 
     private static class SceneEntry extends UIElement {
@@ -65,7 +116,7 @@ public class SceneLine extends UIElement{
             this.layout(layout -> {
                 layout.widthPercent(100);
                 layout.heightPercent(20);
-                layout.paddingAll(2);
+                layout.paddingAll(3);
             });
             this.style(style -> {
                 style.background(Sprites.BORDER);

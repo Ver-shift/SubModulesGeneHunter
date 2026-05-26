@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.ChunkPos;
 
@@ -68,7 +69,7 @@ public class LevelZoneData implements IPersistedSerializable {
     public Set<ChunkPos> nodeChunks()  { var s = new HashSet<ChunkPos>(); node().forEach(v -> s.add(unpack(v))); return s; }
     public Set<ChunkPos> activeChunks(){ var s = new HashSet<ChunkPos>(); act().forEach(v -> s.add(unpack(v))); return s; }
 
-    /** 返回所有 zone entries（兼容旧 API） */
+    /** 返回所有 Zone 条目；同一 ChunkPos 可按不同 ZoneType 出现多次。 */
     public Set<Map.Entry<ChunkPos, ZoneType>> getZoneEntries() {
         Set<Map.Entry<ChunkPos, ZoneType>> result = new HashSet<>();
         for (long v : safeZonesPacked) result.add(Map.entry(unpack(v), ZoneType.Safe_Zone));
@@ -85,9 +86,82 @@ public class LevelZoneData implements IPersistedSerializable {
 
     private static boolean syncPersisted(long v, List<Long> list, Set<Long> set) { list.add(v); return true; }
 
-    // ---- 兼容旧 API ----
+    public boolean addPacked(ZoneType type, long packed) {
+        return switch (type) {
+            case Safe_Zone -> safe().add(packed) && syncPersisted(packed, safeZonesPacked, safeSet);
+            case Node_Zone -> node().add(packed) && syncPersisted(packed, nodeZonesPacked, nodeSet);
+            case Active_Zone -> act().add(packed) && syncPersisted(packed, activeZonesPacked, activeSet);
+            case Empty -> false;
+        };
+    }
 
-    /** 按优先级返回最高优 ZoneType（Safe > Node > Active） */
+    public boolean addPackedAll(ZoneType type, Collection<Long> packedChunks) {
+        boolean changed = false;
+        for (long packed : packedChunks) {
+            if (addPacked(type, packed)) changed = true;
+        }
+        return changed;
+    }
+
+    public List<Long> getPacked(ZoneType type) {
+        return switch (type) {
+            case Safe_Zone -> List.copyOf(safe());
+            case Node_Zone -> List.copyOf(node());
+            case Active_Zone -> List.copyOf(act());
+            case Empty -> List.of();
+        };
+    }
+
+    public LevelZoneData copy() {
+        LevelZoneData copy = new LevelZoneData();
+        copy.addPackedAll(ZoneType.Safe_Zone, safe());
+        copy.addPackedAll(ZoneType.Node_Zone, node());
+        copy.addPackedAll(ZoneType.Active_Zone, act());
+        return copy;
+    }
+
+    public void replaceFrom(LevelZoneData other) {
+        safeZonesPacked = new ArrayList<>(other.safe());
+        nodeZonesPacked = new ArrayList<>(other.node());
+        activeZonesPacked = new ArrayList<>(other.act());
+        safeSet = null;
+        nodeSet = null;
+        activeSet = null;
+    }
+
+    public static void writeFull(FriendlyByteBuf buf, LevelZoneData data) {
+        writeLongList(buf, data.safe());
+        writeLongList(buf, data.node());
+        writeLongList(buf, data.act());
+    }
+
+    public static LevelZoneData readFull(FriendlyByteBuf buf) {
+        LevelZoneData data = new LevelZoneData();
+        data.addPackedAll(ZoneType.Safe_Zone, readLongList(buf));
+        data.addPackedAll(ZoneType.Node_Zone, readLongList(buf));
+        data.addPackedAll(ZoneType.Active_Zone, readLongList(buf));
+        return data;
+    }
+
+    private static void writeLongList(FriendlyByteBuf buf, Collection<Long> values) {
+        buf.writeVarInt(values.size());
+        for (long value : values) {
+            buf.writeLong(value);
+        }
+    }
+
+    private static List<Long> readLongList(FriendlyByteBuf buf) {
+        int size = buf.readVarInt();
+        List<Long> values = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            values.add(buf.readLong());
+        }
+        return values;
+    }
+
+    // ---- 单值视图 ----
+
+    /** 用于实体当前区域判定；底层数据仍允许同一区块同时属于多个 Zone。 */
     public ZoneType getZoneType(BlockPos pos) { return getZoneType(ChunkPos.containing(pos)); }
 
     public ZoneType getZoneType(ChunkPos p) {

@@ -8,6 +8,8 @@ import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondGlobalData;
 import org.galaxy.beyond.api.system.BeyondMobData;
 import org.galaxy.beyond.api.system.BeyondPlayerData;
+import org.galaxy.beyond.api.system.large.BeyondLargeLevelData;
+import org.galaxy.beyond.api.system.large.BeyondLargeLevelDataSyncHandler;
 
 import java.util.function.Supplier;
 
@@ -34,6 +36,13 @@ public class BeyondAttachmentInit {
                     () -> AttachmentType.builder(BeyondMobData::new)
                             .serialize(BeyondMobData.CODEC)
                             .sync(BeyondMobData.STREAM_CODEC)
+                            .build());
+
+    public static final Supplier<AttachmentType<BeyondLargeLevelData>> LARGE_LEVEL_DATA =
+            ATTACHMENT_TYPES.register("large_level_data",
+                    () -> AttachmentType.builder(BeyondLargeLevelData::new)
+                            .serialize(BeyondLargeLevelData.CODEC)
+                            .sync(new BeyondLargeLevelDataSyncHandler())
                             .build());
 
     public static void register(IEventBus eventBus) {

@@ -33,6 +33,10 @@ public class RogueNodeData implements IPersistedSerializable {
 
     public NodePhase getNodePhase() { return nodeData.getPhase(); }
     public void setNodePhase(NodePhase phase) { nodeData.setPhase(phase); }
+    public void setNodePhase(net.minecraft.world.level.Level level, NodePhase phase) {
+        nodeData.setPhase(phase);
+        org.galaxy.beyond.api.system.BeyondAPI.getLargeLevelData(level).updateNodePhase(nodeData, phase);
+    }
     public List<ChunkPos> getNodeChunks() { return nodeData.getNodeChunkPosList(); }
     public boolean containsChunk(ChunkPos pos) { return nodeData.containsChunk(pos); }
     public boolean hasEncounter() { return encounterData.getEvents() != null && encounterData.getEvents().hasEvents(); }
@@ -46,6 +50,12 @@ public class RogueNodeData implements IPersistedSerializable {
         currentEventIndex = 0;
     }
 
+    public void prepareForEncounter(net.minecraft.world.level.Level level) {
+        setNodePhase(level, NodePhase.PRE_NODE);
+        encounterData = new EncounterData();
+        currentEventIndex = 0;
+    }
+
     /** PRE_NODE → ON_EVENT：绑定遭遇数据，事件链开始 */
     public void startEncounter(EncounterData encData) {
         this.encounterData = encData;
@@ -53,11 +63,24 @@ public class RogueNodeData implements IPersistedSerializable {
         setNodePhase(NodePhase.ON_EVENT);
     }
 
+    public void startEncounter(net.minecraft.world.level.Level level, EncounterData encData) {
+        this.encounterData = encData;
+        this.currentEventIndex = 0;
+        setNodePhase(level, NodePhase.ON_EVENT);
+    }
+
     /** 步进到下一个事件，返回 true 表示这是最后一个事件 */
     public boolean advanceToNextEvent() {
         currentEventIndex++;
         boolean isLast = currentEventIndex >= eventCount() - 1;
         setNodePhase(isLast ? NodePhase.ON_EVENT : NodePhase.PRE_EVENT);
+        return isLast;
+    }
+
+    public boolean advanceToNextEvent(net.minecraft.world.level.Level level) {
+        currentEventIndex++;
+        boolean isLast = currentEventIndex >= eventCount() - 1;
+        setNodePhase(level, isLast ? NodePhase.ON_EVENT : NodePhase.PRE_EVENT);
         return isLast;
     }
 
@@ -69,5 +92,11 @@ public class RogueNodeData implements IPersistedSerializable {
     public void markUnlocked() {
         setNodePhase(NodePhase.UNLOCKED);
         nodeData.setColor(NodeColor.BLUE);
+    }
+
+    public void markUnlocked(net.minecraft.world.level.Level level) {
+        setNodePhase(level, NodePhase.UNLOCKED);
+        nodeData.setColor(NodeColor.BLUE);
+        org.galaxy.beyond.api.system.BeyondAPI.getLargeLevelData(level).updateNodeColor(nodeData, NodeColor.BLUE);
     }
 }

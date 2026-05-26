@@ -33,9 +33,8 @@ public class NodeZoneEnterCap extends RogueCap {
         if (now - data.getLastNodeEnterTime() < ENTER_COOLDOWN_TICKS) return;
         data.setLastNodeEnterTime(now);
 
-        var rogueData = BeyondAPI.getRogueData(player.level());
         ChunkPos at = ChunkPos.containing(player.getOnPos());
-        var nodeData = rogueData.findNodeData(at);
+        var nodeData = BeyondAPI.findNodeData(player.level(), at);
         if (nodeData == null) return;
 
         var colorName = nodeData.getColor().name().toLowerCase();

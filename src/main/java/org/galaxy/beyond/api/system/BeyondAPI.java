@@ -10,11 +10,15 @@ import net.minecraft.world.level.Level;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondAttachmentInit;
+import org.galaxy.beyond.api.system.large.BeyondLargeLevelData;
+import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.RogueData;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
 import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
+
+import java.util.List;
 
 public class BeyondAPI {
 
@@ -51,7 +55,19 @@ public class BeyondAPI {
     }
 
     public static LevelZoneData getLevelZoneData(Level level) {
-        return getBeyondDimensionData(level).getLevelZoneData();
+        return getLargeLevelData(level).getLevelZoneData();
+    }
+
+    public static BeyondLargeLevelData getLargeLevelData(Level level) {
+        return level.getData(BeyondAttachmentInit.LARGE_LEVEL_DATA.get());
+    }
+
+    public static List<NodeData> getNodeDatas(Level level) {
+        return getLargeLevelData(level).getNodeDatas();
+    }
+
+    public static NodeData findNodeData(Level level, net.minecraft.world.level.ChunkPos pos) {
+        return getLargeLevelData(level).findNodeData(pos);
     }
 
     public static SafeZoneStructureData getSafeZoneStructureData(Level level) {
@@ -76,6 +92,11 @@ public class BeyondAPI {
 
     public static void syncGlobalData(ServerLevel level) {
         level.syncData(BeyondAttachmentInit.GLOBAL_DATA.get());
+    }
+
+    public static void syncLargeLevelData(ServerLevel level) {
+        getLargeLevelData(level).prepareSyncSnapshot();
+        level.syncData(BeyondAttachmentInit.LARGE_LEVEL_DATA.get());
     }
 
     public static void syncPlayerData(ServerPlayer player) {
