@@ -1,0 +1,77 @@
+package org.galaxy.beyond.api.client.render;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.Util;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
+
+public final class RenderHelper {
+    public static final ResourceLocation FORCEFIELD =
+            ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
+
+    private RenderHelper() {
+    }
+
+    public static void renderBorder(double minX, double minZ, double maxX, double maxZ,
+                                    int r, int g, int b, int bottomAlpha, int topAlpha,
+                                    Camera camera, PoseStack poseStack) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+
+        double minY = mc.level.getMinBuildHeight();
+        double maxY = mc.level.getMaxBuildHeight();
+
+        poseStack.pushPose();
+        var cameraPos = camera.getPosition();
+        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.depthMask(false);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, FORCEFIELD);
+
+        float time = Util.getMillis() / 2500.0F;
+        float offsetU = time / 0.5F;
+        float offsetV = -time;
+        float uLengthX = (float) (maxX - minX);
+        float uLengthZ = (float) (maxZ - minZ);
+        float vHeight = (float) (maxY - minY);
+
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder builder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        Matrix4f matrix = poseStack.last().pose();
+
+        addWall(builder, matrix, minX, maxX, minY, maxY, minZ, minZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthX, vHeight);
+        addWall(builder, matrix, maxX, minX, minY, maxY, maxZ, maxZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthX, vHeight);
+        addWall(builder, matrix, minX, minX, minY, maxY, maxZ, minZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthZ, vHeight);
+        addWall(builder, matrix, maxX, maxX, minY, maxY, minZ, maxZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthZ, vHeight);
+
+        BufferUploader.drawWithShader(builder.buildOrThrow());
+
+        RenderSystem.depthMask(true);
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+    }
+
+    private static void addWall(BufferBuilder builder, Matrix4f matrix,
+                                double x1, double x2, double y1, double y2, double z1, double z2,
+                                int r, int g, int b, int bottomAlpha, int topAlpha,
+                                float uOffset, float vOffset, float uMax, float vMax) {
+        builder.addVertex(matrix, (float) x1, (float) y1, (float) z1).setColor(r, g, b, bottomAlpha).setUv(uOffset, vMax + vOffset);
+        builder.addVertex(matrix, (float) x2, (float) y1, (float) z2).setColor(r, g, b, bottomAlpha).setUv(uMax + uOffset, vMax + vOffset);
+        builder.addVertex(matrix, (float) x2, (float) y2, (float) z2).setColor(r, g, b, topAlpha).setUv(uMax + uOffset, vOffset);
+        builder.addVertex(matrix, (float) x1, (float) y2, (float) z1).setColor(r, g, b, topAlpha).setUv(uOffset, vOffset);
+    }
+}

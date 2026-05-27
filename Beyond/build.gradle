@@ -64,8 +64,9 @@ configurations {
 dependencies {
     // Beyond 依赖项目内公共库 GalaxyLib
     implementation(project(":GalaxyLib"))
-    implementation("maven.modrinth:waystones:${waystones_version}")
-    implementation("net.blay09.mods:balm-neoforge:${balm_version}")
+    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${dep_ldlib2_version}:all")
+    implementation("top.theillusivec4.curios:curios-neoforge:${dep_curios_version}")
+    compileOnly("org.jetbrains:annotations:${dep_jetbrains_annotations_version}")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "beyond:safe_structure",
+      "weight": 1
+    },
+    {
+      "structure": "beyond:pillager_camp",
+      "weight": 20
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 294765103,
+    "spacing": 30,
+    "separation": 16
+  }
+}
