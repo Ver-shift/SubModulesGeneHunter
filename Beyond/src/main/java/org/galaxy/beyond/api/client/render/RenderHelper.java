@@ -14,6 +14,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
+import java.util.List;
+
 public final class RenderHelper {
     public static final ResourceLocation FORCEFIELD =
             ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
@@ -65,6 +67,50 @@ public final class RenderHelper {
         poseStack.popPose();
     }
 
+    public static void renderBorderSegments(List<BorderSegment> segments,
+                                            int r, int g, int b, int bottomAlpha, int topAlpha,
+                                            Camera camera, PoseStack poseStack) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || segments.isEmpty()) return;
+
+        double minY = mc.level.getMinBuildHeight();
+        double maxY = mc.level.getMaxBuildHeight();
+
+        poseStack.pushPose();
+        var cameraPos = camera.getPosition();
+        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();
+        RenderSystem.depthMask(false);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, FORCEFIELD);
+
+        float time = Util.getMillis() / 2500.0F;
+        float offsetU = time / 0.5F;
+        float offsetV = -time;
+        float vHeight = (float) (maxY - minY);
+
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder builder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        Matrix4f matrix = poseStack.last().pose();
+
+        for (BorderSegment segment : segments) {
+            float uLength = (float) segment.length();
+            addWall(builder, matrix,
+                    segment.x1(), segment.x2(), minY, maxY, segment.z1(), segment.z2(),
+                    r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLength, vHeight);
+        }
+
+        BufferUploader.drawWithShader(builder.buildOrThrow());
+
+        RenderSystem.depthMask(true);
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+    }
+
     private static void addWall(BufferBuilder builder, Matrix4f matrix,
                                 double x1, double x2, double y1, double y2, double z1, double z2,
                                 int r, int g, int b, int bottomAlpha, int topAlpha,
@@ -73,5 +119,13 @@ public final class RenderHelper {
         builder.addVertex(matrix, (float) x2, (float) y1, (float) z2).setColor(r, g, b, bottomAlpha).setUv(uMax + uOffset, vMax + vOffset);
         builder.addVertex(matrix, (float) x2, (float) y2, (float) z2).setColor(r, g, b, topAlpha).setUv(uMax + uOffset, vOffset);
         builder.addVertex(matrix, (float) x1, (float) y2, (float) z1).setColor(r, g, b, topAlpha).setUv(uOffset, vOffset);
+    }
+
+    public record BorderSegment(double x1, double z1, double x2, double z2) {
+        double length() {
+            double dx = x2 - x1;
+            double dz = z2 - z1;
+            return Math.sqrt(dx * dx + dz * dz);
+        }
     }
 }

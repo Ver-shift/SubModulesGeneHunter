@@ -5,6 +5,7 @@ plugins{
 allprojects {
     repositories {
         mavenLocal()
+        mavenCentral()
         maven { url = 'https://maven.neoforged.net/releases' }
         // 统一提供 Biotech 传递依赖所需仓库
         maven { url = 'https://maven.firstdark.dev/snapshots' }
