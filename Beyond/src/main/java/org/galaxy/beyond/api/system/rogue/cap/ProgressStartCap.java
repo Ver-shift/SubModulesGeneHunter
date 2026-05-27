@@ -108,9 +108,9 @@ public class ProgressStartCap extends RogueCap {
     // ============================================================
 
     public Step tryLeaveSafeZone(ServerPlayer player) {
-        if (isInRogue(player)) return Step.NOT_IN_ROGUE;
-
         var data = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData();
+        if (data.getPhase() != PlayerPhase.LOBBY) return Step.NOT_IN_ROGUE;
+
         long now = player.level().getGameTime();
         long cd = CommonConfig.LOBBY_COOLDOWN_SECONDS.get() * 20L;
         if (data.getLastSafeZoneReturnTime() > 0 && now - data.getLastSafeZoneReturnTime() < cd) {
@@ -126,9 +126,10 @@ public class ProgressStartCap extends RogueCap {
             return Step.NO_PROGRESS;
         }
 
-        rogueData.addRoguePlayer(player.getUUID());
-        BeyondAPI.syncGlobalData(level);
+        data.setPhase(PlayerPhase.PREPARE_ROGUE);
+        BeyondAPI.syncPlayerData(player);
         RoguePlayerManager.giveItem(player, BeyondItemInit.LOOT_BAG.get());
+        player.sendSystemMessage(Component.translatable("beyond.rogue.loot_bag_given"));
         return Step.BAG_GIVEN;
     }
 
@@ -137,21 +138,20 @@ public class ProgressStartCap extends RogueCap {
     // ============================================================
 
     public static Step tryOpenLootBag(ServerPlayer player, IRogueContext ctx) {
-        // 不在肉鸽列表
-        if (!isInRogue(player)) return Step.NOT_IN_ROGUE;
-
         PlayerPhase playerPhase = ctx.getPlayerPhase(player);
+        if (playerPhase == PlayerPhase.LOBBY) return Step.NOT_IN_ROGUE;
 
-        // 已经开过袋
-        if (playerPhase == PlayerPhase.PRE_ROGUE) {
-            player.sendSystemMessage(Component.translatable("beyond.rogue.already_opened"));
-            return Step.ALREADY_OPENED;
-        }
-
-        // 游戏已在进行中
-        if (playerPhase == PlayerPhase.ON_PROGRESS) {
-            player.sendSystemMessage(Component.translatable("beyond.rogue.game_in_progress"));
-            return Step.GAME_IN_PROGRESS;
+        if (playerPhase != PlayerPhase.PREPARE_ROGUE) {
+            if (playerPhase == PlayerPhase.PRE_ROGUE) {
+                player.sendSystemMessage(Component.translatable("beyond.rogue.already_opened"));
+                return Step.ALREADY_OPENED;
+            }
+            if (playerPhase == PlayerPhase.ON_PROGRESS) {
+                player.sendSystemMessage(Component.translatable("beyond.rogue.game_in_progress"));
+                return Step.GAME_IN_PROGRESS;
+            }
+            player.sendSystemMessage(Component.translatable("beyond.rogue.game_already_started"));
+            return Step.GAME_ALREADY_STARTED;
         }
 
         // 全局 phase 已离开 PRE_ROGUE（游戏已由其他人触发开始）
@@ -198,10 +198,8 @@ public class ProgressStartCap extends RogueCap {
         ctx.setPlayerPhase(player, PlayerPhase.LOBBY);
         ServerLevel level = (ServerLevel) player.level();
         var rogueData = ctx.getRogueData(level);
-        rogueData.removeRoguePlayer(player.getUUID());
-        BeyondAPI.syncGlobalData(level);
 
-        if (rogueData.getRoguePlayerIds().isEmpty()) {
+        if (ctx.playersInRogue(level).isEmpty()) {
             rogueData.setProgressActive(false);
             BeyondAPI.syncGlobalData(level);
             ctx.setPhase(level, RoguePhase.LOBBY);
@@ -212,11 +210,6 @@ public class ProgressStartCap extends RogueCap {
     // ============================================================
     // 查询
     // ============================================================
-
-    private static boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getRogueData(player.level())
-                .getRoguePlayerIds().contains(player.getUUID());
-    }
 
     public static int countReady(ServerLevel level, IRogueContext ctx) {
         int c = 0;

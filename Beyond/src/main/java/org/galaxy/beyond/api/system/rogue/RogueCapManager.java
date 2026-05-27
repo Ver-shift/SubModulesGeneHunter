@@ -8,6 +8,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.event.custom.LivingChangeZoneEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.init.BeyondAttachmentInit;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -45,6 +46,7 @@ public class RogueCapManager {
 
             if (oldZone != newZone) {
                 mobData.setZoneType(newZone);
+                player.syncData(BeyondAttachmentInit.MOB_DATA.get());
                 NeoForge.EVENT_BUS.post(new LivingChangeZoneEvent(player, oldZone, newZone));
                 dispatchChangeZone(caps, player, oldZone, newZone);
             }
@@ -62,6 +64,7 @@ public class RogueCapManager {
         if (mobData.getZoneType() != newZone) {
             dispatchChangeZone(caps, mob, mobData.getZoneType(), newZone);
             mobData.setZoneType(newZone);
+            mob.syncData(BeyondAttachmentInit.MOB_DATA.get());
         }
         dispatchLivingTick(caps, mob);
     }

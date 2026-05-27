@@ -18,7 +18,6 @@ import org.galaxy.beyond.api.system.zone.algorithm.NodeAwareExpander;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ZoneManager implements IZoneManager {
 
@@ -52,24 +51,12 @@ public class ZoneManager implements IZoneManager {
     public void addSafeZone(ServerLevel level, int chunkSize, BlockPos center) {
         ChunkPos cc = org.galaxy.beyond.api.util.CompatUtil.chunkPos(center);
         int radius = chunkSize / 2;
-        LevelZoneData lzd = getLZD(level);
         Set<ChunkPos> targets = ZoneHelper.expandSquare(cc, radius);
 
-        if (!lzd.safeChunks().isEmpty()) {
-            var rogueData = BeyondAPI.getRogueData(level);
-            for (ChunkPos p : targets) {
-                if (!lzd.isNode(p)) continue;
-                var nd = BeyondAPI.findNodeData(level, p);
-                if (nd != null && nd.getPhase() != NodePhase.UNLOCKED) {
-                    level.getServer().getPlayerList().broadcastSystemMessage(
-                            net.minecraft.network.chat.Component.translatable("commands.beyond.safezone.expand.locked"), false);
-                    return;
-                }
-            }
-        }
+        var largeData = BeyondAPI.getLargeLevelData(level);
+        if (!clearLockedConflicts(level, largeData, targets)) return;
 
-        boolean changed = false;
-        changed = BeyondAPI.getLargeLevelData(level).addZoneChunks(ZoneType.Safe_Zone, targets);
+        boolean changed = largeData.addZoneChunks(ZoneType.Safe_Zone, targets);
         if (changed) syncLD(level);
     }
 
@@ -80,20 +67,61 @@ public class ZoneManager implements IZoneManager {
         var sm = BeyondAPI.getBeyondManager().getStructureManager();
         List<ChunkPos> chunks = sm.getStructureChunks(level, pos);
         LevelZoneData lzd = getLZD(level);
-        boolean changed = false;
-        List<ChunkPos> targets = new ArrayList<>();
+        Set<ChunkPos> targets = new LinkedHashSet<>();
         for (ChunkPos cp : chunks) {
             if (cp == null) continue;
-            if (lzd.isSafe(cp)) continue;
+            if (lzd.isSafe(cp)) return;
             targets.add(cp);
         }
-        changed = BeyondAPI.getLargeLevelData(level).addZoneChunks(ZoneType.Node_Zone, targets);
-        if (changed) {
-            var nd = new NodeData(randomNodeColor(level));
-            for (ChunkPos cp : chunks) if (cp != null) nd.addChunkPos(cp);
-            if (!nd.getNodeChunks().isEmpty()) BeyondAPI.getLargeLevelData(level).addNodeData(nd);
+        if (targets.isEmpty()) return;
+
+        var largeData = BeyondAPI.getLargeLevelData(level);
+        if (isRegisteredNode(level, targets)) return;
+        if (!clearLockedConflicts(level, largeData, targets)) return;
+
+        boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, targets);
+
+        var nd = new NodeData(randomNodeColor(level));
+        for (ChunkPos cp : targets) nd.addChunkPos(cp);
+        boolean nodeChanged = largeData.addNodeData(nd);
+
+        if (zoneChanged || nodeChanged) {
             syncLD(level);
         }
+    }
+
+    private static boolean isRegisteredNode(ServerLevel level, Set<ChunkPos> targets) {
+        NodeData first = null;
+        for (ChunkPos target : targets) {
+            NodeData nodeData = BeyondAPI.findNodeData(level, target);
+            if (nodeData == null) return false;
+            if (first == null) first = nodeData;
+            else if (first.ensureNodeKey() != nodeData.ensureNodeKey()) return false;
+        }
+        return first != null && new HashSet<>(first.getNodeChunkPosList()).equals(targets);
+    }
+
+    private static boolean clearLockedConflicts(ServerLevel level,
+                                                org.galaxy.beyond.api.system.large.BeyondLargeLevelData largeData,
+                                                Set<ChunkPos> targets) {
+        Set<NodeData> conflicts = findConflictingNodes(level, targets);
+        for (NodeData nodeData : conflicts) {
+            if (nodeData.getPhase() != NodePhase.LOCKED) return false;
+        }
+        for (NodeData nodeData : conflicts) {
+            largeData.removePackedZoneChunks(ZoneType.Node_Zone, nodeData.getNodeChunks());
+            largeData.removeNodeData(nodeData.ensureNodeKey());
+        }
+        return true;
+    }
+
+    private static Set<NodeData> findConflictingNodes(ServerLevel level, Set<ChunkPos> targets) {
+        Set<NodeData> conflicts = new HashSet<>();
+        for (ChunkPos target : targets) {
+            NodeData nodeData = BeyondAPI.findNodeData(level, target);
+            if (nodeData != null) conflicts.add(nodeData);
+        }
+        return conflicts;
     }
 
     private static NodeColor randomNodeColor(ServerLevel l) {
@@ -146,9 +174,6 @@ public class ZoneManager implements IZoneManager {
         Set<ChunkPos> seeds = new HashSet<>(list);
         LevelZoneData lzd = getLZD(level);
 
-        // 主动扫描附近的结构点位，预注册节点区域（无需等待区块加载）
-        discoverNearbyStructures(level, seeds);
-
         Set<ChunkPos> nodeChunks = lzd.nodeChunks();
         Set<ChunkPos> uncompleted = getUncompletedNodes(level, nodeChunks);
 
@@ -173,20 +198,6 @@ public class ZoneManager implements IZoneManager {
                     net.minecraft.network.chat.Component.translatable("commands.beyond.activezone.expand.failed"), false);
         } else if (r >= minR) {
             syncLD(level);
-        }
-    }
-
-    /** 在种子区块周围主动扫描节点结构，预注册节点区域（无需等待区块加载）。 */
-    private void discoverNearbyStructures(ServerLevel level, Set<ChunkPos> seeds) {
-        int scanRadius = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
-        for (ChunkPos seed : seeds) {
-            BlockPos center = seed.getMiddleBlockPosition(0);
-            for (int pass = 0; pass < 20; pass++) {
-                var pos = level.findNearestMapStructure(NODE_STRUCTURE_TAG, center, scanRadius, false);
-                if (pos == null) break;
-                addNodeZone(level, pos);
-                center = pos.offset(16, 0, 16);
-            }
         }
     }
 

@@ -79,6 +79,18 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
         return true;
     }
 
+    public boolean removePackedZoneChunks(ZoneType type, Collection<Long> chunks) {
+        List<Long> removed = new ArrayList<>();
+        for (long chunk : chunks) {
+            if (levelZoneData.removePacked(type, chunk)) {
+                removed.add(chunk);
+            }
+        }
+        if (removed.isEmpty()) return false;
+        recordDelta(LargeDataDelta.removeZoneChunks(type, removed));
+        return true;
+    }
+
     public boolean addNodeData(NodeData nodeData) {
         nodeData.ensureNodeKey();
         if (nodeData.getNodeKey() == 0L || findNodeDataByKey(nodeData.getNodeKey()) != null) {
@@ -90,22 +102,12 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
         return true;
     }
 
-    public boolean addOrUpdateNodeData(NodeData nodeData) {
-        nodeData.ensureNodeKey();
-        NodeData existing = findNodeDataByKey(nodeData.getNodeKey());
-        if (existing == null) {
-            return addNodeData(nodeData);
+    public boolean removeNodeData(long nodeKey) {
+        if (nodeDatas.removeIf(nodeData -> nodeData.ensureNodeKey() == nodeKey)) {
+            recordDelta(LargeDataDelta.removeNodeData(nodeKey));
+            return true;
         }
-        List<Long> added = new ArrayList<>();
-        for (long packed : nodeData.getNodeChunks()) {
-            if (existing.addPackedChunkIfAbsent(packed)) {
-                added.add(packed);
-            }
-        }
-        if (!added.isEmpty()) {
-            recordDelta(LargeDataDelta.addNodeChunks(existing.getNodeKey(), added));
-        }
-        return !added.isEmpty();
+        return false;
     }
 
     public boolean updateNodePhase(long nodeKey, NodePhase phase) {
@@ -184,12 +186,14 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
     public void applyDelta(LargeDataDelta delta) {
         switch (delta.type()) {
             case ADD_ZONE_CHUNKS -> levelZoneData.addPackedAll(delta.zoneType(), delta.chunks());
+            case REMOVE_ZONE_CHUNKS -> levelZoneData.removePackedAll(delta.zoneType(), delta.chunks());
             case ADD_NODE_DATA -> {
                 NodeData node = delta.nodeData().copy();
                 if (findNodeDataByKey(node.ensureNodeKey()) == null) {
                     nodeDatas.add(node);
                 }
             }
+            case REMOVE_NODE_DATA -> removeNodeDataNoDelta(delta.nodeKey());
             case UPDATE_NODE_PHASE -> updateNodePhaseByIdNoDelta(delta.nodeKey(), delta.phaseId());
             case UPDATE_NODE_COLOR -> updateNodeColorNoDelta(delta.nodeKey(), delta.nodeColor());
             case ADD_NODE_CHUNKS -> addNodeChunksNoDelta(delta.nodeKey(), delta.chunks());
@@ -237,6 +241,10 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
             if (node.addPackedChunkIfAbsent(chunk)) changed = true;
         }
         return changed;
+    }
+
+    private boolean removeNodeDataNoDelta(long nodeKey) {
+        return nodeDatas.removeIf(nodeData -> nodeData.ensureNodeKey() == nodeKey);
     }
 
     private void recordDelta(LargeDataDelta delta) {

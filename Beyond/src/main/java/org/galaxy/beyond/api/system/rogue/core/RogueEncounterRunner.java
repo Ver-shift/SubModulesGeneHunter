@@ -1,6 +1,5 @@
 package org.galaxy.beyond.api.system.rogue.core;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -8,8 +7,6 @@ import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.event.custom.RogueEncounterEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.*;
-
-import java.util.List;
 
 /**
  * 节点遭遇运行器 —— 管理单个节点的遭遇解析 → 事件步进 → 解锁全流程。
@@ -106,7 +103,7 @@ public class RogueEncounterRunner {
 
         // 最后一个事件 → 解锁
         if (curIdx >= nodeData.eventCount() - 1) {
-            unlockNode();
+            forceUnlockNode();
             return true;
         }
 
@@ -142,7 +139,7 @@ public class RogueEncounterRunner {
     // 解锁 / 通关
     // ============================================================
 
-    private void unlockNode() {
+    public void forceUnlockNode() {
         var encData = nodeData.getEncounterData();
         nodeData.markUnlocked(level);
 
@@ -164,8 +161,10 @@ public class RogueEncounterRunner {
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.node.zone_expanded"), false);
 
-        RogueEncounterEvent.post(new RogueEncounterEvent.Complete(
-                level, encData.getType(), encData.getEvents(), ctx));
+        if (encData != null && encData.getEvents() != null && encData.getEvents().hasEvents()) {
+            RogueEncounterEvent.post(new RogueEncounterEvent.Complete(
+                    level, encData.getType(), encData.getEvents(), ctx));
+        }
 
         if (allDone) {
             ctx.setPhase(level, RoguePhase.PROGRESS_FINISH);

@@ -45,6 +45,8 @@ allprojects {
                 includeGroup "net.blay09.mods"
             }
         }
+        maven { url = "https://cursemaven.com" }
+
 
     }
 }

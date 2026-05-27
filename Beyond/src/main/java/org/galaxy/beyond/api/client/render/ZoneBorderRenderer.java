@@ -10,6 +10,10 @@ public abstract class ZoneBorderRenderer {
 
     public abstract void render(Level level, Camera camera, PoseStack poseStack);
 
+    public void render(ZoneRenderContext context) {
+        render(context.level(), context.camera(), context.poseStack());
+    }
+
     public void invalidate() {
     }
 }

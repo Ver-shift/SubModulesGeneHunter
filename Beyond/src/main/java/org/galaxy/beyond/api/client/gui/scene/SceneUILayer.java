@@ -43,8 +43,8 @@ public class SceneUILayer implements ModularHudLayer {
         var root = new UIElement();
         root.layout(layout -> {
 
-            layout.width(Minecraft.getInstance().getWindow().getScreenWidth());
-            layout.height(Minecraft.getInstance().getWindow().getScreenHeight());
+            layout.widthPercent(100f);
+            layout.heightPercent(100f);
 
             layout.paddingAll(3);
             layout.justifyContent(AlignContent.CENTER);

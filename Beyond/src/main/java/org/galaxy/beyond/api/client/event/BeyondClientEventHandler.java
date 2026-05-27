@@ -11,6 +11,13 @@ import org.galaxy.beyond.api.client.gui.scene.SceneUILayer;
 import org.galaxy.beyond.api.client.render.ActiveZoneBorderRenderer;
 import org.galaxy.beyond.api.client.render.NodeBorderRenderer;
 import org.galaxy.beyond.api.client.render.SafeZoneBorderRenderer;
+import org.galaxy.beyond.api.client.render.ZoneRenderContext;
+import org.galaxy.beyond.api.config.CommonConfig;
+import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
+import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
+import org.galaxy.beyond.api.system.zone.LevelZoneData;
+import org.galaxy.beyond.api.system.zone.ZoneType;
 
 @EventBusSubscriber(value = Dist.CLIENT)
 public class BeyondClientEventHandler {
@@ -49,8 +56,51 @@ public class BeyondClientEventHandler {
         var level = Minecraft.getInstance().level;
         if (level == null) return;
 
-        getSafeZoneRenderer().render(level, event.getCamera(), event.getPoseStack());
-        getNodeBorderRenderer().render(level, event.getCamera(), event.getPoseStack());
-        getActiveZoneRenderer().render(level, event.getCamera(), event.getPoseStack());
+        ZoneRenderContext context = createRenderContext(event, level);
+        if (context == null) return;
+
+        getSafeZoneRenderer().render(context);
+        if (context.playerInSafeZone()) return;
+
+        getNodeBorderRenderer().render(context);
+        getActiveZoneRenderer().render(context);
+    }
+
+    private static ZoneRenderContext createRenderContext(RenderLevelStageEvent event, net.minecraft.world.level.Level level) {
+        try {
+            LevelZoneData data = BeyondAPI.getLevelZoneData(level);
+            if (data == null || !data.hasZones()) return null;
+
+            var player = Minecraft.getInstance().player;
+            var cameraPos = event.getCamera().getPosition();
+            double playerX = player == null ? cameraPos.x : player.getX();
+            double playerZ = player == null ? cameraPos.z : player.getZ();
+            PlayerPhase playerPhase = player == null ? PlayerPhase.LOBBY : BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
+            boolean inGame = BeyondAPI.getRogueData(level).getPhase() != RoguePhase.LOBBY;
+            boolean playerInSafeZone = player != null && data.getZoneType(player.chunkPosition()) == ZoneType.Safe_Zone;
+
+            return new ZoneRenderContext(
+                    level,
+                    data,
+                    event.getCamera(),
+                    event.getPoseStack(),
+                    BeyondAPI.getNodeDatas(level),
+                    CommonConfig.DEBUG_MODE.get(),
+                    inGame && !playerInSafeZone,
+                    playerInSafeZone,
+                    playerX,
+                    playerZ,
+                    CommonConfig.ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS.get() * 16.0,
+                    ZoneRenderContext.nodeCounts(
+                            CommonConfig.VISIBLE_GREEN_NODE_COUNT.get(),
+                            CommonConfig.VISIBLE_ORANGE_NODE_COUNT.get(),
+                            CommonConfig.VISIBLE_RED_NODE_COUNT.get(),
+                            CommonConfig.VISIBLE_BLUE_NODE_COUNT.get()
+                    ),
+                    playerPhase
+            );
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

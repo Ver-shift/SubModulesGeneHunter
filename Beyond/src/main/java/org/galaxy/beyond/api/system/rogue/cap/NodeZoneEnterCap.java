@@ -10,6 +10,7 @@ import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
+import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
 /**
@@ -38,13 +39,17 @@ public class NodeZoneEnterCap extends RogueCap {
         if (nodeData == null) return;
 
         var colorName = nodeData.getColor().name().toLowerCase();
+        var color = Component.translatable("beyond.node.color." + colorName);
+
+        if (BeyondAPI.getRogueData(player.level()).getPhase() == RoguePhase.LOBBY) {
+            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone_not_started", color));
+            return;
+        }
 
         if (nodeData.getPhase() == NodePhase.UNLOCKED) {
-            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone_unlocked",
-                    Component.translatable("beyond.node.color." + colorName)));
+            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone_unlocked", color));
         } else {
-            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone",
-                    Component.translatable("beyond.node.color." + colorName)));
+            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone", color));
         }
     }
 }

@@ -2,6 +2,7 @@ package org.galaxy.beyond.api.client.gui;
 
 import com.lowdragmc.lowdraglib2.configurator.IConfigurable;
 import com.lowdragmc.lowdraglib2.configurator.ui.BooleanConfigurator;
+import com.lowdragmc.lowdraglib2.configurator.ui.ColorConfigurator;
 import com.lowdragmc.lowdraglib2.configurator.ui.ConfiguratorGroup;
 import com.lowdragmc.lowdraglib2.configurator.ui.NumberConfigurator;
 import com.lowdragmc.lowdraglib2.configurator.ui.StringConfigurator;
@@ -117,6 +118,11 @@ public class BeyondConfigScreen {
                         v -> CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.set(v.intValue()), 3, false)
                         .setRange(1, 100).setWheel(1)
         );
+        grp.addConfigurator(
+                new NumberConfigurator("beyond.config.field.border_visible_chunks", CommonConfig.ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS::get,
+                        v -> CommonConfig.ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS.set(v.intValue()), 3, false)
+                        .setRange(0, 64).setWheel(1)
+        );
         return grp;
     }
 
@@ -136,6 +142,42 @@ public class BeyondConfigScreen {
                 new NumberConfigurator("beyond.config.field.red_weight", CommonConfig.NODE_COLOR_RED_WEIGHT::get,
                         v -> CommonConfig.NODE_COLOR_RED_WEIGHT.set(v.intValue()), 20, false)
                         .setRange(0, 1000).setWheel(1)
+        );
+        grp.addConfigurator(
+                new NumberConfigurator("beyond.config.field.visible_green_count", CommonConfig.VISIBLE_GREEN_NODE_COUNT::get,
+                        v -> CommonConfig.VISIBLE_GREEN_NODE_COUNT.set(v.intValue()), 1, false)
+                        .setRange(0, 64).setWheel(1)
+        );
+        grp.addConfigurator(
+                new NumberConfigurator("beyond.config.field.visible_orange_count", CommonConfig.VISIBLE_ORANGE_NODE_COUNT::get,
+                        v -> CommonConfig.VISIBLE_ORANGE_NODE_COUNT.set(v.intValue()), 1, false)
+                        .setRange(0, 64).setWheel(1)
+        );
+        grp.addConfigurator(
+                new NumberConfigurator("beyond.config.field.visible_red_count", CommonConfig.VISIBLE_RED_NODE_COUNT::get,
+                        v -> CommonConfig.VISIBLE_RED_NODE_COUNT.set(v.intValue()), 1, false)
+                        .setRange(0, 64).setWheel(1)
+        );
+        grp.addConfigurator(
+                new NumberConfigurator("beyond.config.field.visible_blue_count", CommonConfig.VISIBLE_BLUE_NODE_COUNT::get,
+                        v -> CommonConfig.VISIBLE_BLUE_NODE_COUNT.set(v.intValue()), 1, false)
+                        .setRange(0, 64).setWheel(1)
+        );
+        grp.addConfigurator(
+                new ColorConfigurator("beyond.config.field.green_render_color", CommonConfig.GREEN_NODE_RENDER_COLOR::get,
+                        CommonConfig.GREEN_NODE_RENDER_COLOR::set, 0x8C00FF00, false)
+        );
+        grp.addConfigurator(
+                new ColorConfigurator("beyond.config.field.orange_render_color", CommonConfig.ORANGE_NODE_RENDER_COLOR::get,
+                        CommonConfig.ORANGE_NODE_RENDER_COLOR::set, 0x8CFFA500, false)
+        );
+        grp.addConfigurator(
+                new ColorConfigurator("beyond.config.field.red_render_color", CommonConfig.RED_NODE_RENDER_COLOR::get,
+                        CommonConfig.RED_NODE_RENDER_COLOR::set, 0x8CFF0000, false)
+        );
+        grp.addConfigurator(
+                new ColorConfigurator("beyond.config.field.blue_render_color", CommonConfig.BLUE_NODE_RENDER_COLOR::get,
+                        CommonConfig.BLUE_NODE_RENDER_COLOR::set, 0x8C0000FF, false)
         );
         return grp;
     }

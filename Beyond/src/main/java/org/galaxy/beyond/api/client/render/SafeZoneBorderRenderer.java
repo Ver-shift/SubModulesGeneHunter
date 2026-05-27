@@ -45,17 +45,42 @@ public class SafeZoneBorderRenderer extends ZoneBorderRenderer {
         );
     }
 
+    @Override
+    public void render(ZoneRenderContext context) {
+        LevelZoneData data = context.data();
+        if (data == null || !data.hasZones()) return;
+
+        Set<ChunkPos> safeChunks = data.safeChunks();
+        if (safeChunks.isEmpty()) return;
+
+        ZoneHelper.Bounds bounds = ZoneHelper.boundsOf(safeChunks);
+        int[] color = colorOf(context.playerPhase());
+        RenderHelper.renderBorder(
+                bounds.minX() * 16.0,
+                bounds.minZ() * 16.0,
+                (bounds.maxX() + 1) * 16.0,
+                (bounds.maxZ() + 1) * 16.0,
+                color[0], color[1], color[2],
+                BOTTOM_ALPHA, TOP_ALPHA,
+                context.camera(), context.poseStack()
+        );
+    }
+
     private static int[] currentColor() {
         var player = Minecraft.getInstance().player;
         if (player == null) return new int[]{BLUE_R, BLUE_G, BLUE_B};
 
         try {
-            PlayerPhase phase = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
-            if (phase == PlayerPhase.PRE_ROGUE) return new int[]{ORANGE_R, ORANGE_G, ORANGE_B};
-            if (phase != PlayerPhase.LOBBY) return new int[]{RED_R, RED_G, RED_B};
+            return colorOf(BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase());
         } catch (Exception ignored) {
         }
 
+        return new int[]{BLUE_R, BLUE_G, BLUE_B};
+    }
+
+    private static int[] colorOf(PlayerPhase phase) {
+        if (phase == PlayerPhase.PRE_ROGUE) return new int[]{ORANGE_R, ORANGE_G, ORANGE_B};
+        if (phase != null && phase != PlayerPhase.LOBBY) return new int[]{RED_R, RED_G, RED_B};
         return new int[]{BLUE_R, BLUE_G, BLUE_B};
     }
 }

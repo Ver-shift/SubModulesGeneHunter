@@ -3,6 +3,8 @@ package org.galaxy.beyond.comand;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -10,13 +12,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueData;
+import org.galaxy.beyond.api.system.rogue.RogueNodeData;
+import org.galaxy.beyond.api.system.rogue.core.NodePhase;
+import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
+import org.galaxy.beyond.api.system.rogue.core.RogueEncounterRunner;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class BeyondCommand {
 
@@ -79,7 +85,6 @@ public class BeyondCommand {
                                 )
                         )
                         .then(Commands.literal("config")
-                                // ---- currentProgress ----
                                 .then(Commands.literal("currentProgress")
                                         .then(Commands.argument("value", StringArgumentType.string())
                                                 .suggests((ctx, builder) -> {
@@ -87,7 +92,7 @@ public class BeyondCommand {
                                                     if (globalData == null) return builder.buildFuture();
                                                     var def = globalData.getRogueDefinition();
                                                     if (def == null) return builder.buildFuture();
-                                                    def.getRogueProgress().keySet().forEach(k -> builder.suggest("\"" + k.toString() + "\""));
+                                                    def.getRogueProgress().keySet().forEach(k -> builder.suggest("\"" + k + "\""));
                                                     return builder.buildFuture();
                                                 })
                                                 .executes(ctx -> {
@@ -107,104 +112,41 @@ public class BeyondCommand {
                                                 })
                                         )
                                         .executes(ctx -> {
-                                                    var id = getRogueData().getProgressId();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.get.currentProgress",
-                                                                    id != null ? id.toString() : "-"),
-                                                            false);
-                                                    return 1;
+                                            var id = getRogueData().getProgressId();
+                                            ctx.getSource().sendSuccess(
+                                                    () -> Component.translatable("commands.beyond.config.get.currentProgress",
+                                                            id != null ? id.toString() : "-"),
+                                                    false);
+                                            return 1;
                                         })
                                 )
-                                // ---- playerList ----
-                                .then(Commands.literal("playerList")
-                                        .then(Commands.literal("add")
-                                                .then(Commands.argument("player", StringArgumentType.word())
-                                                        .suggests((ctx, builder) -> {
-                                                            for (var p : ctx.getSource().getServer().getPlayerList().getPlayers()) {
-                                                                builder.suggest(p.getName().getString());
-                                                            }
-                                                            return builder.buildFuture();
-                                                        })
-                                                        .executes(ctx -> {
-                                                            String name = StringArgumentType.getString(ctx, "player");
-                                                            var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(name);
-                                                            if (player == null) {
-                                                                ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.playerList.not_found", name));
-                                                                return 0;
-                                                            }
-                                                            boolean added = getRogueData().addRoguePlayer(player.getUUID());
-                                                            if (added) syncRogueData();
-                                                            ctx.getSource().sendSuccess(
-                                                                    () -> Component.translatable(added
-                                                                                    ? "commands.beyond.config.playerList.added"
-                                                                                    : "commands.beyond.config.playerList.already_exists",
-                                                                            name),
-                                                                    true);
-                                                            return 1;
-                                                        })
-                                                )
-                                        )
-                                        .then(Commands.literal("remove")
-                                                .then(Commands.argument("player", StringArgumentType.word())
-                                                        .suggests((ctx, builder) -> {
-                                                            for (UUID id : getRogueData().getRoguePlayerIds()) {
-                                                                builder.suggest(id.toString());
-                                                            }
-                                                            return builder.buildFuture();
-                                                        })
-                                                        .executes(ctx -> {
-                                                            String input = StringArgumentType.getString(ctx, "player");
-                                                            UUID id;
-                                                            try { id = UUID.fromString(input); }
-                                                            catch (IllegalArgumentException e) {
-                                                                var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(input);
-                                                                if (player == null) {
-                                                                    ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.playerList.not_found", input));
-                                                                    return 0;
-                                                                }
-                                                                id = player.getUUID();
-                                                            }
-                                                            boolean removed = getRogueData().removeRoguePlayer(id);
-                                                            if (removed) syncRogueData();
-                                                            ctx.getSource().sendSuccess(
-                                                                    () -> Component.translatable(removed
-                                                                                    ? "commands.beyond.config.playerList.removed"
-                                                                                    : "commands.beyond.config.playerList.not_in_list",
-                                                                            input),
-                                                                    true);
-                                                            return 1;
-                                                        })
-                                                )
-                                        )
-                                        .then(Commands.literal("list")
+                        )
+                        .then(Commands.literal("playerPhase")
+                                .then(Commands.literal("get")
+                                        .then(Commands.argument("player", StringArgumentType.word())
+                                                .suggests((ctx, builder) -> suggestOnlinePlayers(ctx.getSource(), builder))
                                                 .executes(ctx -> {
-                                                    Set<UUID> ids = getRogueData().getRoguePlayerIds();
-                                                    if (ids.isEmpty()) {
-                                                        ctx.getSource().sendSuccess(
-                                                                () -> Component.translatable("commands.beyond.config.playerList.empty"),
-                                                                false);
-                                                        return 1;
+                                                    String name = StringArgumentType.getString(ctx, "player");
+                                                    var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(name);
+                                                    if (player == null) {
+                                                        ctx.getSource().sendFailure(Component.translatable("commands.beyond.playerPhase.not_found", name));
+                                                        return 0;
                                                     }
-                                                    StringBuilder sb = new StringBuilder();
-                                                    for (UUID id : ids) {
-                                                        if (!sb.isEmpty()) sb.append(", ");
-                                                        sb.append(id.toString());
-                                                    }
-                                                    String list = sb.toString();
+                                                    PlayerPhase phase = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
                                                     ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.playerList.list", list),
+                                                            () -> Component.translatable("commands.beyond.playerPhase.get", name, phase.name()),
                                                             false);
                                                     return 1;
                                                 })
                                         )
                                 )
-                                // ---- safeZoneList ----
-                                .then(Commands.literal("safeZoneList")
-                                        .then(Commands.literal("add")
-                                                .then(Commands.argument("player", StringArgumentType.word())
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("player", StringArgumentType.word())
+                                                .suggests((ctx, builder) -> suggestOnlinePlayers(ctx.getSource(), builder))
+                                                .then(Commands.argument("phase", StringArgumentType.word())
                                                         .suggests((ctx, builder) -> {
-                                                            for (var p : ctx.getSource().getServer().getPlayerList().getPlayers()) {
-                                                                builder.suggest(p.getName().getString());
+                                                            for (PlayerPhase phase : PlayerPhase.values()) {
+                                                                builder.suggest(phase.name());
                                                             }
                                                             return builder.buildFuture();
                                                         })
@@ -212,77 +154,68 @@ public class BeyondCommand {
                                                             String name = StringArgumentType.getString(ctx, "player");
                                                             var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(name);
                                                             if (player == null) {
-                                                                ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.safeZoneList.not_found", name));
+                                                                ctx.getSource().sendFailure(Component.translatable("commands.beyond.playerPhase.not_found", name));
                                                                 return 0;
                                                             }
-                                                            boolean added = getRogueData().addSafeZonePlayer(player.getUUID());
-                                                            if (added) syncRogueData();
+                                                            String value = StringArgumentType.getString(ctx, "phase");
+                                                            PlayerPhase phase = parsePlayerPhase(value);
+                                                            if (phase == null) {
+                                                                ctx.getSource().sendFailure(Component.translatable("commands.beyond.playerPhase.invalid", value));
+                                                                return 0;
+                                                            }
+                                                            BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().setPhase(phase);
+                                                            BeyondAPI.syncPlayerData(player);
                                                             ctx.getSource().sendSuccess(
-                                                                    () -> Component.translatable(added
-                                                                                    ? "commands.beyond.config.safeZoneList.added"
-                                                                                    : "commands.beyond.config.safeZoneList.already_exists",
-                                                                            name),
+                                                                    () -> Component.translatable("commands.beyond.playerPhase.set", name, phase.name()),
                                                                     true);
                                                             return 1;
                                                         })
                                                 )
-                                        )
-                                        .then(Commands.literal("remove")
-                                                .then(Commands.argument("player", StringArgumentType.word())
-                                                        .suggests((ctx, builder) -> {
-                                                            for (UUID id : getRogueData().getSafeZonePlayerIds()) {
-                                                                builder.suggest(id.toString());
-                                                            }
-                                                            return builder.buildFuture();
-                                                        })
-                                                        .executes(ctx -> {
-                                                            String input = StringArgumentType.getString(ctx, "player");
-                                                            UUID id;
-                                                            try { id = UUID.fromString(input); }
-                                                            catch (IllegalArgumentException e) {
-                                                                var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(input);
-                                                                if (player == null) {
-                                                                    ctx.getSource().sendFailure(Component.translatable("commands.beyond.config.safeZoneList.not_found", input));
-                                                                    return 0;
-                                                                }
-                                                                id = player.getUUID();
-                                                            }
-                                                            boolean removed = getRogueData().removeSafeZonePlayer(id);
-                                                            if (removed) syncRogueData();
-                                                            ctx.getSource().sendSuccess(
-                                                                    () -> Component.translatable(removed
-                                                                                    ? "commands.beyond.config.safeZoneList.removed"
-                                                                                    : "commands.beyond.config.safeZoneList.not_in_list",
-                                                                            input),
-                                                                    true);
-                                                            return 1;
-                                                        })
-                                                )
-                                        )
-                                        .then(Commands.literal("list")
-                                                .executes(ctx -> {
-                                                    Set<UUID> ids = getRogueData().getSafeZonePlayerIds();
-                                                    if (ids.isEmpty()) {
-                                                        ctx.getSource().sendSuccess(
-                                                                () -> Component.translatable("commands.beyond.config.safeZoneList.empty"),
-                                                                false);
-                                                        return 1;
-                                                    }
-                                                    StringBuilder sb = new StringBuilder();
-                                                    for (UUID id : ids) {
-                                                        if (!sb.isEmpty()) sb.append(", ");
-                                                        sb.append(id.toString());
-                                                    }
-                                                    String list = sb.toString();
-                                                    ctx.getSource().sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.config.safeZoneList.list", list),
-                                                            false);
-                                                    return 1;
-                                                })
                                         )
                                 )
                         )
+                        .then(Commands.literal("unlockCurrentNode")
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    ServerLevel level = (ServerLevel) player.level();
+                                    ChunkPos playerChunk = new ChunkPos(player.blockPosition());
+                                    var nodeData = BeyondAPI.findNodeData(level, playerChunk);
+                                    if (nodeData == null) {
+                                        ctx.getSource().sendFailure(Component.translatable("commands.beyond.unlockCurrentNode.not_in_node"));
+                                        return 0;
+                                    }
+                                    if (nodeData.getPhase() == NodePhase.UNLOCKED) {
+                                        ctx.getSource().sendFailure(Component.translatable("commands.beyond.unlockCurrentNode.already_unlocked"));
+                                        return 0;
+                                    }
+
+                                    RogueNodeData rogueNodeData = new RogueNodeData();
+                                    rogueNodeData.setNodeData(nodeData);
+                                    rogueNodeData.setNodeChunk(playerChunk);
+                                    BeyondAPI.getRogueData(level).setRogueNodeData(rogueNodeData);
+
+                                    new RogueEncounterRunner(level, new RogueContext(), rogueNodeData).forceUnlockNode();
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.translatable("commands.beyond.unlockCurrentNode.success"),
+                                            true);
+                                    return 1;
+                                })
+                        )
         );
+    }
+
+    private static CompletableFuture<Suggestions> suggestOnlinePlayers(CommandSourceStack source, SuggestionsBuilder builder) {
+        for (var player : source.getServer().getPlayerList().getPlayers()) {
+            builder.suggest(player.getName().getString());
+        }
+        return builder.buildFuture();
+    }
+
+    private static PlayerPhase parsePlayerPhase(String value) {
+        for (PlayerPhase phase : PlayerPhase.values()) {
+            if (phase.name().equalsIgnoreCase(value)) return phase;
+        }
+        return null;
     }
 
     private static RogueData getRogueData() {

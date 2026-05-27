@@ -143,7 +143,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
             case Safe_Zone -> 1;
             case Node_Zone -> 2;
             case Active_Zone -> 3;
-            default -> 0;
+            case Empty -> 4;
         };
         if (level > 0) {
             player.addEffect(new MobEffectInstance(

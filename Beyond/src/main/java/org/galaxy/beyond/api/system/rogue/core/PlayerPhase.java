@@ -9,6 +9,7 @@ import org.galaxy.beyond.Beyond;
 public enum PlayerPhase implements Phase {
 
     LOBBY("lobby"),
+    PREPARE_ROGUE("prepare_rogue"),
     PRE_ROGUE("pre_rogue"),
     ON_PROGRESS("on_progress"),
     PRE_NODE("pre_node"),

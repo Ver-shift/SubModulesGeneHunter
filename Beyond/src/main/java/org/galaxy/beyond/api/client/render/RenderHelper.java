@@ -67,6 +67,18 @@ public final class RenderHelper {
         poseStack.popPose();
     }
 
+    public static void renderBorder(double minX, double minZ, double maxX, double maxZ,
+                                    int argb, Camera camera, PoseStack poseStack) {
+        int alpha = alpha(argb);
+        if (alpha <= 0) return;
+        renderBorder(
+                minX, minZ, maxX, maxZ,
+                red(argb), green(argb), blue(argb),
+                alpha, fadeTopAlpha(alpha),
+                camera, poseStack
+        );
+    }
+
     public static void renderBorderSegments(List<BorderSegment> segments,
                                             int r, int g, int b, int bottomAlpha, int topAlpha,
                                             Camera camera, PoseStack poseStack) {
@@ -128,4 +140,27 @@ public final class RenderHelper {
             return Math.sqrt(dx * dx + dz * dz);
         }
     }
+
+    public static int alpha(int argb) {
+        return argb >>> 24;
+    }
+
+    public static int red(int argb) {
+        return (argb >> 16) & 255;
+    }
+
+    public static int green(int argb) {
+        return (argb >> 8) & 255;
+    }
+
+    public static int blue(int argb) {
+        return argb & 255;
+    }
+
+    private static int fadeTopAlpha(int bottomAlpha) {
+        return Math.max(0, Math.min(255, bottomAlpha * TOP_FADE_ALPHA / BOTTOM_FADE_ALPHA));
+    }
+
+    private static final int BOTTOM_FADE_ALPHA = 140;
+    private static final int TOP_FADE_ALPHA = 30;
 }

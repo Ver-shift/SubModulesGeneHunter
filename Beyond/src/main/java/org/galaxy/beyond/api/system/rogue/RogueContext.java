@@ -6,7 +6,8 @@ import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class RogueContext implements IRogueContext {
@@ -57,23 +58,20 @@ public class RogueContext implements IRogueContext {
 
     @Override
     public List<ServerPlayer> playersInRogue(ServerLevel level) {
-        var rogueData = getRogueData(level);
-        var playerList = level.getServer().getPlayerList();
         List<ServerPlayer> result = new ArrayList<>();
-        for (UUID id : rogueData.getRoguePlayerIds()) {
-            ServerPlayer p = playerList.getPlayer(id);
-            if (p != null) result.add(p);
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            if (player.level() != level) continue;
+            if (getPlayerPhase(player) != PlayerPhase.LOBBY) result.add(player);
         }
         return result;
     }
 
     @Override
     public boolean allPlayersMatchPhase(ServerLevel level, PlayerPhase phase) {
-        var ids = getRogueData(level).getRoguePlayerIds();
-        if (ids.isEmpty()) return false;
-        for (UUID uuid : ids) {
-            ServerPlayer p = level.getServer().getPlayerList().getPlayer(uuid);
-            if (p == null || getPlayerPhase(p) != phase) return false;
+        var players = playersInRogue(level);
+        if (players.isEmpty()) return false;
+        for (ServerPlayer player : players) {
+            if (getPlayerPhase(player) != phase) return false;
         }
         return true;
     }

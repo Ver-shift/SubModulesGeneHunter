@@ -31,6 +31,8 @@ public class CommonConfig {
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS;
     /** 节点拓展后至少需要扫描到的其他未完成节点连接数 */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_CONNECTIONS;
+    /** 玩家距离活动区边界多少区块内才显示边界 */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS;
 
     /** 节点颜色权重：绿色 */
     public static final ModConfigSpec.IntValue NODE_COLOR_GREEN_WEIGHT;
@@ -38,6 +40,22 @@ public class CommonConfig {
     public static final ModConfigSpec.IntValue NODE_COLOR_ORANGE_WEIGHT;
     /** 节点颜色权重：红色 */
     public static final ModConfigSpec.IntValue NODE_COLOR_RED_WEIGHT;
+    /** 非安全区内最多显示多少个最近的绿色节点 */
+    public static final ModConfigSpec.IntValue VISIBLE_GREEN_NODE_COUNT;
+    /** 非安全区内最多显示多少个最近的橙色节点 */
+    public static final ModConfigSpec.IntValue VISIBLE_ORANGE_NODE_COUNT;
+    /** 非安全区内最多显示多少个最近的红色节点 */
+    public static final ModConfigSpec.IntValue VISIBLE_RED_NODE_COUNT;
+    /** 非安全区内最多显示多少个最近的蓝色已解锁节点 */
+    public static final ModConfigSpec.IntValue VISIBLE_BLUE_NODE_COUNT;
+    /** 绿色节点实际渲染 ARGB 颜色 */
+    public static final ModConfigSpec.IntValue GREEN_NODE_RENDER_COLOR;
+    /** 橙色节点实际渲染 ARGB 颜色 */
+    public static final ModConfigSpec.IntValue ORANGE_NODE_RENDER_COLOR;
+    /** 红色节点实际渲染 ARGB 颜色 */
+    public static final ModConfigSpec.IntValue RED_NODE_RENDER_COLOR;
+    /** 蓝色已解锁节点实际渲染 ARGB 颜色 */
+    public static final ModConfigSpec.IntValue BLUE_NODE_RENDER_COLOR;
 
     /** 玩家离开安全区的最小冷却时间（秒），防止频繁出入触发游戏入口流程 */
     public static final ModConfigSpec.IntValue LOBBY_COOLDOWN_SECONDS;
@@ -74,6 +92,9 @@ public class CommonConfig {
         ACTIVE_ZONE_MIN_CONNECTIONS = BUILDER
                 .comment("节点扩张后至少需要扫描到的其他未完成节点连接数，防止玩家卡关。")
                 .defineInRange("minConnections", 3, 1, 100);
+        ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS = BUILDER
+                .comment("玩家距离活动区边界多少区块内才显示边界。")
+                .defineInRange("borderVisibleChunks", 3, 0, 64);
         BUILDER.pop();
 
         BUILDER.comment("节点颜色权重配置").push("node_color");
@@ -86,6 +107,30 @@ public class CommonConfig {
         NODE_COLOR_RED_WEIGHT = BUILDER
                 .comment("红色节点的生成权重（默认 20）")
                 .defineInRange("redWeight", 20, 0, 1000);
+        VISIBLE_GREEN_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近绿色节点数量。")
+                .defineInRange("visibleGreenCount", 1, 0, 64);
+        VISIBLE_ORANGE_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近橙色节点数量。")
+                .defineInRange("visibleOrangeCount", 1, 0, 64);
+        VISIBLE_RED_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近红色节点数量。")
+                .defineInRange("visibleRedCount", 1, 0, 64);
+        VISIBLE_BLUE_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近蓝色已解锁节点数量。")
+                .defineInRange("visibleBlueCount", 1, 0, 64);
+        GREEN_NODE_RENDER_COLOR = BUILDER
+                .comment("绿色节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("greenRenderColor", 0x8C00FF00, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        ORANGE_NODE_RENDER_COLOR = BUILDER
+                .comment("橙色节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("orangeRenderColor", 0x8CFFA500, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        RED_NODE_RENDER_COLOR = BUILDER
+                .comment("红色节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("redRenderColor", 0x8CFF0000, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        BLUE_NODE_RENDER_COLOR = BUILDER
+                .comment("蓝色已解锁节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("blueRenderColor", 0x8C0000FF, Integer.MIN_VALUE, Integer.MAX_VALUE);
         BUILDER.pop();
 
         BUILDER.comment("大厅/准备阶段配置").push("lobby");

@@ -9,12 +9,15 @@ import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.lowdragmc.lowdraglib2.math.interpolate.Eases;
 import com.lowdragmc.lowdraglib2.syncdata.ISubscription;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.vfyjxf.taffy.style.FlexDirection;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
 import org.galaxy.beyond.api.system.rogue.SceneType;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,11 +102,13 @@ public class SceneLine extends UIElement{
         private final SceneType scene;
         private final int index;
         private final ProgressType progressType;
+        private final ItemStack itemStack;
 
         private SceneEntry(SceneType scene,int index,ProgressType progressType) {
             this.scene = scene;
             this.index = index;
             this.progressType = progressType;
+            this.itemStack = itemFor(scene);
 
             this.layout(layout -> {
                 layout.widthPercent(100);
@@ -127,7 +132,27 @@ public class SceneLine extends UIElement{
             if (progressType.getScenesIndex() == index) {
                 context.drawTexture(new ColorRectTexture(0x80FFFFFF), (int) getContentX(), (int) getContentY(), getContentWidth(), getContentHeight());
             }
+            drawSceneItem(context);
             super.drawBackgroundAdditional(context);
+        }
+
+        private void drawSceneItem(GUIContext context) {
+            if (itemStack.isEmpty()) {
+                return;
+            }
+
+            int x = (int) (getContentX() + (getContentWidth() - 16) / 2f);
+            int y = (int) (getContentY() + (getContentHeight() - 16) / 2f);
+
+            context.pose.pushPose();
+            context.pose.translate(x, y, 232);
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthMask(true);
+            context.graphics.renderItem(itemStack, 0, 0);
+            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+            RenderSystem.depthMask(false);
+            RenderSystem.disableDepthTest();
+            context.pose.popPose();
         }
 
         private static ItemStack itemFor(SceneType scene) {

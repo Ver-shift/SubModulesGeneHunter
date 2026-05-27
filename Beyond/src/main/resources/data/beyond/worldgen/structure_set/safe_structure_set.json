@@ -3,10 +3,6 @@
     {
       "structure": "beyond:safe_structure",
       "weight": 1
-    },
-    {
-      "structure": "beyond:pillager_camp",
-      "weight": 20
     }
   ],
   "placement": {

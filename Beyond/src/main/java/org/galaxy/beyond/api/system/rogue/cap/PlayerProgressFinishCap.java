@@ -132,10 +132,7 @@ public class PlayerProgressFinishCap extends RogueCap {
         for (var p : players) {
             p.teleportTo(activeLevel, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
                     p.getYRot(), p.getXRot());
-            var rogueData = BeyondAPI.getRogueData(activeLevel);
-            rogueData.removeRoguePlayer(p.getUUID());
         }
-        BeyondAPI.syncGlobalData(activeLevel);
         activeLevel.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.settle.teleport_success"), false);
     }

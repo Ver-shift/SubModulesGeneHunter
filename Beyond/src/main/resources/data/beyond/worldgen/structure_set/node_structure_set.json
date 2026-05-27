@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "beyond:smal_castle",
+      "weight": 80
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 514229371,
+    "spacing": 8,
+    "separation": 3
+  }
+}

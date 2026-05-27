@@ -95,6 +95,10 @@ dependencies {
     //lidlib 2 给这里也整上，毕竟很好用
     implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${dep_ldlib2_version}:all")
 
+    //永恒传送门（刷怪必备）
+    implementation ("curse.maven:gateways-to-eternity-417802:6926284")
+    implementation "curse.maven:apothic-attributes-898963:7445079"
+    implementation "curse.maven:placebo-283644:6926281"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

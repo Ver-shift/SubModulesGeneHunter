@@ -1,6 +1,5 @@
 package org.galaxy.gene_hunter;
 
-import com.pz.beyond.Beyond;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;

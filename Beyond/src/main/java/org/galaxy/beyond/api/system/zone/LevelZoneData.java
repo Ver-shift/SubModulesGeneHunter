@@ -103,6 +103,29 @@ public class LevelZoneData implements IPersistedSerializable {
         return changed;
     }
 
+    public boolean removePacked(ZoneType type, long packed) {
+        return switch (type) {
+            case Safe_Zone -> removePacked(packed, safeZonesPacked, safe());
+            case Node_Zone -> removePacked(packed, nodeZonesPacked, node());
+            case Active_Zone -> removePacked(packed, activeZonesPacked, act());
+            case Empty -> false;
+        };
+    }
+
+    public boolean removePackedAll(ZoneType type, Collection<Long> packedChunks) {
+        boolean changed = false;
+        for (long packed : packedChunks) {
+            if (removePacked(type, packed)) changed = true;
+        }
+        return changed;
+    }
+
+    private static boolean removePacked(long packed, List<Long> list, Set<Long> set) {
+        if (!set.remove(packed)) return false;
+        list.remove(packed);
+        return true;
+    }
+
     public List<Long> getPacked(ZoneType type) {
         return switch (type) {
             case Safe_Zone -> List.copyOf(safe());

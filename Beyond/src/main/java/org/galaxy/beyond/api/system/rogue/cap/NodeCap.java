@@ -11,15 +11,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.*;
 import org.galaxy.beyond.api.system.rogue.core.*;
-import org.galaxy.beyond.api.system.zone.ZoneHelper;
-import org.galaxy.beyond.api.system.zone.ZoneType;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 节点交互 Cap —— 入口分发，具体步进逻辑委托给 {@link RogueEncounterRunner}。
@@ -103,21 +97,8 @@ public class NodeCap extends RogueCap {
             }
         }
 
-        List<ChunkPos> cluster = findNodeCluster(level, clickedChunk);
-        NodeData nodeData = null;
-        for (ChunkPos c : cluster) {
-            nodeData = BeyondAPI.findNodeData(level, c);
-            if (nodeData != null) break;
-        }
-        if (nodeData == null) {
-            nodeData = new NodeData(randomNodeColor(level));
-            cluster.forEach(nodeData::addChunkPos);
-            BeyondAPI.getLargeLevelData(level).addNodeData(nodeData);
-        } else {
-            NodeData updated = nodeData.copy();
-            cluster.forEach(updated::addChunkPosIfAbsent);
-            BeyondAPI.getLargeLevelData(level).addOrUpdateNodeData(updated);
-        }
+        NodeData nodeData = BeyondAPI.findNodeData(level, clickedChunk);
+        if (nodeData == null) return new RogueNodeData();
 
         RogueNodeData next = new RogueNodeData();
         next.setNodeData(nodeData);
@@ -127,32 +108,8 @@ public class NodeCap extends RogueCap {
         return next;
     }
 
-    private static List<ChunkPos> findNodeCluster(ServerLevel level, ChunkPos seed) {
-        var entries = BeyondAPI.getLevelZoneData(level).getZoneEntries();
-        var nodeChunks = entries.stream()
-                .filter(e -> e.getValue() == ZoneType.Node_Zone)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-        for (var comp : ZoneHelper.findConnectedComponents(nodeChunks)) {
-            if (comp.contains(seed)) return new ArrayList<>(comp);
-        }
-        return new ArrayList<>(List.of(seed));
-    }
-
     private static boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getRogueData(player.level())
-                .getRoguePlayerIds().contains(player.getUUID());
+        return BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase() != PlayerPhase.LOBBY;
     }
 
-    private static NodeColor randomNodeColor(ServerLevel level) {
-        int g = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_GREEN_WEIGHT.get();
-        int o = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_ORANGE_WEIGHT.get();
-        int r = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_RED_WEIGHT.get();
-        int total = g + o + r;
-        if (total <= 0) return NodeColor.ORANGE;
-        int roll = level.getRandom().nextInt(total);
-        if (roll < g) return NodeColor.GREEN;
-        if (roll < g + o) return NodeColor.ORANGE;
-        return NodeColor.RED;
-    }
 }
