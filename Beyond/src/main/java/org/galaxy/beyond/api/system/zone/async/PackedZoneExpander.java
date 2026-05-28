@@ -1,5 +1,7 @@
 package org.galaxy.beyond.api.system.zone.async;
 
+import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -163,13 +165,13 @@ public class PackedZoneExpander {
         Set<Long> result = new LinkedHashSet<>();
         long radiusSqr = (long) radius * radius;
         for (long seed : seeds) {
-            int centerX = x(seed);
-            int centerZ = z(seed);
+            int centerX = PackedChunkPos.x(seed);
+            int centerZ = PackedChunkPos.z(seed);
             for (int dx = -radius; dx <= radius; dx++) {
                 long dxSqr = (long) dx * dx;
                 int dzMax = (int) Math.sqrt(radiusSqr - dxSqr);
                 for (int dz = -dzMax; dz <= dzMax; dz++) {
-                    result.add(pack(centerX + dx, centerZ + dz));
+                    result.add(PackedChunkPos.pack(centerX + dx, centerZ + dz));
                 }
             }
         }
@@ -177,28 +179,28 @@ public class PackedZoneExpander {
     }
 
     private static List<Long> neighbors4(long chunk) {
-        int x = x(chunk);
-        int z = z(chunk);
+        int x = PackedChunkPos.x(chunk);
+        int z = PackedChunkPos.z(chunk);
         return List.of(
-                pack(x + 1, z),
-                pack(x - 1, z),
-                pack(x, z + 1),
-                pack(x, z - 1)
+                PackedChunkPos.pack(x + 1, z),
+                PackedChunkPos.pack(x - 1, z),
+                PackedChunkPos.pack(x, z + 1),
+                PackedChunkPos.pack(x, z - 1)
         );
     }
 
     private static List<Long> neighbors8(long chunk) {
-        int x = x(chunk);
-        int z = z(chunk);
+        int x = PackedChunkPos.x(chunk);
+        int z = PackedChunkPos.z(chunk);
         return List.of(
-                pack(x + 1, z),
-                pack(x - 1, z),
-                pack(x, z + 1),
-                pack(x, z - 1),
-                pack(x + 1, z + 1),
-                pack(x - 1, z - 1),
-                pack(x + 1, z - 1),
-                pack(x - 1, z + 1)
+                PackedChunkPos.pack(x + 1, z),
+                PackedChunkPos.pack(x - 1, z),
+                PackedChunkPos.pack(x, z + 1),
+                PackedChunkPos.pack(x, z - 1),
+                PackedChunkPos.pack(x + 1, z + 1),
+                PackedChunkPos.pack(x - 1, z - 1),
+                PackedChunkPos.pack(x + 1, z - 1),
+                PackedChunkPos.pack(x - 1, z + 1)
         );
     }
     private static boolean hasAny(Set<Long> safe, Set<Long> node, Set<Long> active, long chunk) {
@@ -206,26 +208,14 @@ public class PackedZoneExpander {
     }
 
     private static int minDistanceToSeeds(Set<Long> seeds, long chunk) {
-        int chunkX = x(chunk);
-        int chunkZ = z(chunk);
+        int chunkX = PackedChunkPos.x(chunk);
+        int chunkZ = PackedChunkPos.z(chunk);
         double minDistance = Double.MAX_VALUE;
         for (long seed : seeds) {
-            double dx = chunkX - x(seed);
-            double dz = chunkZ - z(seed);
+            double dx = chunkX - PackedChunkPos.x(seed);
+            double dz = chunkZ - PackedChunkPos.z(seed);
             minDistance = Math.min(minDistance, Math.sqrt(dx * dx + dz * dz));
         }
         return (int) Math.ceil(minDistance);
-    }
-
-    public static long pack(int x, int z) {
-        return ((long) x & 0xFFFFFFFFL) | (((long) z & 0xFFFFFFFFL) << 32);
-    }
-
-    public static int x(long packed) {
-        return (int) (packed & 0xFFFFFFFFL);
-    }
-
-    public static int z(long packed) {
-        return (int) ((packed >> 32) & 0xFFFFFFFFL);
     }
 }
