@@ -12,7 +12,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.config.CommonConfig;
-import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
@@ -27,6 +26,9 @@ public class ZoneManager implements IZoneManager {
 
     private final ZoneWriter writer = new ZoneWriter();
     private final ZoneConflictResolver conflictResolver = new ZoneConflictResolver(writer);
+    private final NodeColorPicker nodeColorPicker = new NodeColorPicker();
+    private final SafeZoneRegistrar safeZoneRegistrar = new SafeZoneRegistrar(writer, conflictResolver);
+    private final NodeZoneRegistrar nodeZoneRegistrar = new NodeZoneRegistrar(writer, conflictResolver, nodeColorPicker);
     private final AsyncZoneExpansionService asyncExpansion = new AsyncZoneExpansionService();
 
     private static final TagKey<Structure> NODE_STRUCTURE_TAG =
@@ -41,8 +43,9 @@ public class ZoneManager implements IZoneManager {
         if (sm.hasStructureByTag(sl, wp, NODE_STRUCTURE_TAG)) addNodeZone(sl, wp);
     }
 
-    private LevelZoneData getLZD(ServerLevel l) { return BeyondAPI.getLevelZoneData(l); }
-    private void syncLD(ServerLevel l) { BeyondAPI.syncLargeLevelData(l); }
+    private LevelZoneData getLZD(ServerLevel l) {
+        return BeyondAPI.getLevelZoneData(l);
+    }
 
     @Override
     public void tick(ServerLevel level) {
@@ -58,70 +61,14 @@ public class ZoneManager implements IZoneManager {
 
     @Override
     public void addSafeZone(ServerLevel level, int chunkSize, BlockPos center) {
-        ChunkPos cc = org.galaxy.beyond.api.util.CompatUtil.chunkPos(center);
-        int radius = chunkSize / 2;
-        Set<ChunkPos> targets = ZoneHelper.expandSquare(cc, radius);
-
-        if (!conflictResolver.clearLockedNodeConflicts(level, targets)) return;
-
-        writer.addZoneChunks(level, ZoneType.Safe_Zone, targets);
+        safeZoneRegistrar.addSafeZone(level, chunkSize, center);
     }
 
     // ---- Node Zone ----
 
     @Override
     public void addNodeZone(ServerLevel level, BlockPos pos) {
-        var sm = BeyondAPI.getBeyondManager().getStructureManager();
-        List<ChunkPos> chunks = sm.getStructureChunks(level, pos);
-        LevelZoneData lzd = getLZD(level);
-        Set<ChunkPos> targets = new LinkedHashSet<>();
-        for (ChunkPos cp : chunks) {
-            if (cp == null) continue;
-            if (lzd.isSafe(cp)) return;
-            targets.add(cp);
-        }
-        if (targets.isEmpty()) return;
-
-        var largeData = BeyondAPI.getLargeLevelData(level);
-        if (isRegisteredNode(level, targets)) {
-            writer.removeZoneChunks(level, ZoneType.Active_Zone, targets);
-            return;
-        }
-        if (!conflictResolver.clearLockedNodeConflicts(level, targets)) return;
-
-        boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, ZoneWriter.packChunks(targets));
-        boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, targets);
-
-        var nd = new NodeData(randomNodeColor(level));
-        for (ChunkPos cp : targets) nd.addChunkPos(cp);
-        boolean nodeChanged = largeData.addNodeData(nd);
-
-        if (activeChanged || zoneChanged || nodeChanged) {
-            syncLD(level);
-        }
-    }
-
-    private static boolean isRegisteredNode(ServerLevel level, Set<ChunkPos> targets) {
-        NodeData first = null;
-        for (ChunkPos target : targets) {
-            NodeData nodeData = BeyondAPI.findNodeData(level, target);
-            if (nodeData == null) return false;
-            if (first == null) first = nodeData;
-            else if (first.ensureNodeKey() != nodeData.ensureNodeKey()) return false;
-        }
-        return first != null && new HashSet<>(first.getNodeChunkPosList()).equals(targets);
-    }
-
-    private static NodeColor randomNodeColor(ServerLevel l) {
-        int g = CommonConfig.NODE_COLOR_GREEN_WEIGHT.get();
-        int o = CommonConfig.NODE_COLOR_ORANGE_WEIGHT.get();
-        int r = CommonConfig.NODE_COLOR_RED_WEIGHT.get();
-        int total = g + o + r;
-        if (total <= 0) return NodeColor.ORANGE;
-        int roll = l.getRandom().nextInt(total);
-        if (roll < g) return NodeColor.GREEN;
-        if (roll < g + o) return NodeColor.ORANGE;
-        return NodeColor.RED;
+        nodeZoneRegistrar.addNodeZone(level, pos);
     }
 
     // ---- Active Zone ----

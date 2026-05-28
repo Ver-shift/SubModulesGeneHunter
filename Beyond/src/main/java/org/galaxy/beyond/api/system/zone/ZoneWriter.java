@@ -3,6 +3,7 @@ package org.galaxy.beyond.api.system.zone;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
 
 import java.util.ArrayList;
@@ -35,6 +36,15 @@ public class ZoneWriter {
         boolean changed = BeyondAPI.getLargeLevelData(level).removeNodeData(nodeKey);
         if (changed) sync(level);
         return changed;
+    }
+
+    public boolean registerNodeZone(ServerLevel level, Collection<ChunkPos> chunks, NodeData nodeData) {
+        var largeData = BeyondAPI.getLargeLevelData(level);
+        boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(chunks));
+        boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, chunks);
+        boolean nodeChanged = largeData.addNodeData(nodeData);
+        if (activeChanged || zoneChanged || nodeChanged) sync(level);
+        return activeChanged || zoneChanged || nodeChanged;
     }
 
     public static List<Long> packChunks(Collection<ChunkPos> chunks) {
