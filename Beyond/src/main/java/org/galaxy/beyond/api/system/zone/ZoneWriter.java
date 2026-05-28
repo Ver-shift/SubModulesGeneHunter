@@ -40,11 +40,10 @@ public class ZoneWriter {
 
     public boolean registerNodeZone(ServerLevel level, Collection<ChunkPos> chunks, NodeData nodeData) {
         var largeData = BeyondAPI.getLargeLevelData(level);
-        boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(chunks));
         boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, chunks);
         boolean nodeChanged = largeData.addNodeData(nodeData);
-        if (activeChanged || zoneChanged || nodeChanged) sync(level);
-        return activeChanged || zoneChanged || nodeChanged;
+        if (zoneChanged || nodeChanged) sync(level);
+        return zoneChanged || nodeChanged;
     }
 
     public static List<Long> packChunks(Collection<ChunkPos> chunks) {

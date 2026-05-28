@@ -13,53 +13,132 @@ public class CommonConfig {
 
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    /** 是否输出 Beyond 模块的调试信息 */
+    /**
+     * 是否输出 Beyond 模块的调试信息
+     */
     public static final ModConfigSpec.BooleanValue DEBUG_MODE;
 
-    /** 肉鸽玩法生效的维度，格式为 "namespace:path"，如 "minecraft:overworld" */
+    /**
+     * 肉鸽玩法生效的维度，格式为 "namespace:path"，如 "minecraft:overworld"
+     */
     public static final ModConfigSpec.ConfigValue<String> ROGUE_DIMENSION;
 
-    /** 安全区向外最小拓展距离（区块数） */
+    /**
+     * 安全区向外最小拓展距离（区块数）
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_EXPAND;
-    /** 安全区向外最大拓展距离（区块数），超过仍未满足条件则以当前范围注册 */
+    /**
+     * 安全区向外最大拓展距离（区块数），超过仍未满足条件则以当前范围注册
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MAX_EXPAND;
-    /** 初始活动区至少需要覆盖的节点数量 */
+    /**
+     * 初始活动区至少需要覆盖的节点数量
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_NODES;
-    /** 节点完成后向外拓展的初始半径（区块数） */
+    /**
+     * 节点完成后向外拓展的初始半径（区块数）
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_EXPAND_RADIUS;
-    /** 节点完成后向外拓展时允许扫描的最大半径（区块数） */
+    /**
+     * 节点完成后向外拓展时允许扫描的最大半径（区块数）
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS;
-    /** 节点拓展后至少需要扫描到的其他未完成节点连接数 */
+    /**
+     * 节点拓展后至少需要扫描到的其他未完成节点连接数
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_CONNECTIONS;
-    /** 玩家距离活动区边界多少区块内才显示边界 */
+    /**
+     * 玩家距离活动区边界多少区块内才显示边界
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS;
-    /** 可活动区域边界实际渲染 ARGB 颜色 */
+    /**
+     * 可活动区域边界实际渲染 ARGB 颜色
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_RENDER_COLOR;
 
-    /** 节点颜色权重：绿色 */
+    /**
+     * 是否渲染全部区域边界和节点提示
+     */
+    public static final ModConfigSpec.BooleanValue ZONE_RENDER_ENABLED;
+    /**
+     * 是否渲染安全区边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_SAFE_ZONE_BORDER;
+    /**
+     * 是否渲染可活动区边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_ACTIVE_ZONE_BORDER;
+    /**
+     * 是否渲染绿色节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_GREEN_NODES;
+    /**
+     * 是否渲染橙色节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_ORANGE_NODES;
+    /**
+     * 是否渲染红色节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_RED_NODES;
+    /**
+     * 是否渲染蓝色已解锁节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_BLUE_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_SAFE_ZONE_BORDER;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_ACTIVE_ZONE_BORDER;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_GREEN_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_ORANGE_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_RED_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_BLUE_NODES;
+
+    /**
+     * 节点颜色权重：绿色
+     */
     public static final ModConfigSpec.IntValue NODE_COLOR_GREEN_WEIGHT;
-    /** 节点颜色权重：橙色 */
+    /**
+     * 节点颜色权重：橙色
+     */
     public static final ModConfigSpec.IntValue NODE_COLOR_ORANGE_WEIGHT;
-    /** 节点颜色权重：红色 */
+    /**
+     * 节点颜色权重：红色
+     */
     public static final ModConfigSpec.IntValue NODE_COLOR_RED_WEIGHT;
-    /** 非安全区内最多显示多少个最近的绿色节点 */
+    /**
+     * 非安全区内最多显示多少个最近的绿色节点
+     */
     public static final ModConfigSpec.IntValue VISIBLE_GREEN_NODE_COUNT;
-    /** 非安全区内最多显示多少个最近的橙色节点 */
+    /**
+     * 非安全区内最多显示多少个最近的橙色节点
+     */
     public static final ModConfigSpec.IntValue VISIBLE_ORANGE_NODE_COUNT;
-    /** 非安全区内最多显示多少个最近的红色节点 */
+    /**
+     * 非安全区内最多显示多少个最近的红色节点
+     */
     public static final ModConfigSpec.IntValue VISIBLE_RED_NODE_COUNT;
-    /** 非安全区内最多显示多少个最近的蓝色已解锁节点 */
+    /**
+     * 非安全区内最多显示多少个最近的蓝色已解锁节点
+     */
     public static final ModConfigSpec.IntValue VISIBLE_BLUE_NODE_COUNT;
-    /** 绿色节点实际渲染 ARGB 颜色 */
+    /**
+     * 绿色节点实际渲染 ARGB 颜色
+     */
     public static final ModConfigSpec.IntValue GREEN_NODE_RENDER_COLOR;
-    /** 橙色节点实际渲染 ARGB 颜色 */
+    /**
+     * 橙色节点实际渲染 ARGB 颜色
+     */
     public static final ModConfigSpec.IntValue ORANGE_NODE_RENDER_COLOR;
-    /** 红色节点实际渲染 ARGB 颜色 */
+    /**
+     * 红色节点实际渲染 ARGB 颜色
+     */
     public static final ModConfigSpec.IntValue RED_NODE_RENDER_COLOR;
-    /** 蓝色已解锁节点实际渲染 ARGB 颜色 */
+    /**
+     * 蓝色已解锁节点实际渲染 ARGB 颜色
+     */
     public static final ModConfigSpec.IntValue BLUE_NODE_RENDER_COLOR;
 
-    /** 玩家离开安全区的最小冷却时间（秒），防止频繁出入触发游戏入口流程 */
+    /**
+     * 玩家离开安全区的最小冷却时间（秒），防止频繁出入触发游戏入口流程
+     */
     public static final ModConfigSpec.IntValue LOBBY_COOLDOWN_SECONDS;
 
     static {
@@ -96,10 +175,52 @@ public class CommonConfig {
                 .defineInRange("minConnections", 3, 1, 100);
         ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS = BUILDER
                 .comment("玩家距离活动区边界多少区块内才显示边界。")
-                .defineInRange("borderVisibleChunks", 3, 0, 64);
+                .defineInRange("borderVisibleChunks", 8, 0, 64);
         ACTIVE_ZONE_RENDER_COLOR = BUILDER
                 .comment("可活动区域边界渲染颜色，ARGB 格式，包含透明度。")
                 .defineInRange("activeZoneRenderColor", 0x64DCDCDC, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        BUILDER.pop();
+
+        BUILDER.comment("区域渲染配置").push("render");
+        ZONE_RENDER_ENABLED = BUILDER
+                .comment("是否启用 Beyond 区域边界和节点提示渲染。")
+                .define("zoneRenderEnabled", true);
+        RENDER_SAFE_ZONE_BORDER = BUILDER
+                .comment("是否渲染安全区边界。")
+                .define("safeZoneBorder", true);
+        RENDER_ACTIVE_ZONE_BORDER = BUILDER
+                .comment("是否渲染可活动区外边界。")
+                .define("activeZoneBorder", true);
+        RENDER_GREEN_NODES = BUILDER
+                .comment("是否渲染绿色节点边界。")
+                .define("greenNodes", true);
+        RENDER_ORANGE_NODES = BUILDER
+                .comment("是否渲染橙色节点边界。")
+                .define("orangeNodes", true);
+        RENDER_RED_NODES = BUILDER
+                .comment("是否渲染红色节点边界。")
+                .define("redNodes", true);
+        RENDER_BLUE_NODES = BUILDER
+                .comment("是否渲染蓝色已解锁节点边界。")
+                .define("blueNodes", true);
+        DEBUG_SHOW_SAFE_ZONE_BORDER = BUILDER
+                .comment("Debug 模式下是否显示安全区边界。")
+                .define("debugShowSafeZoneBorder", true);
+        DEBUG_SHOW_ACTIVE_ZONE_BORDER = BUILDER
+                .comment("Debug 模式下是否显示完整可活动区边界。")
+                .define("debugShowActiveZoneBorder", true);
+        DEBUG_SHOW_GREEN_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部绿色节点边界。")
+                .define("debugShowGreenNodes", true);
+        DEBUG_SHOW_ORANGE_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部橙色节点边界。")
+                .define("debugShowOrangeNodes", true);
+        DEBUG_SHOW_RED_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部红色节点边界。")
+                .define("debugShowRedNodes", true);
+        DEBUG_SHOW_BLUE_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部蓝色已解锁节点边界。")
+                .define("debugShowBlueNodes", true);
         BUILDER.pop();
 
         BUILDER.comment("节点颜色权重配置").push("node_color");
@@ -153,6 +274,7 @@ public class CommonConfig {
     public static ResourceKey<Level> getRogueDimension() {
         return ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(ROGUE_DIMENSION.get()));
     }
+
     private CommonConfig() {
     }
 }

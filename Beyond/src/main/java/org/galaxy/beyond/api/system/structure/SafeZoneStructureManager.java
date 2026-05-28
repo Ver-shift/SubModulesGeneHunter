@@ -136,8 +136,6 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     @Override
     public void playerTick(ServerPlayer player) {
-        if (!CommonConfig.DEBUG_MODE.get()) return;
-
         var zone = BeyondAPI.getBeyondMobData(player).getZoneType();
         int level = switch (zone) {
             case Safe_Zone -> 1;
@@ -146,9 +144,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
             case Empty -> 4;
         };
         if (level > 0) {
+            boolean visible = CommonConfig.DEBUG_MODE.get();
             player.addEffect(new MobEffectInstance(
                     BeyondMobEffectInit.ZONE_INDICATOR, -1, level - 1,
-                    false, false, false));
+                    false, visible, visible));
         }
     }
 

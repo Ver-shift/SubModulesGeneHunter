@@ -11,6 +11,7 @@ import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 import org.galaxy.beyond.api.system.zone.async.AsyncZoneExpansionService;
 import org.galaxy.beyond.api.system.zone.async.ZoneExpansionJobType;
 import org.galaxy.beyond.api.system.zone.async.ZoneExpansionRequest;
+import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,13 +26,17 @@ public class ActiveZoneController {
 
     public void activeZoneInit(ServerLevel level) {
         LevelZoneData levelZoneData = BeyondAPI.getLevelZoneData(level);
-        Set<Long> seeds = new HashSet<>(levelZoneData.getPacked(ZoneType.Safe_Zone));
-        if (seeds.isEmpty()) return;
+        Set<Long> safe = new HashSet<>(levelZoneData.getPacked(ZoneType.Safe_Zone));
+        if (safe.isEmpty()) return;
 
-        submitExpansion(level, ZoneExpansionJobType.INITIAL, seeds, getUncompletedNodeChunks(level),
+        int minRadius = CommonConfig.ACTIVE_ZONE_MIN_EXPAND.get();
+        asyncExpansion.clear(level);
+        submitExpansion(level, ZoneExpansionJobType.INITIAL, Set.of(centerOf(safe)), getUncompletedNodeChunks(level),
                 CommonConfig.ACTIVE_ZONE_MIN_NODES.get(),
-                CommonConfig.ACTIVE_ZONE_MIN_EXPAND.get(),
+                minRadius,
                 CommonConfig.ACTIVE_ZONE_MAX_EXPAND.get());
+        level.getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable("beyond.node.active_zone_initial_radius", minRadius), false);
     }
 
     public void addActiveZone(ServerLevel level, RogueNodeData nodeData) {
@@ -48,7 +53,7 @@ public class ActiveZoneController {
                 nodeData.getNodeData().getPhase().name()
         );
 
-        boolean submitted = submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, seeds, getUncompletedNodeChunks(level),
+        boolean submitted = submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, Set.of(centerOf(seeds)), getUncompletedNodeChunks(level),
                 CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get(),
                 CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get(),
                 CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get());
@@ -62,6 +67,7 @@ public class ActiveZoneController {
         long jobId = asyncExpansion.nextJobId();
         ZoneExpansionRequest request = new ZoneExpansionRequest(
                 jobId,
+                type,
                 Set.copyOf(seeds),
                 new HashSet<>(data.getPacked(ZoneType.Safe_Zone)),
                 new HashSet<>(data.getPacked(ZoneType.Node_Zone)),
@@ -71,7 +77,32 @@ public class ActiveZoneController {
                 minRadius,
                 maxRadius
         );
-        return asyncExpansion.submit(level, type, request);
+        boolean submitted = asyncExpansion.submit(level, type, request);
+        Beyond.debugInfo(
+                "[Zone][EXPAND_SUBMIT] jobId={}, type={}, submitted={}, seeds={}, safe={}, node={}, active={}, uncompleted={}, minConnections={}, minRadius={}, maxRadius={}",
+                jobId,
+                type,
+                submitted,
+                seeds.size(),
+                request.safe().size(),
+                request.node().size(),
+                request.active().size(),
+                uncompleted.size(),
+                minConnections,
+                minRadius,
+                maxRadius
+        );
+        return submitted;
+    }
+
+    private static long centerOf(Set<Long> chunks) {
+        long totalX = 0;
+        long totalZ = 0;
+        for (long chunk : chunks) {
+            totalX += PackedChunkPos.x(chunk);
+            totalZ += PackedChunkPos.z(chunk);
+        }
+        return PackedChunkPos.pack(Math.round((float) totalX / chunks.size()), Math.round((float) totalZ / chunks.size()));
     }
 
     private static Set<Long> getUncompletedNodeChunks(ServerLevel level) {

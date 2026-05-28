@@ -27,6 +27,7 @@ public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
 
     @Override
     public void render(ZoneRenderContext context) {
+        if (!ZoneRenderConfig.activeZoneBorder(context)) return;
         LevelZoneData data = context.data();
         if (data == null || !data.hasZones()) return;
 
@@ -81,7 +82,7 @@ public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
             case NORTH -> new ChunkPos(pos.x, pos.z - 1);
             case SOUTH -> new ChunkPos(pos.x, pos.z + 1);
         };
-        if (data.isActive(neighbor)) return;
+        if (data.hasAny(neighbor)) return;
 
         double minX = pos.getMinBlockX();
         double minZ = pos.getMinBlockZ();
@@ -104,7 +105,7 @@ public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
             case NORTH -> new ChunkPos(pos.x, pos.z - 1);
             case SOUTH -> new ChunkPos(pos.x, pos.z + 1);
         };
-        if (data.isActive(neighbor)) return;
+        if (data.hasAny(neighbor)) return;
 
         double minX = pos.getMinBlockX();
         double minZ = pos.getMinBlockZ();

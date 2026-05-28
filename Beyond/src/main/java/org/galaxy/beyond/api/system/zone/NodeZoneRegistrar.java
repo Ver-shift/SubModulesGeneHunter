@@ -35,10 +35,7 @@ public class NodeZoneRegistrar {
         }
         if (targets.isEmpty()) return;
 
-        if (isRegisteredNode(level, targets)) {
-            writer.removeZoneChunks(level, ZoneType.Active_Zone, targets);
-            return;
-        }
+        if (isRegisteredNode(level, targets)) return;
         if (!conflictResolver.clearLockedNodeConflicts(level, targets)) return;
 
         var nodeData = new NodeData(colorPicker.random(level));

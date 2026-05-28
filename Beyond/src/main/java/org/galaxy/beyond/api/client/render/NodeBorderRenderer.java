@@ -22,14 +22,14 @@ public class NodeBorderRenderer extends ZoneBorderRenderer {
     @Override
     public void render(Level level, Camera camera, PoseStack poseStack) {
         if (level == null) return;
-        List<NodeBorder> borders = collectNodeBorders(BeyondAPI.getNodeDatas(level));
+        List<NodeBorder> borders = collectNodeBorders(BeyondAPI.getNodeDatas(level), CommonConfig.DEBUG_MODE.get());
         renderBorders(borders, camera, poseStack);
     }
 
     @Override
     public void render(ZoneRenderContext context) {
-        List<NodeBorder> borders = collectNodeBorders(context.nodeDatas());
-        if (!context.debugMode() && context.limitByPlayerState()) {
+        List<NodeBorder> borders = collectNodeBorders(context.nodeDatas(), context);
+        if (ZoneRenderConfig.limitNodeCount(context) && context.limitByPlayerState()) {
             borders = nearestBorders(borders, context);
         }
         renderBorders(borders, context.camera(), context.poseStack());
@@ -49,7 +49,7 @@ public class NodeBorderRenderer extends ZoneBorderRenderer {
         }
     }
 
-    private static List<NodeBorder> collectNodeBorders(List<NodeData> nodeDatas) {
+    private static List<NodeBorder> collectNodeBorders(List<NodeData> nodeDatas, boolean debugMode) {
         List<NodeBorder> borders = new ArrayList<>();
         for (NodeData nodeData : nodeDatas) {
             Set<ChunkPos> chunks = new HashSet<>(nodeData.getNodeChunkPosList());
@@ -58,11 +58,22 @@ public class NodeBorderRenderer extends ZoneBorderRenderer {
         return borders;
     }
 
-    private static List<NodeBorder>  nearestBorders(List<NodeBorder> borders, ZoneRenderContext context) {
+    private static List<NodeBorder> collectNodeBorders(List<NodeData> nodeDatas, ZoneRenderContext context) {
+        List<NodeBorder> borders = new ArrayList<>();
+        for (NodeData nodeData : nodeDatas) {
+            if (!ZoneRenderConfig.nodeColor(nodeData.getColor(), context)) continue;
+            Set<ChunkPos> chunks = new HashSet<>(nodeData.getNodeChunkPosList());
+            if (!chunks.isEmpty()) borders.add(NodeBorder.from(chunks, nodeData.getColor()));
+        }
+        return borders;
+    }
+
+    private static List<NodeBorder> nearestBorders(List<NodeBorder> borders, ZoneRenderContext context) {
         Map<NodeColor, List<NodeBorder>> byColor = new EnumMap<>(NodeColor.class);
         for (NodeBorder border : borders) {
             NodeColor color = border.nodeColor();
-            if (color != NodeColor.GREEN && color != NodeColor.ORANGE && color != NodeColor.RED && color != NodeColor.BLUE) continue;
+            if (color != NodeColor.GREEN && color != NodeColor.ORANGE && color != NodeColor.RED && color != NodeColor.BLUE)
+                continue;
 
             byColor.computeIfAbsent(color, ignored -> new ArrayList<>()).add(border);
         }

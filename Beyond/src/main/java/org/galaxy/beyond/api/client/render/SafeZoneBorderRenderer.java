@@ -47,6 +47,7 @@ public class SafeZoneBorderRenderer extends ZoneBorderRenderer {
 
     @Override
     public void render(ZoneRenderContext context) {
+        if (!ZoneRenderConfig.safeZoneBorder(context)) return;
         LevelZoneData data = context.data();
         if (data == null || !data.hasZones()) return;
 

@@ -35,6 +35,12 @@ public class AsyncZoneExpansionService {
         return true;
     }
 
+    public void clear(ServerLevel level) {
+        ResourceKey<Level> key = level.dimension();
+        running.remove(key);
+        pending.remove(key);
+    }
+
     public void tick(ServerLevel level) {
         ResourceKey<Level> key = level.dimension();
         RunningJob job = running.get(key);
@@ -57,7 +63,7 @@ public class AsyncZoneExpansionService {
         }
         if (apply.getType() == ZoneExpansionJobType.NODE_UNLOCK) {
             level.getServer().getPlayerList().broadcastSystemMessage(
-                    Component.translatable("beyond.node.zone_expanded"), false);
+                    Component.translatable("beyond.node.zone_expanded", apply.getRadius(), apply.getReachedNodeZones()), false);
         }
     }
 

@@ -4,6 +4,7 @@ import java.util.Set;
 
 public record ZoneExpansionRequest(
         long jobId,
+        ZoneExpansionJobType type,
         Set<Long> seeds,
         Set<Long> safe,
         Set<Long> node,

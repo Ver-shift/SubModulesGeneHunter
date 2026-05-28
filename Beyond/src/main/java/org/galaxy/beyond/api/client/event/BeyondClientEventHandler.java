@@ -11,6 +11,7 @@ import org.galaxy.beyond.api.client.gui.scene.SceneUILayer;
 import org.galaxy.beyond.api.client.render.ActiveZoneBorderRenderer;
 import org.galaxy.beyond.api.client.render.NodeBorderRenderer;
 import org.galaxy.beyond.api.client.render.SafeZoneBorderRenderer;
+import org.galaxy.beyond.api.client.render.ZoneRenderConfig;
 import org.galaxy.beyond.api.client.render.ZoneRenderContext;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
@@ -59,11 +60,15 @@ public class BeyondClientEventHandler {
         ZoneRenderContext context = createRenderContext(event, level);
         if (context == null) return;
 
-        getSafeZoneRenderer().render(context);
+        if (ZoneRenderConfig.safeZoneBorder(context)) {
+            getSafeZoneRenderer().render(context);
+        }
         if (context.playerInSafeZone()) return;
 
         getNodeBorderRenderer().render(context);
-        getActiveZoneRenderer().render(context);
+        if (ZoneRenderConfig.activeZoneBorder(context)) {
+            getActiveZoneRenderer().render(context);
+        }
     }
 
     private static ZoneRenderContext createRenderContext(RenderLevelStageEvent event, net.minecraft.world.level.Level level) {
@@ -76,8 +81,8 @@ public class BeyondClientEventHandler {
             double playerX = player == null ? cameraPos.x : player.getX();
             double playerZ = player == null ? cameraPos.z : player.getZ();
             PlayerPhase playerPhase = player == null ? PlayerPhase.LOBBY : BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
-            boolean inGame = BeyondAPI.getRogueData(level).getPhase() != RoguePhase.LOBBY;
             boolean playerInSafeZone = player != null && data.getZoneType(player.chunkPosition()) == ZoneType.Safe_Zone;
+            boolean onProgress = BeyondAPI.getRogueData(level).getPhase() == RoguePhase.ON_PROGRESS;
 
             return new ZoneRenderContext(
                     level,
@@ -86,8 +91,9 @@ public class BeyondClientEventHandler {
                     event.getPoseStack(),
                     BeyondAPI.getNodeDatas(level),
                     CommonConfig.DEBUG_MODE.get(),
-                    inGame && !playerInSafeZone,
+                    !playerInSafeZone,
                     playerInSafeZone,
+                    onProgress,
                     playerX,
                     playerZ,
                     CommonConfig.ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS.get() * 16.0,

@@ -14,8 +14,7 @@ public class PackedZoneExpander {
     public ZoneExpansionResult expand(ZoneExpansionRequest request) {
         Set<Long> safe = Set.copyOf(request.safe());
         Set<Long> node = Set.copyOf(request.node());
-        Set<Long> active = new HashSet<>(request.active());
-        Set<Long> added = new LinkedHashSet<>();
+        Set<Long> active = Set.copyOf(request.active());
 
         Set<Long> beforeReachable = floodReachable(request.seeds(), safe, node, active);
         Set<Long> newTargets = new HashSet<>(request.uncompleted());
@@ -23,7 +22,7 @@ public class PackedZoneExpander {
 
         List<Set<Long>> targetComponents = connectedComponents(newTargets);
         int needed = targetComponents.isEmpty() ? 0 : Math.min(request.minConnections(), targetComponents.size());
-        int actualRadius = -1;
+        Set<Set<Long>> selected = new LinkedHashSet<>();
 
         org.galaxy.beyond.Beyond.debugInfo(
                 "[Zone][EXPAND] jobId={}, seeds={}, safe={}, node={}, active={}, uncompleted={}, beforeReachable={}, targetComponents={}, needed={}, minRadius={}, maxRadius={}",
@@ -40,80 +39,88 @@ public class PackedZoneExpander {
                 request.maxRadius()
         );
 
-        for (int radius = 1; radius <= request.maxRadius(); radius++) {
-            for (long chunk : ringOf(request.seeds(), radius)) {
+        int scanRadius = scanTargets(request.seeds(), targetComponents, selected, request.minRadius(), request.maxRadius(), needed);
+        boolean success = needed == 0 || selected.size() >= needed;
+        int actualRadius = success ? Math.max(request.minRadius(), scanRadius) : -1;
+        if (success) actualRadius = expandRadiusToCoverSelected(request.seeds(), targetComponents, selected, actualRadius);
+
+        Set<Long> finalArea = success ? expandCircleMulti(request.seeds(), actualRadius) : Set.of();
+        if (success) includeTouchedTargets(request.seeds(), targetComponents, selected, finalArea);
+        if (success) actualRadius = expandRadiusToCoverSelected(request.seeds(), targetComponents, selected, actualRadius);
+
+        Set<Long> added = new LinkedHashSet<>();
+        if (success) {
+            for (long chunk : expandCircleMulti(request.seeds(), actualRadius)) {
                 if (hasAny(safe, node, active, chunk)) continue;
-                if (active.add(chunk)) added.add(chunk);
+                added.add(chunk);
             }
-
-            if (radius < request.minRadius()) continue;
-            if (needed == 0) {
-                int explorationRadius = Math.min(Math.max(request.minRadius() * 2, 40), request.maxRadius());
-                for (int extraRadius = radius + 1; extraRadius <= explorationRadius; extraRadius++) {
-                    for (long chunk : ringOf(request.seeds(), extraRadius)) {
-                        if (hasAny(safe, node, active, chunk)) continue;
-                        if (active.add(chunk)) added.add(chunk);
-                    }
-                }
-                actualRadius = explorationRadius;
-                break;
-            }
-
-            Set<Long> reachable = floodReachable(request.seeds(), safe, node, active);
-            int reached = countReachedComponents(targetComponents, reachable);
-            if (reached < needed) continue;
-
-            int furthest = furthestReachedDistance(request.seeds(), targetComponents, reachable);
-            actualRadius = Math.min(Math.max(radius, furthest), request.maxRadius());
-            for (int extraRadius = radius + 1; extraRadius <= actualRadius; extraRadius++) {
-                for (long chunk : ringOf(request.seeds(), extraRadius)) {
-                    if (hasAny(safe, node, active, chunk)) continue;
-                    if (active.add(chunk)) added.add(chunk);
-                }
-            }
-            break;
         }
 
         org.galaxy.beyond.Beyond.debugInfo(
-                "[Zone][EXPAND_DONE] jobId={}, added={}, radius={}, success={}",
+                "[Zone][EXPAND_DONE] jobId={}, added={}, radius={}, reachedNodeZones={}, success={}",
                 request.jobId(),
                 added.size(),
                 actualRadius,
-                actualRadius >= 0
+                selected.size(),
+                success
         );
 
-        return new ZoneExpansionResult(request.jobId(), List.copyOf(added), actualRadius, actualRadius >= 0);
+        return new ZoneExpansionResult(request.jobId(), List.copyOf(added), actualRadius, selected.size(), success);
     }
 
-    private static int countReachedComponents(List<Set<Long>> components, Set<Long> reachable) {
-        int reached = 0;
-        for (Set<Long> component : components) {
+    private static int scanTargets(Set<Long> seeds, List<Set<Long>> targets, Set<Set<Long>> selected,
+                                   int minRadius, int maxRadius, int needed) {
+        int radius = 0;
+        for (; radius <= maxRadius; radius++) {
+            includeTargetsWithin(seeds, targets, selected, radius);
+            if (radius >= minRadius && selected.size() >= needed) break;
+        }
+        return radius > maxRadius ? maxRadius : radius;
+    }
+
+    private static void includeTargetsWithin(Set<Long> seeds, List<Set<Long>> targets, Set<Set<Long>> selected, int radius) {
+        for (Set<Long> component : targets) {
+            if (selected.contains(component)) continue;
             for (long chunk : component) {
-                if (reachable.contains(chunk)) {
-                    reached++;
+                if (minDistanceToSeeds(seeds, chunk) <= radius) {
+                    selected.add(component);
                     break;
                 }
             }
         }
-        return reached;
     }
 
-    private static int furthestReachedDistance(Set<Long> seeds, List<Set<Long>> components, Set<Long> reachable) {
-        int furthest = 0;
-        for (Set<Long> component : components) {
-            boolean reached = false;
-            for (long chunk : component) {
-                if (reachable.contains(chunk)) {
-                    reached = true;
-                    break;
-                }
+    private static void includeTouchedTargets(Set<Long> seeds, List<Set<Long>> targets, Set<Set<Long>> selected, Set<Long> area) {
+        int previousSize;
+        do {
+            previousSize = selected.size();
+            for (Set<Long> component : targets) {
+                if (selected.contains(component)) continue;
+                if (touches(component, area)) selected.add(component);
             }
-            if (!reached) continue;
+            int radius = expandRadiusToCoverSelected(seeds, targets, selected, 0);
+            area.clear();
+            area.addAll(expandCircleMulti(seeds, radius));
+        } while (selected.size() != previousSize);
+    }
+
+    private static boolean touches(Set<Long> component, Set<Long> area) {
+        for (long chunk : component) {
+            if (area.contains(chunk)) return true;
+        }
+        return false;
+    }
+
+    private static int expandRadiusToCoverSelected(Set<Long> seeds, List<Set<Long>> targets,
+                                                   Set<Set<Long>> selected, int minRadius) {
+        int radius = minRadius;
+        for (Set<Long> component : targets) {
+            if (!selected.contains(component)) continue;
             for (long chunk : component) {
-                furthest = Math.max(furthest, minDistanceToSeeds(seeds, chunk));
+                radius = Math.max(radius, minDistanceToSeeds(seeds, chunk));
             }
         }
-        return furthest;
+        return radius;
     }
 
     private static Set<Long> floodReachable(Set<Long> seeds, Set<Long> safe, Set<Long> node, Set<Long> active) {
@@ -152,13 +159,6 @@ public class PackedZoneExpander {
             components.add(component);
         }
         return components;
-    }
-
-    private static Set<Long> ringOf(Set<Long> seeds, int radius) {
-        if (radius == 0) return new HashSet<>(seeds);
-        Set<Long> outer = expandCircleMulti(seeds, radius);
-        outer.removeAll(expandCircleMulti(seeds, radius - 1));
-        return outer;
     }
 
     private static Set<Long> expandCircleMulti(Set<Long> seeds, int radius) {

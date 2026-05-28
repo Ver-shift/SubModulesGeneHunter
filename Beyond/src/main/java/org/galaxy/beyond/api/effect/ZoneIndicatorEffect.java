@@ -8,6 +8,7 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
@@ -42,8 +43,9 @@ public class ZoneIndicatorEffect extends MobEffect {
         };
         if (amplification != target) {
             Holder<MobEffect> holder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this);
+            boolean visible = CommonConfig.DEBUG_MODE.get();
             mob.removeEffect(holder);
-            mob.addEffect(new MobEffectInstance(holder, -1, target, false, true, true));
+            mob.addEffect(new MobEffectInstance(holder, -1, target, false, visible, visible));
         }
         return true;
     }

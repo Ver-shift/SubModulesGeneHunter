@@ -15,6 +15,7 @@ public class PendingZoneApply {
     private final ZoneExpansionJobType type;
     private final List<Long> chunks;
     private final int radius;
+    private final int reachedNodeZones;
     private final boolean success;
     private int cursor;
 
@@ -23,6 +24,7 @@ public class PendingZoneApply {
         this.type = type;
         this.chunks = result.addedActive();
         this.radius = result.radius();
+        this.reachedNodeZones = result.reachedNodeZones();
         this.success = result.success();
     }
 
@@ -30,9 +32,20 @@ public class PendingZoneApply {
         if (isDone()) return 0;
         int end = Math.min(cursor + limit, chunks.size());
         List<Long> batch = chunks.subList(cursor, end);
-        boolean changed = BeyondAPI.getLargeLevelData(level).addPackedZoneChunks(ZoneType.Active_Zone, filterAvailable(level, batch));
+        List<Long> available = filterAvailable(level, batch);
+        boolean changed = BeyondAPI.getLargeLevelData(level).addPackedZoneChunks(ZoneType.Active_Zone, available);
         cursor = end;
         if (changed) BeyondAPI.syncLargeLevelData(level);
+        org.galaxy.beyond.Beyond.debugInfo(
+                "[Zone][EXPAND_APPLY] jobId={}, type={}, batch={}, available={}, cursor={}/{}, changed={}",
+                jobId,
+                type,
+                batch.size(),
+                available.size(),
+                cursor,
+                chunks.size(),
+                changed
+        );
         return batch.size();
     }
 
@@ -62,6 +75,10 @@ public class PendingZoneApply {
 
     public int getRadius() {
         return radius;
+    }
+
+    public int getReachedNodeZones() {
+        return reachedNodeZones;
     }
 
     public boolean isSuccess() {
