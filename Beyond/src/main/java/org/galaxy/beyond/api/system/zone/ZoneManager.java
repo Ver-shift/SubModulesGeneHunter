@@ -20,11 +20,14 @@ import org.galaxy.beyond.api.system.zone.async.AsyncZoneExpansionService;
 import org.galaxy.beyond.api.system.zone.async.ZoneExpansionJobType;
 import org.galaxy.beyond.api.system.zone.async.ZoneExpansionRequest;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
+import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
 
 import java.util.*;
 
 public class ZoneManager implements IZoneManager {
 
+    private final ZoneWriter writer = new ZoneWriter();
+    private final ZoneConflictResolver conflictResolver = new ZoneConflictResolver(writer);
     private final AsyncZoneExpansionService asyncExpansion = new AsyncZoneExpansionService();
 
     private static final TagKey<Structure> NODE_STRUCTURE_TAG =
@@ -49,9 +52,7 @@ public class ZoneManager implements IZoneManager {
 
     @Override
     public boolean addZone(ServerLevel level, ChunkPos pos, ZoneType type) {
-        boolean changed = BeyondAPI.getLargeLevelData(level).addZoneChunks(type, List.of(pos));
-        if (changed) syncLD(level);
-        return changed;
+        return writer.addZone(level, pos, type);
     }
 
     // ---- Safe Zone ----
@@ -62,11 +63,9 @@ public class ZoneManager implements IZoneManager {
         int radius = chunkSize / 2;
         Set<ChunkPos> targets = ZoneHelper.expandSquare(cc, radius);
 
-        var largeData = BeyondAPI.getLargeLevelData(level);
-        if (!clearLockedConflicts(level, largeData, targets)) return;
+        if (!conflictResolver.clearLockedNodeConflicts(level, targets)) return;
 
-        boolean changed = largeData.addZoneChunks(ZoneType.Safe_Zone, targets);
-        if (changed) syncLD(level);
+        writer.addZoneChunks(level, ZoneType.Safe_Zone, targets);
     }
 
     // ---- Node Zone ----
@@ -86,10 +85,10 @@ public class ZoneManager implements IZoneManager {
 
         var largeData = BeyondAPI.getLargeLevelData(level);
         if (isRegisteredNode(level, targets)) {
-            if (largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(targets))) syncLD(level);
+            writer.removePackedZoneChunks(level, ZoneType.Active_Zone, packChunks(targets));
             return;
         }
-        if (!clearLockedConflicts(level, largeData, targets)) return;
+        if (!conflictResolver.clearLockedNodeConflicts(level, targets)) return;
 
         boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(targets));
         boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, targets);
@@ -106,7 +105,7 @@ public class ZoneManager implements IZoneManager {
     private static List<Long> packChunks(Collection<ChunkPos> chunks) {
         List<Long> packed = new ArrayList<>(chunks.size());
         for (ChunkPos chunk : chunks) {
-            packed.add(((long) chunk.x & 0xFFFFFFFFL) | (((long) chunk.z & 0xFFFFFFFFL) << 32));
+            packed.add(PackedChunkPos.pack(chunk));
         }
         return packed;
     }
@@ -120,29 +119,6 @@ public class ZoneManager implements IZoneManager {
             else if (first.ensureNodeKey() != nodeData.ensureNodeKey()) return false;
         }
         return first != null && new HashSet<>(first.getNodeChunkPosList()).equals(targets);
-    }
-
-    private static boolean clearLockedConflicts(ServerLevel level,
-                                                org.galaxy.beyond.api.system.large.BeyondLargeLevelData largeData,
-                                                Set<ChunkPos> targets) {
-        Set<NodeData> conflicts = findConflictingNodes(level, targets);
-        for (NodeData nodeData : conflicts) {
-            if (nodeData.getPhase() != NodePhase.LOCKED) return false;
-        }
-        for (NodeData nodeData : conflicts) {
-            largeData.removePackedZoneChunks(ZoneType.Node_Zone, nodeData.getNodeChunks());
-            largeData.removeNodeData(nodeData.ensureNodeKey());
-        }
-        return true;
-    }
-
-    private static Set<NodeData> findConflictingNodes(ServerLevel level, Set<ChunkPos> targets) {
-        Set<NodeData> conflicts = new HashSet<>();
-        for (ChunkPos target : targets) {
-            NodeData nodeData = BeyondAPI.findNodeData(level, target);
-            if (nodeData != null) conflicts.add(nodeData);
-        }
-        return conflicts;
     }
 
     private static NodeColor randomNodeColor(ServerLevel l) {

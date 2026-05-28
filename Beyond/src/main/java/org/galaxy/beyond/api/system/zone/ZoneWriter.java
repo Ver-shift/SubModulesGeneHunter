@@ -1,0 +1,51 @@
+package org.galaxy.beyond.api.system.zone;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+public class ZoneWriter {
+
+    public boolean addZone(ServerLevel level, ChunkPos pos, ZoneType type) {
+        return addZoneChunks(level, type, List.of(pos));
+    }
+
+    public boolean addZoneChunks(ServerLevel level, ZoneType type, Collection<ChunkPos> chunks) {
+        boolean changed = BeyondAPI.getLargeLevelData(level).addZoneChunks(type, chunks);
+        if (changed) sync(level);
+        return changed;
+    }
+
+    public boolean removeZoneChunks(ServerLevel level, ZoneType type, Collection<ChunkPos> chunks) {
+        return removePackedZoneChunks(level, type, packChunks(chunks));
+    }
+
+    public boolean removePackedZoneChunks(ServerLevel level, ZoneType type, Collection<Long> chunks) {
+        boolean changed = BeyondAPI.getLargeLevelData(level).removePackedZoneChunks(type, chunks);
+        if (changed) sync(level);
+        return changed;
+    }
+
+    public boolean removeNodeData(ServerLevel level, long nodeKey) {
+        boolean changed = BeyondAPI.getLargeLevelData(level).removeNodeData(nodeKey);
+        if (changed) sync(level);
+        return changed;
+    }
+
+    public static List<Long> packChunks(Collection<ChunkPos> chunks) {
+        List<Long> packed = new ArrayList<>(chunks.size());
+        for (ChunkPos chunk : chunks) {
+            packed.add(PackedChunkPos.pack(chunk));
+        }
+        return packed;
+    }
+
+    private static void sync(ServerLevel level) {
+        BeyondAPI.syncLargeLevelData(level);
+    }
+}
