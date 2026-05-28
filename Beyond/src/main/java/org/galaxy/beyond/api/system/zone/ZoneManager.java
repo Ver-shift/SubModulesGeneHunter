@@ -20,7 +20,6 @@ import org.galaxy.beyond.api.system.zone.async.AsyncZoneExpansionService;
 import org.galaxy.beyond.api.system.zone.async.ZoneExpansionJobType;
 import org.galaxy.beyond.api.system.zone.async.ZoneExpansionRequest;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
-import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
 
 import java.util.*;
 
@@ -85,12 +84,12 @@ public class ZoneManager implements IZoneManager {
 
         var largeData = BeyondAPI.getLargeLevelData(level);
         if (isRegisteredNode(level, targets)) {
-            writer.removePackedZoneChunks(level, ZoneType.Active_Zone, packChunks(targets));
+            writer.removeZoneChunks(level, ZoneType.Active_Zone, targets);
             return;
         }
         if (!conflictResolver.clearLockedNodeConflicts(level, targets)) return;
 
-        boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(targets));
+        boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, ZoneWriter.packChunks(targets));
         boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, targets);
 
         var nd = new NodeData(randomNodeColor(level));
@@ -100,14 +99,6 @@ public class ZoneManager implements IZoneManager {
         if (activeChanged || zoneChanged || nodeChanged) {
             syncLD(level);
         }
-    }
-
-    private static List<Long> packChunks(Collection<ChunkPos> chunks) {
-        List<Long> packed = new ArrayList<>(chunks.size());
-        for (ChunkPos chunk : chunks) {
-            packed.add(PackedChunkPos.pack(chunk));
-        }
-        return packed;
     }
 
     private static boolean isRegisteredNode(ServerLevel level, Set<ChunkPos> targets) {
