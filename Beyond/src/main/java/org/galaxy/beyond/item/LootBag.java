@@ -3,14 +3,16 @@ package org.galaxy.beyond.item;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import org.galaxy.beyond.api.system.rogue.RogueContext;
+import org.galaxy.beyond.api.system.rogue.cap.ProgressStartCap;
 
 /**
- * 战利品袋 —— 使用事件由 {@code BeyondManagerEventHandle.onUse} 转发到 Zone Cap。
+ * 战利品袋 —— 右键时进入肉鸽开袋流程。
  */
 public class LootBag extends Item {
     public LootBag(Properties properties) {
@@ -20,10 +22,9 @@ public class LootBag extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (player instanceof ServerPlayer) {
-            player.startUsingItem(hand);
-            return new InteractionResultHolder<>(InteractionResult.CONSUME, stack);
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            ProgressStartCap.tryOpenLootBag(serverPlayer, new RogueContext());
         }
-        return InteractionResultHolder.pass(stack);
+        return new InteractionResultHolder<>(InteractionResult.CONSUME, stack);
     }
 }

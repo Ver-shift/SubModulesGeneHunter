@@ -21,6 +21,7 @@ import org.galaxy.beyond.api.system.rogue.RogueNodeData;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.rogue.core.RogueEncounterRunner;
+import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -178,6 +179,15 @@ public class BeyondCommand {
                                 .executes(ctx -> {
                                     ServerPlayer player = ctx.getSource().getPlayerOrException();
                                     ServerLevel level = (ServerLevel) player.level();
+                                    RogueData rogueData = BeyondAPI.getRogueData(level);
+                                    if (BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase() == PlayerPhase.LOBBY) {
+                                        ctx.getSource().sendFailure(Component.translatable("beyond.node.not_in_rogue"));
+                                        return 0;
+                                    }
+                                    if (rogueData.getPhase() != RoguePhase.ON_PROGRESS) {
+                                        ctx.getSource().sendFailure(Component.translatable("beyond.node.game_not_started"));
+                                        return 0;
+                                    }
                                     ChunkPos playerChunk = new ChunkPos(player.blockPosition());
                                     var nodeData = BeyondAPI.findNodeData(level, playerChunk);
                                     if (nodeData == null) {
@@ -192,7 +202,7 @@ public class BeyondCommand {
                                     RogueNodeData rogueNodeData = new RogueNodeData();
                                     rogueNodeData.setNodeData(nodeData);
                                     rogueNodeData.setNodeChunk(playerChunk);
-                                    BeyondAPI.getRogueData(level).setRogueNodeData(rogueNodeData);
+                                    rogueData.setRogueNodeData(rogueNodeData);
 
                                     new RogueEncounterRunner(level, new RogueContext(), rogueNodeData).forceUnlockNode();
                                     ctx.getSource().sendSuccess(

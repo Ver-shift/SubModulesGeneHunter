@@ -34,7 +34,7 @@ public class NodeZoneEnterCap extends RogueCap {
         if (now - data.getLastNodeEnterTime() < ENTER_COOLDOWN_TICKS) return;
         data.setLastNodeEnterTime(now);
 
-        ChunkPos at = org.galaxy.beyond.api.util.CompatUtil.chunkPos(player.getOnPos());
+        ChunkPos at = org.galaxy.beyond.api.util.CompatUtil.chunkPos(player.blockPosition());
         var nodeData = BeyondAPI.findNodeData(player.level(), at);
         if (nodeData == null) return;
 

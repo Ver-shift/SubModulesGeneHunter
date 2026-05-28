@@ -6,9 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Items;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.config.CommonConfig;
@@ -27,10 +24,9 @@ import org.galaxy.beyond.api.system.zone.ZoneType;
  * <p>
  * 管理肉鸽开局流程：离开安全区 → 冷却检查 → 发放战利品袋 → 开袋装备 → PRE_ROGUE 就绪检测 → 推进到 INIT。
  * <p>
- * 通过 {@code @SubscribeEvent} 监听右键物品（战利品袋），
+ * 战利品袋物品会直接调用开袋逻辑，
  * 通过 {@code phaseTick} 轮询 PRE_ROGUE 就绪状态。
  */
-@EventBusSubscriber
 public class ProgressStartCap extends RogueCap {
 
     public static final ResourceLocation ID = Beyond.asResource("progress_start");
@@ -46,10 +42,10 @@ public class ProgressStartCap extends RogueCap {
     @Override
     public void changeZone(LivingEntity entity, ZoneType from, ZoneType to, IRogueContext ctx) {
         if (!(entity instanceof ServerPlayer player)) return;
-        if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
-            tryLeaveSafeZone(player);
-        } else if (from != ZoneType.Safe_Zone && to == ZoneType.Safe_Zone) {
+        if (to == ZoneType.Safe_Zone && ctx.getPlayerPhase(player) != PlayerPhase.LOBBY) {
             returnToSafeZone(player, ctx);
+        } else if (from == ZoneType.Safe_Zone && to != ZoneType.Safe_Zone) {
+            tryLeaveSafeZone(player);
         }
     }
 
@@ -92,18 +88,6 @@ public class ProgressStartCap extends RogueCap {
     }
 
     // ============================================================
-    // 战利品袋使用 → @SubscribeEvent
-    // ============================================================
-
-    @SubscribeEvent
-    public static void onItemRightClick(PlayerInteractEvent.RightClickItem event) {
-        if (event.getEntity() instanceof ServerPlayer player
-                && event.getItemStack().is(BeyondItemInit.LOOT_BAG.get())) {
-            tryOpenLootBag(player, new RogueContext());
-        }
-    }
-
-    // ============================================================
     // 离开安全区 → 冷却检查 → 发放战利品袋
     // ============================================================
 
@@ -139,7 +123,10 @@ public class ProgressStartCap extends RogueCap {
 
     public static Step tryOpenLootBag(ServerPlayer player, IRogueContext ctx) {
         PlayerPhase playerPhase = ctx.getPlayerPhase(player);
-        if (playerPhase == PlayerPhase.LOBBY) return Step.NOT_IN_ROGUE;
+        if (playerPhase == PlayerPhase.LOBBY) {
+            player.sendSystemMessage(Component.translatable("beyond.rogue.not_in_rogue"));
+            return Step.NOT_IN_ROGUE;
+        }
 
         if (playerPhase != PlayerPhase.PREPARE_ROGUE) {
             if (playerPhase == PlayerPhase.PRE_ROGUE) {

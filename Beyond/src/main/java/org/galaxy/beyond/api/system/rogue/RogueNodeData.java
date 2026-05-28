@@ -34,8 +34,8 @@ public class RogueNodeData implements IPersistedSerializable {
     public NodePhase getNodePhase() { return nodeData.getPhase(); }
     public void setNodePhase(NodePhase phase) { nodeData.setPhase(phase); }
     public void setNodePhase(net.minecraft.world.level.Level level, NodePhase phase) {
-        nodeData.setPhase(phase);
         org.galaxy.beyond.api.system.BeyondAPI.getLargeLevelData(level).updateNodePhase(nodeData, phase);
+        nodeData.setPhase(phase);
     }
     public List<ChunkPos> getNodeChunks() { return nodeData.getNodeChunkPosList(); }
     public boolean containsChunk(ChunkPos pos) { return nodeData.containsChunk(pos); }
@@ -96,7 +96,7 @@ public class RogueNodeData implements IPersistedSerializable {
 
     public void markUnlocked(net.minecraft.world.level.Level level) {
         setNodePhase(level, NodePhase.UNLOCKED);
-        nodeData.setColor(NodeColor.BLUE);
         org.galaxy.beyond.api.system.BeyondAPI.getLargeLevelData(level).updateNodeColor(nodeData, NodeColor.BLUE);
+        nodeData.setColor(NodeColor.BLUE);
     }
 }

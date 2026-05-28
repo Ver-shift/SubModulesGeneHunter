@@ -50,6 +50,7 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void levelTick(ServerLevel level) {
+        zoneManager.tick(level);
         rogueCapManager.tickZoneEvents(level);
 
         if (level.dimension().equals(CommonConfig.getRogueDimension())) {

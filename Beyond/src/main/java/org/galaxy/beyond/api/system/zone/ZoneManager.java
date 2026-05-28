@@ -14,14 +14,16 @@ import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
-import org.galaxy.beyond.api.system.zone.algorithm.NodeAwareExpander;
+import org.galaxy.beyond.api.system.zone.async.AsyncZoneExpansionService;
+import org.galaxy.beyond.api.system.zone.async.ZoneExpansionJobType;
+import org.galaxy.beyond.api.system.zone.async.ZoneExpansionRequest;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 
 import java.util.*;
 
 public class ZoneManager implements IZoneManager {
 
-    private final NodeAwareExpander nodeExpander = new NodeAwareExpander(this::groupComponents);
+    private final AsyncZoneExpansionService asyncExpansion = new AsyncZoneExpansionService();
 
     private static final TagKey<Structure> NODE_STRUCTURE_TAG =
             TagKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath("beyond", "node_structure"));
@@ -37,6 +39,11 @@ public class ZoneManager implements IZoneManager {
 
     private LevelZoneData getLZD(ServerLevel l) { return BeyondAPI.getLevelZoneData(l); }
     private void syncLD(ServerLevel l) { BeyondAPI.syncLargeLevelData(l); }
+
+    @Override
+    public void tick(ServerLevel level) {
+        asyncExpansion.tick(level);
+    }
 
     @Override
     public boolean addZone(ServerLevel level, ChunkPos pos, ZoneType type) {
@@ -141,105 +148,53 @@ public class ZoneManager implements IZoneManager {
     @Override
     public void activeZoneInit(ServerLevel level) {
         LevelZoneData lzd = getLZD(level);
-        Set<ChunkPos> safeChunks = lzd.safeChunks();
-        if (safeChunks.isEmpty()) return;
+        Set<Long> seeds = new HashSet<>(lzd.getPacked(ZoneType.Safe_Zone));
+        if (seeds.isEmpty()) return;
 
-        Set<ChunkPos> nodeChunks = lzd.nodeChunks();
-        Set<ChunkPos> uncompleted = getUncompletedNodes(level, nodeChunks);
-
-        int minR = CommonConfig.ACTIVE_ZONE_MIN_EXPAND.get();
-        int maxR = CommonConfig.ACTIVE_ZONE_MAX_EXPAND.get();
-
-        List<ChunkPos> addedActive = new ArrayList<>();
-        int r = nodeExpander.expandUntilWrapped(level, safeChunks, uncompleted,
-                CommonConfig.ACTIVE_ZONE_MIN_NODES.get(), minR, maxR, lzd,
-                p -> {
-                    if (lzd.addActive(p)) {
-                        addedActive.add(p);
-                        return true;
-                    }
-                    return false;
-                });
-        if (!addedActive.isEmpty()) {
-            BeyondAPI.getLargeLevelData(level).recordAddedZoneChunks(ZoneType.Active_Zone, addedActive);
-        }
-        if (r >= minR) syncLD(level);
+        submitExpansion(level, ZoneExpansionJobType.INITIAL, seeds, getUncompletedNodeChunks(level),
+                CommonConfig.ACTIVE_ZONE_MIN_NODES.get(),
+                CommonConfig.ACTIVE_ZONE_MIN_EXPAND.get(),
+                CommonConfig.ACTIVE_ZONE_MAX_EXPAND.get());
     }
 
     @Override
     public void addActiveZone(ServerLevel level, RogueNodeData nodeData) {
-        List<ChunkPos> list = nodeData.getNodeData().getNodeChunkPosList();
-        if (list.isEmpty()) return;
+        Set<Long> seeds = new HashSet<>(nodeData.getNodeData().getNodeChunks());
+        if (seeds.isEmpty()) return;
 
-        Set<ChunkPos> seeds = new HashSet<>(list);
-        LevelZoneData lzd = getLZD(level);
-
-        Set<ChunkPos> nodeChunks = lzd.nodeChunks();
-        Set<ChunkPos> uncompleted = getUncompletedNodes(level, nodeChunks);
-
-        int need = CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get();
-        int minR = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
-        int maxR = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
-
-        List<ChunkPos> addedActive = new ArrayList<>();
-        int r = nodeExpander.expandUntilWrapped(level, seeds, uncompleted, need, minR, maxR, lzd,
-                p -> {
-                    if (lzd.addActive(p)) {
-                        addedActive.add(p);
-                        return true;
-                    }
-                    return false;
-                });
-        if (!addedActive.isEmpty()) {
-            BeyondAPI.getLargeLevelData(level).recordAddedZoneChunks(ZoneType.Active_Zone, addedActive);
-        }
-        if (r < 0) {
-            level.getServer().getPlayerList().broadcastSystemMessage(
-                    net.minecraft.network.chat.Component.translatable("commands.beyond.activezone.expand.failed"), false);
-        } else if (r >= minR) {
-            syncLD(level);
-        }
+        submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, seeds, getUncompletedNodeChunks(level),
+                CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get(),
+                CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get(),
+                CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get());
     }
 
     // ---- 辅助 ----
 
-    private Set<Set<ChunkPos>> groupComponents(Set<ChunkPos> uncompleted) {
-        Set<Set<ChunkPos>> comps = new HashSet<>();
-        Set<ChunkPos> remaining = new HashSet<>(uncompleted);
-        while (!remaining.isEmpty()) comps.add(extractComponent(remaining));
-        return comps;
+    private void submitExpansion(ServerLevel level, ZoneExpansionJobType type, Set<Long> seeds, Set<Long> uncompleted,
+                                 int minConnections, int minRadius, int maxRadius) {
+        LevelZoneData data = getLZD(level);
+        long jobId = asyncExpansion.nextJobId();
+        ZoneExpansionRequest request = new ZoneExpansionRequest(
+                jobId,
+                Set.copyOf(seeds),
+                new HashSet<>(data.getPacked(ZoneType.Safe_Zone)),
+                new HashSet<>(data.getPacked(ZoneType.Node_Zone)),
+                new HashSet<>(data.getPacked(ZoneType.Active_Zone)),
+                Set.copyOf(uncompleted),
+                minConnections,
+                minRadius,
+                maxRadius
+        );
+        asyncExpansion.submit(level, type, request);
     }
 
-    private static Set<ChunkPos> extractComponent(Set<ChunkPos> remaining) {
-        Set<ChunkPos> comp = new HashSet<>();
-        ChunkPos seed = remaining.iterator().next();
-        remaining.remove(seed);
-        comp.add(seed);
-        Deque<ChunkPos> q = new ArrayDeque<>();
-        q.add(seed);
-        while (!q.isEmpty()) {
-            for (ChunkPos nb : neighbors8(q.poll())) {
-                if (remaining.remove(nb)) { comp.add(nb); q.add(nb); }
-            }
-        }
-        return comp;
-    }
-
-    private static Set<ChunkPos> getUncompletedNodes(ServerLevel level, Set<ChunkPos> nodeChunks) {
-        Set<ChunkPos> uncompleted = new HashSet<>(nodeChunks);
+    private static Set<Long> getUncompletedNodeChunks(ServerLevel level) {
+        Set<Long> uncompleted = new HashSet<>(BeyondAPI.getLevelZoneData(level).getPacked(ZoneType.Node_Zone));
         for (NodeData nd : BeyondAPI.getNodeDatas(level)) {
             if (nd.getPhase() == NodePhase.UNLOCKED) {
-                for (long v : nd.getNodeChunks())
-                    uncompleted.remove(new ChunkPos(ChunkPos.getX(v), ChunkPos.getZ(v)));
+                uncompleted.removeAll(nd.getNodeChunks());
             }
         }
         return uncompleted;
-    }
-
-    private static List<ChunkPos> neighbors8(ChunkPos p) {
-        int cx = p.getMinBlockX() >> 4, cz = p.getMinBlockZ() >> 4;
-        return List.of(
-                new ChunkPos(cx+1,cz), new ChunkPos(cx-1,cz), new ChunkPos(cx,cz+1), new ChunkPos(cx,cz-1),
-                new ChunkPos(cx+1,cz+1), new ChunkPos(cx-1,cz-1), new ChunkPos(cx+1,cz-1), new ChunkPos(cx-1,cz+1));
     }
 }

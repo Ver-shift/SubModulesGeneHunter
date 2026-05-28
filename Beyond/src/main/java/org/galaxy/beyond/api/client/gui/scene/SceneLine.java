@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
 import org.galaxy.beyond.api.system.rogue.SceneType;
 import org.lwjgl.opengl.GL11;
@@ -25,8 +26,9 @@ import java.util.List;
 public class SceneLine extends UIElement{
 
 
-    private final ProgressType progressType;
-    private final List<SceneEntry> sceneEntries;
+    private ProgressType progressType;
+    private List<SceneEntry> sceneEntries;
+    private List<SceneType> lastScenes = List.of();
     private int lastScenesIndex = -1;
     private float currentOffsetY;
     private ISubscription scrollAnimation = () -> {};
@@ -39,16 +41,25 @@ public class SceneLine extends UIElement{
             layout.heightPercent(100);
             layout.flexDirection(FlexDirection.COLUMN);
 
-        });
+        });   
         sceneEntries = new ArrayList<>();
+        rebuildEntries(progressType);
+        Beyond.debugInfo("已经加载了" + sceneEntries.size()+ "节点");
+        addEventListener(UIEvents.TICK, event -> updateScrollPosition());
+    }
+
+    private void rebuildEntries(ProgressType progressType) {
+        for (SceneEntry entry : sceneEntries) {
+            removeChild(entry);
+        }
+        sceneEntries.clear();
         for (SceneType sceneType : progressType.getScenes()) {
             var scene = new SceneEntry(sceneType,sceneEntries.size(),progressType);
             scene.setId(sceneType.name());
             sceneEntries.add(scene);
             this.addChild(scene);
         }
-        Beyond.debugInfo("已经加载了" + sceneEntries.size()+ "节点");
-        addEventListener(UIEvents.TICK, event -> updateScrollPosition());
+        lastScenes = List.copyOf(progressType.getScenes());
     }
 
     @Override
@@ -57,6 +68,7 @@ public class SceneLine extends UIElement{
     }
 
     private void updateScrollPosition() {
+        refreshProgressType();
         if (sceneEntries.isEmpty()) {
             return;
         }
@@ -76,6 +88,18 @@ public class SceneLine extends UIElement{
             applyScrollOffset(targetOffsetY);
         }
         lastScenesIndex = scenesIndex;
+    }
+
+    private void refreshProgressType() {
+        var level = Minecraft.getInstance().level;
+        if (level == null) return;
+
+        ProgressType current = BeyondAPI.getProgressType(level);
+        if (current == progressType && current.getScenes().equals(lastScenes)) return;
+
+        progressType = current;
+        lastScenesIndex = -1;
+        rebuildEntries(progressType);
     }
 
     private int clampedScenesIndex() {

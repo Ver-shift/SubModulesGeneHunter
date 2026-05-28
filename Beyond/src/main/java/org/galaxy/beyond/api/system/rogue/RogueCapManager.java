@@ -16,7 +16,7 @@ import org.galaxy.beyond.api.system.zone.ZoneType;
 import java.util.List;
 
 /**
- * IRogueCap 事件分发器 —— 从 {@link RogueData#rogueCapData} 读取全局 cap 列表并分发事件。
+ * IRogueCap 事件分发器 —— 从 RogueData 读取全局 cap 列表并分发事件。
  */
 public class RogueCapManager {
 
@@ -39,7 +39,7 @@ public class RogueCapManager {
         for (ServerPlayer player : level.players()) {
             var mobData = BeyondAPI.getBeyondMobData(player);
             ZoneType oldZone = mobData.getZoneType();
-            ZoneType newZone = lzd.getZoneType(org.galaxy.beyond.api.util.CompatUtil.chunkPos(player.getOnPos()));
+            ZoneType newZone = lzd.getZoneType(org.galaxy.beyond.api.util.CompatUtil.chunkPos(player.blockPosition()));
             if (newZone == null) newZone = ZoneType.Empty;
 
             dispatchLivingTick(caps, player);

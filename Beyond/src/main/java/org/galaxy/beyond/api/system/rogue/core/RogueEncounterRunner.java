@@ -158,8 +158,6 @@ public class RogueEncounterRunner {
 
         BeyondAPI.getBeyondManager().getZoneManager().addActiveZone(level, nodeData);
         BeyondAPI.syncGlobalData(level);
-        level.getServer().getPlayerList().broadcastSystemMessage(
-                Component.translatable("beyond.node.zone_expanded"), false);
 
         if (encData != null && encData.getEvents() != null && encData.getEvents().hasEvents()) {
             RogueEncounterEvent.post(new RogueEncounterEvent.Complete(

@@ -18,4 +18,7 @@ public interface IZoneManager {
 
     void activeZoneInit(ServerLevel serverLevel);
     void addActiveZone(ServerLevel serverLevel, RogueNodeData nodeData);
+
+    default void tick(ServerLevel serverLevel) {
+    }
 }

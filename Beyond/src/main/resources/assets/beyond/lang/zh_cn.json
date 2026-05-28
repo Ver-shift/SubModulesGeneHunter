@@ -45,6 +45,7 @@
   "beyond.rogue.already_opened": "你已经打开过战利品袋了",
   "beyond.rogue.game_in_progress": "游戏已在进行中，无法使用战利品袋",
   "beyond.rogue.game_already_started": "游戏已被其他玩家触发开始，无法使用战利品袋",
+  "beyond.rogue.not_in_rogue": "你需要先离开安全区才能使用战利品袋",
   "beyond.rogue.player_ready": "你已准备就绪！（%s/%s）",
   "beyond.rogue.waiting_players": "等待 %s 名玩家准备...",
   "beyond.rogue.ready_status": "就绪状态：%s/%s 名玩家已准备",

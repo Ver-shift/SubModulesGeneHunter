@@ -45,6 +45,7 @@
   "beyond.rogue.already_opened": "You have already opened a loot bag",
   "beyond.rogue.game_in_progress": "Game is already in progress, cannot use loot bag",
   "beyond.rogue.game_already_started": "Another player has already started the game",
+  "beyond.rogue.not_in_rogue": "Leave the safe zone first to use the loot bag",
   "beyond.rogue.player_ready": "You are ready! (%s/%s)",
   "beyond.rogue.waiting_players": "Waiting for %s player(s)...",
   "beyond.rogue.ready_status": "Ready: %s/%s players",
