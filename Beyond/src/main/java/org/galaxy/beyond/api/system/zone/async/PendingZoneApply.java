@@ -4,7 +4,10 @@ import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PendingZoneApply {
 
@@ -27,10 +30,22 @@ public class PendingZoneApply {
         if (isDone()) return 0;
         int end = Math.min(cursor + limit, chunks.size());
         List<Long> batch = chunks.subList(cursor, end);
-        boolean changed = BeyondAPI.getLargeLevelData(level).addPackedZoneChunks(ZoneType.Active_Zone, batch);
+        boolean changed = BeyondAPI.getLargeLevelData(level).addPackedZoneChunks(ZoneType.Active_Zone, filterAvailable(level, batch));
         cursor = end;
         if (changed) BeyondAPI.syncLargeLevelData(level);
         return batch.size();
+    }
+
+    private static List<Long> filterAvailable(ServerLevel level, List<Long> batch) {
+        var data = BeyondAPI.getLevelZoneData(level);
+        Set<Long> blocked = new HashSet<>(data.getPacked(ZoneType.Safe_Zone));
+        blocked.addAll(data.getPacked(ZoneType.Node_Zone));
+        List<Long> filtered = new ArrayList<>(batch.size());
+        for (long chunk : batch) {
+            if (blocked.contains(chunk)) continue;
+            filtered.add(chunk);
+        }
+        return filtered;
     }
 
     public boolean isDone() {

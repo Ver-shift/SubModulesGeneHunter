@@ -23,6 +23,21 @@ public class PackedZoneExpander {
         int needed = targetComponents.isEmpty() ? 0 : Math.min(request.minConnections(), targetComponents.size());
         int actualRadius = -1;
 
+        org.galaxy.beyond.Beyond.debugInfo(
+                "[Zone][EXPAND] jobId={}, seeds={}, safe={}, node={}, active={}, uncompleted={}, beforeReachable={}, targetComponents={}, needed={}, minRadius={}, maxRadius={}",
+                request.jobId(),
+                request.seeds().size(),
+                request.safe().size(),
+                request.node().size(),
+                request.active().size(),
+                request.uncompleted().size(),
+                beforeReachable.size(),
+                targetComponents.size(),
+                needed,
+                request.minRadius(),
+                request.maxRadius()
+        );
+
         for (int radius = 1; radius <= request.maxRadius(); radius++) {
             for (long chunk : ringOf(request.seeds(), radius)) {
                 if (hasAny(safe, node, active, chunk)) continue;
@@ -56,6 +71,14 @@ public class PackedZoneExpander {
             }
             break;
         }
+
+        org.galaxy.beyond.Beyond.debugInfo(
+                "[Zone][EXPAND_DONE] jobId={}, added={}, radius={}, success={}",
+                request.jobId(),
+                added.size(),
+                actualRadius,
+                actualRadius >= 0
+        );
 
         return new ZoneExpansionResult(request.jobId(), List.copyOf(added), actualRadius, actualRadius >= 0);
     }
@@ -178,7 +201,6 @@ public class PackedZoneExpander {
                 pack(x - 1, z + 1)
         );
     }
-
     private static boolean hasAny(Set<Long> safe, Set<Long> node, Set<Long> active, long chunk) {
         return safe.contains(chunk) || node.contains(chunk) || active.contains(chunk);
     }

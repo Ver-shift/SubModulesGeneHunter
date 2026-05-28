@@ -123,6 +123,10 @@ public class BeyondConfigScreen {
                         v -> CommonConfig.ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS.set(v.intValue()), 3, false)
                         .setRange(0, 64).setWheel(1)
         );
+        grp.addConfigurator(
+                new ColorConfigurator("beyond.config.field.active_zone_render_color", CommonConfig.ACTIVE_ZONE_RENDER_COLOR::get,
+                        CommonConfig.ACTIVE_ZONE_RENDER_COLOR::set, 0x64DCDCDC, false)
+        );
         return grp;
     }
 

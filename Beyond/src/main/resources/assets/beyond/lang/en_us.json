@@ -14,6 +14,7 @@
   "beyond.config.field.node_max_expand_radius": "Node Max Expand Radius",
   "beyond.config.field.min_connections": "Min Connections",
   "beyond.config.field.border_visible_chunks": "Border Visible Chunks",
+  "beyond.config.field.active_zone_render_color": "Active Zone Border Color",
   "beyond.config.field.green_weight": "Green Weight",
   "beyond.config.field.orange_weight": "Orange Weight",
   "beyond.config.field.red_weight": "Red Weight",
@@ -131,6 +132,8 @@
   "commands.beyond.unlockCurrentNode.not_in_node": "You are not inside a node",
   "commands.beyond.unlockCurrentNode.already_unlocked": "Current node is already unlocked",
   "commands.beyond.unlockCurrentNode.success": "Unlocked current node",
+  "commands.beyond.activeBoundary.not_found": "No active zone boundary found",
+  "commands.beyond.activeBoundary.success": "Teleported to nearest active zone boundary: %s, %s",
 
   "beyond.event.monster.spawn": "Monsters appear! Defeat them to advance",
   "beyond.event.boss.spawn": "The Boss appears! Defeat it to clear this node",
@@ -139,6 +142,8 @@
   "beyond.event.heal.player": "You recovered some health",
   "beyond.event.reward.grant": "Received 3 iron ingots as reward!",
 
+  "beyond.node.zone_expanding": "Node unlocked. Expanding the active zone...",
+  "beyond.node.zone_expanding_busy": "The active zone is still expanding. Please wait a moment",
   "beyond.node.zone_expanded": "Active zone expanded! Find the next node to continue your adventure",
 
   "beyond.node.game_not_started": "The game has not started yet. Leave the safe zone first!",

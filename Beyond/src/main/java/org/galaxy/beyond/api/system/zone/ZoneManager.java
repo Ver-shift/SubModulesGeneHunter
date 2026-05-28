@@ -1,6 +1,7 @@
 package org.galaxy.beyond.api.system.zone;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -8,6 +9,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.node.NodeColor;
@@ -83,18 +85,30 @@ public class ZoneManager implements IZoneManager {
         if (targets.isEmpty()) return;
 
         var largeData = BeyondAPI.getLargeLevelData(level);
-        if (isRegisteredNode(level, targets)) return;
+        if (isRegisteredNode(level, targets)) {
+            if (largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(targets))) syncLD(level);
+            return;
+        }
         if (!clearLockedConflicts(level, largeData, targets)) return;
 
+        boolean activeChanged = largeData.removePackedZoneChunks(ZoneType.Active_Zone, packChunks(targets));
         boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, targets);
 
         var nd = new NodeData(randomNodeColor(level));
         for (ChunkPos cp : targets) nd.addChunkPos(cp);
         boolean nodeChanged = largeData.addNodeData(nd);
 
-        if (zoneChanged || nodeChanged) {
+        if (activeChanged || zoneChanged || nodeChanged) {
             syncLD(level);
         }
+    }
+
+    private static List<Long> packChunks(Collection<ChunkPos> chunks) {
+        List<Long> packed = new ArrayList<>(chunks.size());
+        for (ChunkPos chunk : chunks) {
+            packed.add(((long) chunk.x & 0xFFFFFFFFL) | (((long) chunk.z & 0xFFFFFFFFL) << 32));
+        }
+        return packed;
     }
 
     private static boolean isRegisteredNode(ServerLevel level, Set<ChunkPos> targets) {
@@ -162,16 +176,28 @@ public class ZoneManager implements IZoneManager {
         Set<Long> seeds = new HashSet<>(nodeData.getNodeData().getNodeChunks());
         if (seeds.isEmpty()) return;
 
-        submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, seeds, getUncompletedNodeChunks(level),
+        Beyond.debugInfo(
+                "[Zone][NODE_UNLOCK] seeds={}, minConnections={}, minRadius={}, maxRadius={}, nodeKey={}, nodePhase={}",
+                seeds.size(),
+                CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get(),
+                CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get(),
+                CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get(),
+                nodeData.getNodeData().ensureNodeKey(),
+                nodeData.getNodeData().getPhase().name()
+        );
+
+        boolean submitted = submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, seeds, getUncompletedNodeChunks(level),
                 CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get(),
                 CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get(),
                 CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get());
+        level.getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable(submitted ? "beyond.node.zone_expanding" : "beyond.node.zone_expanding_busy"), false);
     }
 
     // ---- 辅助 ----
 
-    private void submitExpansion(ServerLevel level, ZoneExpansionJobType type, Set<Long> seeds, Set<Long> uncompleted,
-                                 int minConnections, int minRadius, int maxRadius) {
+    private boolean submitExpansion(ServerLevel level, ZoneExpansionJobType type, Set<Long> seeds, Set<Long> uncompleted,
+                                    int minConnections, int minRadius, int maxRadius) {
         LevelZoneData data = getLZD(level);
         long jobId = asyncExpansion.nextJobId();
         ZoneExpansionRequest request = new ZoneExpansionRequest(
@@ -185,7 +211,7 @@ public class ZoneManager implements IZoneManager {
                 minRadius,
                 maxRadius
         );
-        asyncExpansion.submit(level, type, request);
+        return asyncExpansion.submit(level, type, request);
     }
 
     private static Set<Long> getUncompletedNodeChunks(ServerLevel level) {

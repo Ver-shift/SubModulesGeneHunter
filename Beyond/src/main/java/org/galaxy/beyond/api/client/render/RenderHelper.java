@@ -123,6 +123,18 @@ public final class RenderHelper {
         poseStack.popPose();
     }
 
+    public static void renderBorderSegments(List<BorderSegment> segments,
+                                            int argb, Camera camera, PoseStack poseStack) {
+        int alpha = alpha(argb);
+        if (alpha <= 0) return;
+        renderBorderSegments(
+                segments,
+                red(argb), green(argb), blue(argb),
+                alpha, fadeTopAlpha(alpha),
+                camera, poseStack
+        );
+    }
+
     private static void addWall(BufferBuilder builder, Matrix4f matrix,
                                 double x1, double x2, double y1, double y2, double z1, double z2,
                                 int r, int g, int b, int bottomAlpha, int topAlpha,

@@ -1,7 +1,6 @@
 package org.galaxy.beyond.comand;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -11,17 +10,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueData;
-import org.galaxy.beyond.api.system.rogue.RogueNodeData;
-import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
-import org.galaxy.beyond.api.system.rogue.core.RogueEncounterRunner;
-import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -35,7 +27,7 @@ public class BeyondCommand {
                         .then(Commands.literal("home")
                                 .executes(ctx -> {
                                     CommandSourceStack source = ctx.getSource();
-                                    ServerPlayer player = source.getPlayerOrException();
+                                    var player = source.getPlayerOrException();
                                     ServerLevel level = (ServerLevel) player.level();
 
                                     var safeZone = BeyondAPI.getSafeZoneStructureData(level);
@@ -60,31 +52,7 @@ public class BeyondCommand {
                                     return 1;
                                 })
                         )
-                        .then(Commands.literal("safezone")
-                                .then(Commands.literal("expand")
-                                        .then(Commands.argument("chunkSize", IntegerArgumentType.integer(2, 256))
-                                                .executes(ctx -> {
-                                                    CommandSourceStack source = ctx.getSource();
-                                                    ServerPlayer player = source.getPlayerOrException();
-                                                    ServerLevel level = (ServerLevel) player.level();
-                                                    int chunkSize = IntegerArgumentType.getInteger(ctx, "chunkSize");
-
-                                                    if (chunkSize % 2 != 0) {
-                                                        source.sendFailure(Component.translatable("commands.beyond.safezone.expand.odd"));
-                                                        return 0;
-                                                    }
-
-                                                    var zoneManager = BeyondAPI.getBeyondManager().getZoneManager();
-                                                    zoneManager.addSafeZone(level, chunkSize, player.blockPosition());
-                                                    source.sendSuccess(
-                                                            () -> Component.translatable("commands.beyond.safezone.expand.success", chunkSize),
-                                                            true
-                                                    );
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                        )
+                        .then(BeyondCreativeCommand.create())
                         .then(Commands.literal("config")
                                 .then(Commands.literal("currentProgress")
                                         .then(Commands.argument("value", StringArgumentType.string())
@@ -174,42 +142,6 @@ public class BeyondCommand {
                                                 )
                                         )
                                 )
-                        )
-                        .then(Commands.literal("unlockCurrentNode")
-                                .executes(ctx -> {
-                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
-                                    ServerLevel level = (ServerLevel) player.level();
-                                    RogueData rogueData = BeyondAPI.getRogueData(level);
-                                    if (BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase() == PlayerPhase.LOBBY) {
-                                        ctx.getSource().sendFailure(Component.translatable("beyond.node.not_in_rogue"));
-                                        return 0;
-                                    }
-                                    if (rogueData.getPhase() != RoguePhase.ON_PROGRESS) {
-                                        ctx.getSource().sendFailure(Component.translatable("beyond.node.game_not_started"));
-                                        return 0;
-                                    }
-                                    ChunkPos playerChunk = new ChunkPos(player.blockPosition());
-                                    var nodeData = BeyondAPI.findNodeData(level, playerChunk);
-                                    if (nodeData == null) {
-                                        ctx.getSource().sendFailure(Component.translatable("commands.beyond.unlockCurrentNode.not_in_node"));
-                                        return 0;
-                                    }
-                                    if (nodeData.getPhase() == NodePhase.UNLOCKED) {
-                                        ctx.getSource().sendFailure(Component.translatable("commands.beyond.unlockCurrentNode.already_unlocked"));
-                                        return 0;
-                                    }
-
-                                    RogueNodeData rogueNodeData = new RogueNodeData();
-                                    rogueNodeData.setNodeData(nodeData);
-                                    rogueNodeData.setNodeChunk(playerChunk);
-                                    rogueData.setRogueNodeData(rogueNodeData);
-
-                                    new RogueEncounterRunner(level, new RogueContext(), rogueNodeData).forceUnlockNode();
-                                    ctx.getSource().sendSuccess(
-                                            () -> Component.translatable("commands.beyond.unlockCurrentNode.success"),
-                                            true);
-                                    return 1;
-                                })
                         )
         );
     }

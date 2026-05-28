@@ -14,6 +14,7 @@
   "beyond.config.field.node_max_expand_radius": "节点最大扫描半径",
   "beyond.config.field.min_connections": "最少连接数",
   "beyond.config.field.border_visible_chunks": "边界可见距离（区块）",
+  "beyond.config.field.active_zone_render_color": "可活动区域边界颜色",
   "beyond.config.field.green_weight": "绿色权重",
   "beyond.config.field.orange_weight": "橙色权重",
   "beyond.config.field.red_weight": "红色权重",
@@ -131,6 +132,8 @@
   "commands.beyond.unlockCurrentNode.not_in_node": "你不在节点范围内",
   "commands.beyond.unlockCurrentNode.already_unlocked": "当前节点已解锁",
   "commands.beyond.unlockCurrentNode.success": "已解锁当前节点",
+  "commands.beyond.activeBoundary.not_found": "找不到可活动区域边界",
+  "commands.beyond.activeBoundary.success": "已传送至最近可活动区域边界：%s, %s",
 
   "beyond.event.monster.spawn": "怪物出现了！击败它们来推进探索",
   "beyond.event.boss.spawn": "首领出现了！击败它来通关此节点",
@@ -139,6 +142,8 @@
   "beyond.event.heal.player": "你恢复了部分生命值",
   "beyond.event.reward.grant": "获得了 3 个铁锭作为战利品！",
 
+  "beyond.node.zone_expanding": "节点已解锁，正在拓展可探索区域...",
+  "beyond.node.zone_expanding_busy": "可探索区域仍在拓展中，请稍等片刻",
   "beyond.node.zone_expanded": "可探索区域已扩张，寻找下一个节点继续冒险吧",
 
   "beyond.node.game_not_started": "关卡尚未开始，请先离开安全区触发关卡！",

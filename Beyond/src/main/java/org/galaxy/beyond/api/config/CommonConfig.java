@@ -33,6 +33,8 @@ public class CommonConfig {
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_CONNECTIONS;
     /** 玩家距离活动区边界多少区块内才显示边界 */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS;
+    /** 可活动区域边界实际渲染 ARGB 颜色 */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_RENDER_COLOR;
 
     /** 节点颜色权重：绿色 */
     public static final ModConfigSpec.IntValue NODE_COLOR_GREEN_WEIGHT;
@@ -95,6 +97,9 @@ public class CommonConfig {
         ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS = BUILDER
                 .comment("玩家距离活动区边界多少区块内才显示边界。")
                 .defineInRange("borderVisibleChunks", 3, 0, 64);
+        ACTIVE_ZONE_RENDER_COLOR = BUILDER
+                .comment("可活动区域边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("activeZoneRenderColor", 0x64DCDCDC, Integer.MIN_VALUE, Integer.MAX_VALUE);
         BUILDER.pop();
 
         BUILDER.comment("节点颜色权重配置").push("node_color");
