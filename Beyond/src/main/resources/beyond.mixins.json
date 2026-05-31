@@ -2,7 +2,10 @@
   "required": true,
   "package": "org.galaxy.beyond.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "SinglePoolElementAccessor",
+    "StructureTemplateAccessor"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

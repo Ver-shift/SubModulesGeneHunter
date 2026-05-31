@@ -8,6 +8,7 @@ import org.galaxy.gene_hunter.api.init.GeneHunterAttachInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterAttributeInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterRogueEventInit;
 
 @Mod(GeneHunter.MODID)
 public class GeneHunter {
@@ -17,6 +18,7 @@ public class GeneHunter {
 
         GeneHunterAttachInit.register(modEventBus);
         GeneHunterLootInit.register(modEventBus);
+        GeneHunterRogueEventInit.register(modEventBus);
         GeneHunterAttributeInit.register(modEventBus);
         GeneHunterMenuInit.register();
 

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.world.PieceBeardifierModifier;
 import org.galaxy.beyond.api.client.gui.UIProvider;
 
 public class TextItem extends Item implements HeldItemUIMenuType.HeldItemUI {
@@ -26,6 +27,7 @@ public class TextItem extends Item implements HeldItemUIMenuType.HeldItemUI {
             HeldItemUIMenuType.openUI(serverPlayer, hand);
             return new InteractionResultHolder<>(InteractionResult.CONSUME, stack);
         }
+//        PieceBeardifierModifier
         return InteractionResultHolder.pass(stack);
     }
 

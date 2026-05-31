@@ -3,7 +3,9 @@ package org.galaxy.beyond;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.*;
@@ -38,7 +40,9 @@ public class Beyond {
         MANAGER = new BeyondManager();
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
-        BeyondConfigScreen.register(modContainer);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            BeyondConfigScreen.register(modContainer);
+        }
         newRegistry(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(BeyondCommand::register);
@@ -65,6 +69,7 @@ public class Beyond {
         BeyondCreativeTabInit.register(modEventBus);
         BeyondAttachmentInit.register(modEventBus);
         BeyondMobEffectInit.register(modEventBus);
+        BeyondStructureInit.register(modEventBus);
     }
 
 

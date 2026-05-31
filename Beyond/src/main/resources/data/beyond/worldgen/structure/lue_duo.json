@@ -1,9 +1,9 @@
 {
   "type": "beyond:terrain_blend_jigsaw",
-  "biomes": "#beyond:has_pillager_camp",
+  "biomes": "#beyond:has_lue_duo",
   "step": "surface_structures",
   "spawn_overrides": {},
-  "start_pool": "beyond:pillager_camp_pool",
+  "start_pool": "beyond:lue_duo_pool",
   "size": 1,
   "start_height": {
     "absolute": 0
@@ -12,12 +12,11 @@
   "max_distance_from_center": 116,
   "use_expansion_hack": false,
   "terrain_blend": {
-    "radius": 8,
-    "blend_extension": 4,
-    "slope_height": 2,
-    "depth": 4,
-    "foundation_depth": 4,
-    "max_surface_delta": 10,
-    "anchor_mode": "footprint"
+    "radius": 14,
+    "blend_extension": 6,
+    "slope_height": 3,
+    "depth": 10,
+    "anchor_mode": "solid_tag",
+    "solid_tag": "beyond:terrain_blend_solid"
   }
 }

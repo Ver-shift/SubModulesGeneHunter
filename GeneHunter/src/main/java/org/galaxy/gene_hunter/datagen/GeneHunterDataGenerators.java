@@ -28,5 +28,9 @@ public class GeneHunterDataGenerators {
             event.includeServer(),
             new GeneHunterTagProvider(pack, registries, blockTagProvider.contentsGetter(), helper)
         );
+        generator.addProvider(
+            event.includeServer(),
+            new GeneHunterProgressGen(pack, registries)
+        );
     }
 }

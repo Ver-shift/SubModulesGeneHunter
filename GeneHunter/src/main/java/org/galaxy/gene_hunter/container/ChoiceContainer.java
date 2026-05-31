@@ -4,7 +4,6 @@ import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
-import com.lowdragmc.lowdraglib2.gui.ui.event.UIEventListener;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.networking.rpc.RPCPacketDistributor;
 import dev.vfyjxf.taffy.style.AlignContent;
@@ -13,8 +12,8 @@ import dev.vfyjxf.taffy.style.FlexDirection;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
 import org.galaxy.gene_hunter.ui.element.Choice;
-import org.jetbrains.annotations.Nullable;
 
 import static org.galaxy.gene_hunter.api.GeneHunterAPI.getChoiceManager;
 import static org.galaxy.gene_hunter.api.GeneHunterAPI.getGeneHunterData;
@@ -25,6 +24,11 @@ public class ChoiceContainer {
     public static ModularUI init(Player player) {
         return createGeneInventoryUI(player);
     }
+
+    public static void rogueRewardEvent(ServerPlayer player) {
+        getChoiceManager(player).startRoll(GeneHunterLootInit.WEAPON_LOOT_TYPE.get());
+    }
+
     public static ModularUI createGeneInventoryUI(Player player) {
 
         var root = new UIElement();

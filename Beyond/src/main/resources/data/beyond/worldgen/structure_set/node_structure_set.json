@@ -2,13 +2,17 @@
   "structures": [
     {
       "structure": "beyond:smal_castle",
-      "weight": 80
+      "weight": 70
+    },
+    {
+      "structure": "beyond:lue_duo",
+      "weight": 30
     }
   ],
   "placement": {
     "type": "minecraft:random_spread",
     "salt": 514229371,
-    "spacing": 8,
-    "separation": 3
+    "spacing": 32,
+    "separation": 12
   }
 }
