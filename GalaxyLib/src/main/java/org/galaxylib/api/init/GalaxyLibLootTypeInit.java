@@ -40,22 +40,19 @@ public class GalaxyLibLootTypeInit {
         return LOOT_TYPE_REGISTRY.get(lootTypeId);
     }
 
+    public static ResourceLocation getLootTypeId(ILootType<?> lootType) {
+        return LOOT_TYPE_REGISTRY.getKey(lootType);
+    }
+
     
     /**
      * 根据名称获取战利品类型
      */
-    public static ILootType<?> getLootTypeByName(String name) {
-        return LOOT_TYPE_REGISTRY.stream()
-                .filter(type -> type.getName().equals(name))
-                .findFirst()
-                .orElse(null);
-    }
-
     /**
      * 注册战利品类型
      */
-    public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(Supplier<T> supplier) {
-        return LOOT_TYPE.register(supplier.get().getName(), supplier);
+    public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(String name, Supplier<T> supplier) {
+        return LOOT_TYPE.register(name, supplier);
     }
 
     // ==================== 战利品类型注册 ====================

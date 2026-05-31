@@ -19,6 +19,11 @@ public interface IStructureManager {
     List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos);
 
     /**
+     * 获取位置所在区块中匹配指定 tag 的结构占据的区块集合。
+     */
+    List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos, TagKey<Structure> tag);
+
+    /**
      * 获取该位置所有结构的合并包围盒，若没有结构则返回 null。
      */
     @Nullable

@@ -6,10 +6,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.block.NodeBlock;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.*;
@@ -23,7 +25,9 @@ public class NodeCap extends RogueCap {
 
     public static final ResourceLocation ID = Beyond.asResource("node");
 
-    public NodeCap() { super(ID); }
+    public NodeCap() {
+        super(ID);
+    }
 
     // ---- 方块点击 ----
 
@@ -31,7 +35,7 @@ public class NodeCap extends RogueCap {
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(event.getLevel().getBlockState(event.getPos()).getBlock()
-                instanceof org.galaxy.beyond.block.NodeBlock)) return;
+                instanceof NodeBlock)) return;
         if (!isInRogue(player)) {
             player.sendSystemMessage(Component.translatable("beyond.node.not_in_rogue"));
             return;
@@ -42,7 +46,8 @@ public class NodeCap extends RogueCap {
     private static void handleNodeClick(ServerPlayer player, BlockPos pos) {
         ServerLevel level = (ServerLevel) player.level();
         IRogueContext ctx = new RogueContext();
-        RogueNodeData nodeData = ensureNodeData(level, org.galaxy.beyond.api.util.CompatUtil.chunkPos(pos), ctx);
+        BlockPos nodePos = normalizeNodePos(level, pos);
+        RogueNodeData nodeData = ensureNodeData(level, nodePos, ctx);
         if (nodeData.getNodeData() == null) return;
 
         if (ctx.getPhase(level) == RoguePhase.LOBBY) {
@@ -86,13 +91,15 @@ public class NodeCap extends RogueCap {
 
     // ---- ensureNodeData ----
 
-    private static RogueNodeData ensureNodeData(ServerLevel level, ChunkPos clickedChunk, IRogueContext ctx) {
+    private static RogueNodeData ensureNodeData(ServerLevel level, BlockPos clickedPos, IRogueContext ctx) {
+        ChunkPos clickedChunk = org.galaxy.beyond.api.util.CompatUtil.chunkPos(clickedPos);
         var rogueData = ctx.getRogueData(level);
         RogueNodeData current = rogueData.getRogueNodeData();
 
         if (current != null && current.getNodeData() != null) {
             if (clickedChunk.equals(current.getNodeChunk())
                     || current.getNodeData().containsChunk(clickedChunk)) {
+                current.setNodePos(clickedPos);
                 return current;
             }
         }
@@ -103,9 +110,19 @@ public class NodeCap extends RogueCap {
         RogueNodeData next = new RogueNodeData();
         next.setNodeData(nodeData);
         next.setNodeChunk(clickedChunk);
+        next.setNodePos(clickedPos);
         rogueData.setRogueNodeData(next);
         BeyondAPI.syncGlobalData(level);
         return next;
+    }
+
+    private static BlockPos normalizeNodePos(ServerLevel level, BlockPos pos) {
+        var state = level.getBlockState(pos);
+        if (state.getBlock() instanceof NodeBlock
+                && state.getValue(NodeBlock.HALF) == DoubleBlockHalf.UPPER) {
+            return pos.below();
+        }
+        return pos;
     }
 
     private static boolean isInRogue(ServerPlayer player) {

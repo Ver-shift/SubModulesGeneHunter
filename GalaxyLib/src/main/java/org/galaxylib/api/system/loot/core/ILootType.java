@@ -1,22 +1,33 @@
 package org.galaxylib.api.system.loot.core;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.galaxylib.api.init.GalaxyLibAttributeInit;
+import org.galaxylib.api.system.loot.LootManager;
+import org.galaxylib.api.system.loot.data.LootEntryDefinition;
+
+import java.util.Optional;
 
 public interface ILootType<T> {
 
+    Optional<T> resolve(LootEntryDefinition entry, LootManager.Context context);
 
-    String getName();
+    default ItemStack createStack(LootManager.Bundle<T> bundle, LootManager.Context context) {
+        return bundle.first()
+                .map(value -> value.value() instanceof ItemStack stack ? stack : ItemStack.EMPTY)
+                .orElse(ItemStack.EMPTY);
+    }
 
-    /**
-     * 从ld 里面获取想要的东西，例如物品，词条，
-     * @param lootId
-     * @return
-     */
-    T getLoot(ResourceLocation lootId,int count);
+    default LootManager.ClaimResult claim(ServerPlayer player, ItemStack stack, LootManager.Context context) {
+        if (stack.isEmpty()) {
+            return LootManager.ClaimResult.empty();
+        }
+        if (!player.getInventory().add(stack)) {
+            player.spawnAtLocation(stack);
+        }
+        return LootManager.ClaimResult.success(stack);
+    }
 
 
     /**
@@ -31,35 +42,6 @@ public interface ILootType<T> {
     }
 
 
-    /**
-     * 将战利品发放给玩家
-     * @param player 玩家
-     * @param lootResult 抽取结果
-     */
-    default void claimResultsToPlayer(ServerPlayer player, ILootTableManager.LootResult lootResult) {
-        // 遍历所有抽中的条目
-        for (var entry : lootResult.result()) {
-            // 通过 lootType 获取实际的战利品对象
-            Object loot = lootResult.lootType().getLoot(entry.getId(), entry.getCount());
-            claimItemStackToPlayer(player, loot);
-        }
-    }
-    default void claimItemStackToPlayer(ServerPlayer player, Object itemStack){
-        if (itemStack instanceof ItemStack stack) {
-            // 添加到玩家背包，如果背包满了则掉落在地上
-            if (!player.getInventory().add(stack)) {
-                player.spawnAtLocation(stack);
-            }
-        }
-    }
-
-    default ItemStack stackLike(ILootTableManager.LootResult lootResult){
-        if (getLoot(lootResult.result().get(0).getId(),1) instanceof ItemStack stack) {
-            return stack;
-        }
-        return ItemStack.EMPTY;
-    }
-    
     /**
      * 根据属性值计算抽取次数
      * <p>

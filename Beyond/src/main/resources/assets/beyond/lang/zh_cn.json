@@ -56,6 +56,8 @@
 
   "itemGroup.beyond": "Beyond 模组",
   "item.beyond.loot_bag": "战利品袋",
+  "item.beyond.test_item": "测试物品",
+  "item.beyond.world_seed": "世界种子",
   "block.beyond.node_block": "节点方块",
   "effect.beyond.zone_indicator": "区域指示",
   "beyond.effect.zone_indicator.outside_warning": "你已离开可活动区域，正在持续失去生命值。",
@@ -64,7 +66,7 @@
   "beyond.configuration.section.beyond.common.toml": "Beyond 配置",
   "beyond.configuration.section.beyond.common.toml.title": "Beyond 配置",
 
-  "beyond.welcome": "欢迎游玩我的肉鸽mod",
+  "beyond.welcome": "欢迎游玩我的肉鸽mod！如果有不懂的内容，可以查看Wiki获取玩法说明。",
 
   "beyond.rogue.start": "关卡 %s 开始！所有玩家已准备就绪",
   "beyond.rogue.start.no_progress": "未设置当前关卡，请使用 /beyond config currentProgress 设置",
@@ -160,6 +162,9 @@
   "commands.beyond.unlockCurrentNode.success": "已解锁当前节点",
   "commands.beyond.activeBoundary.not_found": "找不到可活动区域边界",
   "commands.beyond.activeBoundary.success": "已传送至最近可活动区域边界：%s, %s",
+  "commands.beyond.node.invalid_type": "无效的节点传送类型：%s",
+  "commands.beyond.node.not_found": "找不到符合条件的节点：%s",
+  "commands.beyond.node.teleport.success": "已传送至最近节点（%s）：%s, %s",
 
   "beyond.event.monster.spawn": "怪物出现了！击败它们来推进探索",
   "beyond.event.boss.spawn": "首领出现了！击败它来通关此节点",
@@ -170,8 +175,15 @@
 
   "beyond.node.zone_expanding": "节点已解锁，正在拓展可探索区域...",
   "beyond.node.zone_expanding_busy": "可探索区域仍在拓展中，请稍等片刻",
+  "beyond.node.zone_expanding_scan": "正在扫描可探索区域 %s",
+  "beyond.node.zone_expanding_apply": "正在展开可探索区域 %s %s/%s",
   "beyond.node.active_zone_initial_radius": "初始可活动区域半径：%s 区块",
-  "beyond.node.zone_expanded": "可探索区域已扩张，半径：%s 区块，发现节点区域：%s 个",
+  "beyond.node.active_zone_initial_expanded": "初始可探索区域已扩张，半径：%s 区块，已发现节点：%s 个，新节点：%s 个",
+  "beyond.node.zone_expanded": "可探索区域已扩张，半径：%s 区块，已发现节点：%s 个，新节点：%s 个",
+  "beyond.node.zone_expanded_no_target": "未发现新的节点区域，可探索区域暂不扩张",
+  "beyond.node.zone_expanded_no_node": "可探索区域已扩张，半径：%s 区块，但没有发现新的节点区域",
+  "beyond.item.world_seed.expanding": "世界种子正在开拓可探索区域...",
+  "beyond.item.world_seed.expanded": "世界种子已开拓可探索区域，半径：%s 区块，已发现节点：%s 个，新节点：%s 个",
 
   "beyond.node.game_not_started": "关卡尚未开始，请先离开安全区触发关卡！",
   "beyond.event.not_cleared": "当前事件尚未完成，请先击败所有敌人！",

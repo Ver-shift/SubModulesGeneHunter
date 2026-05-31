@@ -99,6 +99,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         }
 
         playerData.getPlayerRogueData().setFirstSpawnDone(true);
+        // TODO 补充正式 Wiki 链接，之后可以改成可点击文本，引导玩家查看玩法说明。
         player.sendSystemMessage(Component.translatable("beyond.welcome"));
 
         if (!spawnPos.equals(BlockPos.ZERO)) {

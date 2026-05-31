@@ -1,0 +1,83 @@
+{
+  "type": "gateways:normal",
+  "size": "small",
+  "color": "#55AA55",
+  "spawn_algorithm": "gateways:inward_spiral",
+  "rules": {
+    "spawn_range": 8.0,
+    "leash_range": 32.0,
+    "player_damage_only": true,
+    "requires_nearby_player": true,
+    "lives": 3
+  },
+  "boss_event": {
+    "mode": "boss_bar",
+    "fog": false
+  },
+  "waves": [
+    {
+      "max_wave_time": 4800,
+      "setup_time": 80,
+      "entities": [
+        {
+          "type": "gateways:standard",
+          "entity": "minecraft:zombie",
+          "count": 5
+        }
+      ],
+      "rewards": [
+        {
+          "type": "gateways:entity_loot",
+          "entity": "minecraft:zombie",
+          "rolls": 10
+        }
+      ]
+    },
+    {
+      "max_wave_time": 4800,
+      "setup_time": 100,
+      "entities": [
+        {
+          "type": "gateways:standard",
+          "entity": "minecraft:zombie",
+          "count": 8,
+          "modifiers": [
+            {
+              "type": "gateways:attribute",
+              "attribute": "minecraft:generic.max_health",
+              "operation": "add_multiplied_total",
+              "value": 0.25
+            }
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "type": "gateways:experience",
+          "experience": 120,
+          "orb_size": 10
+        }
+      ]
+    }
+  ],
+  "rewards": [
+    {
+      "type": "gateways:stack",
+      "stack": {
+        "id": "minecraft:iron_ingot",
+        "count": 6
+      }
+    },
+    {
+      "type": "gene_hunter:choice"
+    }
+  ],
+  "failures": [
+    {
+      "type": "gateways:mob_effect",
+      "effect": "minecraft:hunger",
+      "duration": 200,
+      "amplifier": 0
+    }
+  ]
+}

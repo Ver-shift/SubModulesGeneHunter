@@ -1,19 +1,19 @@
 {
-  "values": [
-    "simplyswords:iron_claymore",
-    "simplyswords:gold_claymore",
-    "simplyswords:diamond_claymore",
-    "simplyswords:netherite_claymore",
-    "simplyswords:runic_claymore",
-    "simplyswords:iron_greathammer",
-    "simplyswords:gold_greathammer",
-    "simplyswords:diamond_greathammer",
-    "simplyswords:netherite_greathammer",
-    "simplyswords:runic_greathammer",
-    "simplyswords:iron_greataxe",
-    "simplyswords:gold_greataxe",
-    "simplyswords:diamond_greataxe",
-    "simplyswords:netherite_greataxe",
-    "simplyswords:runic_greataxe"
-  ]
+    "values": [
+        "simplyswords:iron_claymore",
+        "simplyswords:gold_claymore",
+        "simplyswords:diamond_claymore",
+        "simplyswords:netherite_claymore",
+        "simplyswords:runic_claymore",
+        "simplyswords:iron_greathammer",
+        "simplyswords:gold_greathammer",
+        "simplyswords:diamond_greathammer",
+        "simplyswords:netherite_greathammer",
+        "simplyswords:runic_greathammer",
+        "simplyswords:iron_greataxe",
+        "simplyswords:gold_greataxe",
+        "simplyswords:diamond_greataxe",
+        "simplyswords:netherite_greataxe",
+        "simplyswords:runic_greataxe"
+    ]
 }

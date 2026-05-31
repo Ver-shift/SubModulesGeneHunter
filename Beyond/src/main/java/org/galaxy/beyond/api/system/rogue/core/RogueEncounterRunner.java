@@ -1,6 +1,7 @@
 package org.galaxy.beyond.api.system.rogue.core;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.Beyond;
@@ -85,7 +86,9 @@ public class RogueEncounterRunner {
     // ON_EVENT → 步进 / 解锁
     // ============================================================
 
-    /** 推进到下一个事件或解锁。返回 true 表示节点已结束。 */
+    /**
+     * 推进到下一个事件或解锁。返回 true 表示节点已结束。
+     */
     public boolean advanceEvent(ServerPlayer player) {
         if (!nodeData.hasEncounter()) return false;
 
@@ -223,10 +226,17 @@ public class RogueEncounterRunner {
         return c;
     }
 
-    public boolean isPreNode() { return nodeData.getNodePhase() == NodePhase.PRE_NODE; }
-    public boolean isPreEvent() { return nodeData.getNodePhase() == NodePhase.PRE_EVENT; }
+    public boolean isPreNode() {
+        return nodeData.getNodePhase() == NodePhase.PRE_NODE;
+    }
 
-    /** 对当前事件的 RogueEventType 执行 cast */
+    public boolean isPreEvent() {
+        return nodeData.getNodePhase() == NodePhase.PRE_EVENT;
+    }
+
+    /**
+     * 对当前事件的 RogueEventType 执行 cast
+     */
     private void castCurrentEvent(EncounterType encType) {
         var instances = nodeData.getEncounterData().getEvents().getEventInstances();
         int idx = nodeData.getCurrentEventIndex();
@@ -236,6 +246,12 @@ public class RogueEncounterRunner {
     }
 
     private RogueEventType.Context runnerContext(EncounterType encType) {
-        return new RogueEventType.Context(encType, level, nodeData.getNodeChunk().getWorldPosition());
+        return new RogueEventType.Context(encType, level, nodePos(), ctx);
+    }
+
+    private BlockPos nodePos() {
+        BlockPos pos = nodeData.getNodePos();
+        if (pos != null && !pos.equals(BlockPos.ZERO)) return pos;
+        return nodeData.getNodeChunk().getWorldPosition();
     }
 }

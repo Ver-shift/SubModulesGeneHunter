@@ -1,7 +1,7 @@
 {
   "identify": "gene_hunter:xene_trait_base",
   "note": "一些基础属性的表，血量，攻速，攻击力什么的",
-  "loot_type": "xene_trait",
+  "loot_type": "biotech:xene_trait",
   "pools": [
     {
       "name": "normal_attribute",

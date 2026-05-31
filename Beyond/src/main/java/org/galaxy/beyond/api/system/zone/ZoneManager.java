@@ -9,9 +9,12 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.RogueNodeData;
 import org.galaxy.beyond.api.system.zone.async.AsyncZoneExpansionService;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
+
+import java.util.concurrent.CompletableFuture;
 
 public class ZoneManager implements IZoneManager {
 
@@ -21,7 +24,7 @@ public class ZoneManager implements IZoneManager {
     private final SafeZoneRegistrar safeZoneRegistrar = new SafeZoneRegistrar(writer, conflictResolver);
     private final NodeZoneRegistrar nodeZoneRegistrar = new NodeZoneRegistrar(writer, conflictResolver, nodeColorPicker);
     private final AsyncZoneExpansionService asyncExpansion = new AsyncZoneExpansionService();
-    private final ActiveZoneController activeZoneController = new ActiveZoneController(asyncExpansion);
+    private final ActiveZoneController activeZoneController = new ActiveZoneController(asyncExpansion, nodeZoneRegistrar);
 
     private static final TagKey<Structure> NODE_STRUCTURE_TAG =
             TagKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath("beyond", "node_structure"));
@@ -59,6 +62,11 @@ public class ZoneManager implements IZoneManager {
         nodeZoneRegistrar.addNodeZone(level, pos);
     }
 
+    @Override
+    public CompletableFuture<NodeData> discoverNearestNode(ServerLevel level, ChunkPos center, int radius) {
+        return activeZoneController.discoverNearestNode(level, center, radius);
+    }
+
     // ---- Active Zone ----
 
     @Override
@@ -69,5 +77,9 @@ public class ZoneManager implements IZoneManager {
     @Override
     public void addActiveZone(ServerLevel level, RogueNodeData nodeData) {
         activeZoneController.addActiveZone(level, nodeData);
+    }
+
+    public boolean expandFromWorldSeed(ServerLevel level, ChunkPos pos) {
+        return activeZoneController.expandFromWorldSeed(level, pos);
     }
 }

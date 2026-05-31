@@ -9,12 +9,14 @@ import net.neoforged.fml.common.Mod;
 import org.galaxylib.api.init.GalaxyLibAttachInit;
 import org.galaxylib.api.init.GalaxyLibAttributeInit;
 import org.galaxylib.api.init.GalaxyLibLootTypeInit;
+import org.galaxylib.api.system.GalaxyLibManager;
 import org.slf4j.Logger;
 
 @Mod(GalaxyLib.MODID)
 public class GalaxyLib {
     public static final String MODID = "galaxylib";
     public static final Logger LOGGER = LogUtils.getLogger();
+    public static final GalaxyLibManager MANAGER = new GalaxyLibManager();
 
      public GalaxyLib(IEventBus modEventBus, ModContainer modContainer) {
          GalaxyLibAttributeInit.register(modEventBus);

@@ -1,21 +1,19 @@
 package org.galaxy.gene_hunter.rogue_event;
 
-import lombok.NonNull;
 import net.minecraft.resources.ResourceLocation;
-import org.galaxy.beyond.api.system.rogue.RogueEventType;
+import org.galaxy.gene_hunter.GeneHunter;
 
-public class MonsterEvent extends RogueEventType {
-    public MonsterEvent(ResourceLocation id) {
-        super(id);
+public class MonsterEvent extends GatewayEvent {
+
+    public static final ResourceLocation ID = GeneHunter.asResource("monster");
+    private static final ResourceLocation GATEWAY_ID = GeneHunter.asResource("zombie_example");
+
+    public MonsterEvent() {
+        super(ID);
     }
 
     @Override
-    public void cast(Context context) {
-
-    }
-
-    @Override
-    public @NonNull Result next(Context context) {
-        return null;
+    protected ResourceLocation gatewayId() {
+        return GATEWAY_ID;
     }
 }

@@ -6,7 +6,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.galaxy.beyond.api.init.BeyondRegistries;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
 import org.galaxy.gene_hunter.GeneHunter;
-import org.galaxy.gene_hunter.rogue_event.RogueRewardEventType;
+import org.galaxy.gene_hunter.rogue_event.BossEvent;
+import org.galaxy.gene_hunter.rogue_event.MonsterEvent;
 
 import java.util.function.Supplier;
 
@@ -15,10 +16,12 @@ public class GeneHunterRogueEventInit {
     private static final DeferredRegister<RogueEventType> REGISTRAR =
             DeferredRegister.create(BeyondRegistries.Keys.ROGUE_EVENT_TYPE, GeneHunter.MODID);
 
-    public static final Supplier<RogueEventType> ROGUE_REWARD;
+    public static final Supplier<RogueEventType> MONSTER;
+    public static final Supplier<RogueEventType> BOSS;
 
     static {
-        ROGUE_REWARD = register(RogueRewardEventType.ID, RogueRewardEventType::new);
+        MONSTER = register(MonsterEvent.ID, MonsterEvent::new);
+        BOSS = register(BossEvent.ID, BossEvent::new);
     }
 
     public static void register(IEventBus eventBus) {

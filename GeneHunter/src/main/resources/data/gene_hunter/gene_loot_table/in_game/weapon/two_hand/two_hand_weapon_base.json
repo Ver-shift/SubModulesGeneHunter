@@ -1,7 +1,7 @@
 {
   "identify": "gene_hunter:two_hand_weapon_base",
   "note": "双手武器基础战利品表 - 包含巨剑、巨锤、巨斧",
-  "loot_type": "weapon",
+  "loot_type": "gene_hunter:weapon",
   "pools": [
     {
       "name": "iron_tier",

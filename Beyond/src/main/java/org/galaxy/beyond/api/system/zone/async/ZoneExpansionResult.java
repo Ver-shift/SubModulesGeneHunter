@@ -6,7 +6,11 @@ public record ZoneExpansionResult(
         long jobId,
         List<Long> addedActive,
         int radius,
-        int reachedNodeZones,
+        int discoveredNodeZones,
+        int newNodeZones,
         boolean success
 ) {
+    public int reachedNodeZones() {
+        return discoveredNodeZones + newNodeZones;
+    }
 }

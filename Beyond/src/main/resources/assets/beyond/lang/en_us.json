@@ -56,6 +56,8 @@
 
   "itemGroup.beyond": "Beyond",
   "item.beyond.loot_bag": "Loot Bag",
+  "item.beyond.test_item": "Test Item",
+  "item.beyond.world_seed": "World Seed",
   "block.beyond.node_block": "Node Block",
   "effect.beyond.zone_indicator": "Zone Indicator",
   "beyond.effect.zone_indicator.outside_warning": "You are outside the active area. Health is being drained.",
@@ -64,7 +66,7 @@
   "beyond.configuration.section.beyond.common.toml": "Beyond Configs",
   "beyond.configuration.section.beyond.common.toml.title": "Beyond Configs",
 
-  "beyond.welcome": "Welcome to my roguelike mod!",
+  "beyond.welcome": "Welcome to my roguelike mod! Check the Wiki if you need help with the gameplay.",
 
   "beyond.rogue.start": "Level %s started! All players ready",
   "beyond.rogue.start.no_progress": "No level set, use /beyond config currentProgress first",
@@ -160,6 +162,9 @@
   "commands.beyond.unlockCurrentNode.success": "Unlocked current node",
   "commands.beyond.activeBoundary.not_found": "No active zone boundary found",
   "commands.beyond.activeBoundary.success": "Teleported to nearest active zone boundary: %s, %s",
+  "commands.beyond.node.invalid_type": "Invalid node teleport type: %s",
+  "commands.beyond.node.not_found": "No matching node found: %s",
+  "commands.beyond.node.teleport.success": "Teleported to nearest node (%s): %s, %s",
 
   "beyond.event.monster.spawn": "Monsters appear! Defeat them to advance",
   "beyond.event.boss.spawn": "The Boss appears! Defeat it to clear this node",
@@ -170,8 +175,15 @@
 
   "beyond.node.zone_expanding": "Node unlocked. Expanding the active zone...",
   "beyond.node.zone_expanding_busy": "The active zone is still expanding. Please wait a moment",
+  "beyond.node.zone_expanding_scan": "Scanning active zone %s",
+  "beyond.node.zone_expanding_apply": "Expanding active zone %s %s/%s",
   "beyond.node.active_zone_initial_radius": "Initial active zone radius: %s chunks",
-  "beyond.node.zone_expanded": "Active zone expanded. Radius: %s chunks, node zones found: %s",
+  "beyond.node.active_zone_initial_expanded": "Initial active zone expanded. Radius: %s chunks, discovered nodes: %s, new nodes: %s",
+  "beyond.node.zone_expanded": "Active zone expanded. Radius: %s chunks, discovered nodes: %s, new nodes: %s",
+  "beyond.node.zone_expanded_no_target": "No new node zones were found. Active zone will not expand for now",
+  "beyond.node.zone_expanded_no_node": "Active zone expanded. Radius: %s chunks, but no new node zones were found",
+  "beyond.item.world_seed.expanding": "World Seed is expanding the active zone...",
+  "beyond.item.world_seed.expanded": "World Seed expanded the active zone. Radius: %s chunks, discovered nodes: %s, new nodes: %s",
 
   "beyond.node.game_not_started": "The game has not started yet. Leave the safe zone first!",
   "beyond.event.not_cleared": "The current event is not yet completed. Defeat all enemies first!",

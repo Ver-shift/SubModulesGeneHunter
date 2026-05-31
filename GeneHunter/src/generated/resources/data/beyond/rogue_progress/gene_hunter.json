@@ -6,16 +6,23 @@
                 {
                     "task": {
                         "eventIds": [
-                            "beyond:monster",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:monster"
                         ]
                     },
-                    "weight": 8
+                    "weight": 6
                 },
                 {
                     "task": {
                         "eventIds": [
                             "beyond:shop"
+                        ]
+                    },
+                    "weight": 2
+                },
+                {
+                    "task": {
+                        "eventIds": [
+                            "beyond:heal"
                         ]
                     },
                     "weight": 2
@@ -42,8 +49,7 @@
                     "task": {
                         "eventIds": [
                             "beyond:shop",
-                            "beyond:boss",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:boss"
                         ]
                     },
                     "weight": 1
@@ -56,8 +62,7 @@
                 {
                     "task": {
                         "eventIds": [
-                            "beyond:monster",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:monster"
                         ]
                     },
                     "weight": 5
@@ -65,9 +70,8 @@
                 {
                     "task": {
                         "eventIds": [
-                            "beyond:monster",
-                            "beyond:monster",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:monster",
+                            "gene_hunter:monster"
                         ]
                     },
                     "weight": 3
@@ -75,8 +79,7 @@
                 {
                     "task": {
                         "eventIds": [
-                            "beyond:boss",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:boss"
                         ]
                     },
                     "weight": 2
@@ -103,8 +106,7 @@
                     "task": {
                         "eventIds": [
                             "beyond:shop",
-                            "beyond:boss",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:boss"
                         ]
                     },
                     "weight": 1
@@ -117,9 +119,8 @@
                 {
                     "task": {
                         "eventIds": [
-                            "beyond:monster",
-                            "beyond:monster",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:monster",
+                            "gene_hunter:monster"
                         ]
                     },
                     "weight": 4
@@ -127,8 +128,7 @@
                 {
                     "task": {
                         "eventIds": [
-                            "beyond:boss",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:boss"
                         ]
                     },
                     "weight": 1
@@ -142,8 +142,7 @@
                     "task": {
                         "eventIds": [
                             "beyond:shop",
-                            "beyond:monster",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:monster"
                         ]
                     },
                     "weight": 3
@@ -165,8 +164,7 @@
                     "task": {
                         "eventIds": [
                             "beyond:shop",
-                            "beyond:boss",
-                            "gene_hunter:rogue_reward"
+                            "gene_hunter:boss"
                         ]
                     },
                     "weight": 1

@@ -5,7 +5,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.galaxylib.api.system.loot.LootManager;
 import org.galaxylib.api.system.loot.core.ILootType;
+import org.galaxylib.api.system.loot.data.LootEntryDefinition;
+
+import java.util.Optional;
 
 /**
  * 食物战利品类型 - 只处理有 FOOD 组件的物品
@@ -13,29 +17,23 @@ import org.galaxylib.api.system.loot.core.ILootType;
 public class FoodLootType implements ILootType<ItemStack> {
     
     @Override
-    public String getName() {
-        return "food";
-    }
-
-    @Override
-    public ItemStack getLoot(ResourceLocation lootId, int count) {
-        // 从注册表获取物品
-        var item = BuiltInRegistries.ITEM.get(lootId);
+    public Optional<ItemStack> resolve(LootEntryDefinition entry, LootManager.Context context) {
+        var item = BuiltInRegistries.ITEM.get(entry.id());
         
         // 检查物品是否存在
         if (item == Items.AIR) {
-            return ItemStack.EMPTY;
+            return Optional.empty();
         }
         
         // 创建物品栈
-        ItemStack stack = new ItemStack(item, count);
+        ItemStack stack = new ItemStack(item, entry.count());
         
         // 检测是否是食物
         if (stack.has(DataComponents.FOOD)) {
-            return stack;
+            return Optional.of(stack);
         }
         
-        return ItemStack.EMPTY;
+        return Optional.empty();
     }
 
 

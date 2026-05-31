@@ -10,15 +10,17 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.galaxy.gene_hunter.api.GeneHunterAPI;
+import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
 import org.galaxy.gene_hunter.api.system.GeneHunterData;
 import org.galaxy.gene_hunter.api.system.choice.core.IChoiceManager;
-import org.galaxy.gene_hunter.loot.WeaponLootType;
 import org.galaxylib.api.GalaxyLibAPI;
-import org.biotech.loot.XeneTraitLootType;
-import org.galaxylib.api.system.loot.core.ILootTableManager;
+import org.biotech.api.init.BiotechLootTypeInit;
+import org.galaxylib.api.system.loot.LootManager;
 import org.galaxylib.api.system.loot.core.ILootType;
-import org.galaxylib.api.system.loot.data.LootPoolData;
+
+import java.util.List;
 
 public class ChoiceManager implements IChoiceManager {
 
@@ -69,40 +71,43 @@ public class ChoiceManager implements IChoiceManager {
     public void doRoll(ILootType<?> lootType){
         ItemStackHandler handler = choiceHolderData.getChoiceHolderHandler();
         choiceHolderData.clear();
-        var lootManger = GalaxyLibAPI.getLootTableManager(player);
         int maxSlots = Math.min(getChoiceCount(), handler.getSlots());
-        // 只抽取一次，获取多个结果
-        // 从同一个结果中分配物品到各个槽位
-        for (int i = 0; i < maxSlots; i++) {
 
-            if (lootType instanceof XeneTraitLootType xeneTraitLootType) {
-                rollWithTrait(handler, i, xeneTraitLootType, lootManger);
-            }
+        LootManager.Request request = createChoiceRequest(lootType);
+        var result = GalaxyLibAPI.getLootManager().rollChoices(request, LootManager.Context.of(player, request.getRandomId()), maxSlots);
+        choiceHolderData.setCurrentLootType(lootType);
 
-            if (lootType instanceof WeaponLootType weaponLootType) {
-                var result = lootManger.roolWithoutReplacement(lootType);
-
-                choiceHolderData.setCurrentLootResult(result);
-                LootPoolData.Entry entry = result.result().get(i);
-                var loot = weaponLootType.getLoot(entry.getId(), entry.getCount());
-                if (loot != null) {
-                    handler.setStackInSlot(i, loot);
-                }
-            }
+        for (int i = 0; i < result.options().size(); i++) {
+            handler.setStackInSlot(i, result.options().get(i).stack());
         }
     }
 
-    /**
-     * 词条这里采用特殊方式，来完成多词条的抽取
-     * @param holderSlots
-     * @param lootType
-     * @param manager
-     */
-    private void rollWithTrait(ItemStackHandler holderSlots,int index, ILootType<?> lootType, ILootTableManager manager){
-        var result = manager.roolWithoutReplacement(lootType);
-        choiceHolderData.setCurrentLootResult(result);
-        ItemStack lootItemStack = lootType.stackLike(result);
-        holderSlots.setStackInSlot(index, lootItemStack);
+    private LootManager.Request createChoiceRequest(ILootType<?> lootType) {
+        LootManager.Request.RequestBuilder builder = LootManager.Request.builder()
+                .lootType(lootType)
+                .replacement(false);
+
+        if (lootType == GeneHunterLootInit.WEAPON_LOOT_TYPE.get()) {
+            return builder
+                    .tables(
+                            List.of(
+                                    GeneHunter.asResource("one_hand_weapon_base"),
+                                    GeneHunter.asResource("two_hand_weapon_base"),
+                                    GeneHunter.asResource("polearm_weapon_base")
+                            )
+                    )
+                    .rolls(1)
+                    .build();
+        }
+
+        if (lootType == BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get()) {
+            return builder
+                    .tables(List.of(GeneHunter.asResource("xene_trait_base")))
+                    .rolls(lootType.getPoolCount(player))
+                    .build();
+        }
+
+        return builder.rolls(1).build();
     }
 
     @Override
@@ -134,12 +139,12 @@ public class ChoiceManager implements IChoiceManager {
             return;
         }
 
-        var currentLootResult = choiceHolderData.getCurrentLootResult();
-        if (currentLootResult == null || currentLootResult.lootType() == null) {
+        ILootType<?> lootType = choiceHolderData.getCurrentLootType();
+        if (lootType == null) {
             return;
         }
         choiceHolderData.clear();
-        doRoll(currentLootResult.lootType());
+        doRoll(lootType);
     }
 
     /**
@@ -169,10 +174,9 @@ public class ChoiceManager implements IChoiceManager {
                     if (slotIndex >= 0 && slotIndex < handler.getSlots()) {
                         ItemStack stack = handler.getStackInSlot(slotIndex);
                         if (!stack.isEmpty()) {
-                            // 获取当前战利品类型，使用其 claimItemStackToPlayer 方法
-                            var lootResult = choiceManager.choiceHolderData.getCurrentLootResult();
-                            if (lootResult != null && lootResult.lootType() != null) {
-                                lootResult.lootType().claimItemStackToPlayer(serverPlayer, stack);
+                            ILootType<?> lootType = choiceManager.choiceHolderData.getCurrentLootType();
+                            if (lootType != null) {
+                                lootType.claim(serverPlayer, stack, LootManager.Context.of(serverPlayer));
                             } else {
                                 // 如果没有战利品类型，直接给玩家
                                 if (!serverPlayer.getInventory().add(stack)) {

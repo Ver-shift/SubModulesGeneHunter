@@ -9,8 +9,6 @@ import org.biotech.Biotech;
 import org.biotech.api.BiotechAPI;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.api.system.gene.inventory.GeneInventoryManager;
-import org.galaxylib.api.system.loot.LootTableManager;
-import org.galaxylib.api.system.loot.core.ILootTableManager;
 import org.biotech.api.system.merge.MergeManager;
 import org.biotech.api.system.merge.core.IMergeManager;
 

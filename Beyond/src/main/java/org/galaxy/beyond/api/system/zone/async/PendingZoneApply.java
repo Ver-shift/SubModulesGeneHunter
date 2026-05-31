@@ -15,7 +15,8 @@ public class PendingZoneApply {
     private final ZoneExpansionJobType type;
     private final List<Long> chunks;
     private final int radius;
-    private final int reachedNodeZones;
+    private final int discoveredNodeZones;
+    private final int newNodeZones;
     private final boolean success;
     private int cursor;
 
@@ -24,7 +25,8 @@ public class PendingZoneApply {
         this.type = type;
         this.chunks = result.addedActive();
         this.radius = result.radius();
-        this.reachedNodeZones = result.reachedNodeZones();
+        this.discoveredNodeZones = result.discoveredNodeZones();
+        this.newNodeZones = result.newNodeZones();
         this.success = result.success();
     }
 
@@ -36,16 +38,7 @@ public class PendingZoneApply {
         boolean changed = BeyondAPI.getLargeLevelData(level).addPackedZoneChunks(ZoneType.Active_Zone, available);
         cursor = end;
         if (changed) BeyondAPI.syncLargeLevelData(level);
-        org.galaxy.beyond.Beyond.debugInfo(
-                "[Zone][EXPAND_APPLY] jobId={}, type={}, batch={}, available={}, cursor={}/{}, changed={}",
-                jobId,
-                type,
-                batch.size(),
-                available.size(),
-                cursor,
-                chunks.size(),
-                changed
-        );
+        // 拓展应用按批次执行，debug 会刷屏；保留提交和完成日志即可判断结果。
         return batch.size();
     }
 
@@ -65,6 +58,14 @@ public class PendingZoneApply {
         return cursor >= chunks.size();
     }
 
+    public int getCursor() {
+        return cursor;
+    }
+
+    public int getTotal() {
+        return chunks.size();
+    }
+
     public long getJobId() {
         return jobId;
     }
@@ -78,7 +79,15 @@ public class PendingZoneApply {
     }
 
     public int getReachedNodeZones() {
-        return reachedNodeZones;
+        return discoveredNodeZones + newNodeZones;
+    }
+
+    public int getDiscoveredNodeZones() {
+        return discoveredNodeZones;
+    }
+
+    public int getNewNodeZones() {
+        return newNodeZones;
     }
 
     public boolean isSuccess() {

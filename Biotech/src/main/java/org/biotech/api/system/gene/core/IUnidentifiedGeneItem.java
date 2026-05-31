@@ -12,15 +12,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
-import org.biotech.api.BiotechAPI;
 import org.biotech.api.config.ServerConfig;
 import org.biotech.api.init.BiotechLootTypeInit;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.api.init.BiotechAttributeInit;
-import org.galaxylib.api.GalaxyLibAPI;
-import org.galaxylib.api.init.GalaxyLibLootTypeInit;
-import org.galaxylib.api.system.loot.core.ILootTableManager;
 import org.biotech.loot.GeneTraitLootType;
+import org.galaxylib.api.GalaxyLibAPI;
+import org.galaxylib.api.system.loot.LootManager;
+import org.galaxylib.api.system.loot.core.ILootType;
 import org.galaxylib.api.system.random.RandomManager;
 
 public interface IUnidentifiedGeneItem {
@@ -31,19 +30,22 @@ public interface IUnidentifiedGeneItem {
      */
     default void use(Player player, Rarity rarity){
         if (player instanceof ServerPlayer serverPlayer){
-            ILootTableManager manager = GalaxyLibAPI.getLootTableManager(serverPlayer);
             AttributeInstance instance = serverPlayer.getAttribute(BiotechAttributeInit.GENE_TRAIT_ROLL_COUNT);
             if (instance != null) {
                 instance.setBaseValue(getCountFromRarity(rarity));
             }
 
-            ILootTableManager.LootResult result = manager.rollWithReplacement(BiotechLootTypeInit.GENE_TRAIT_LOOT_TYPE.get(), RandomManager.PROGRESS_RANDOM_ID);
-            if (result.lootType() instanceof GeneTraitLootType geneTraitLootType) {
-                GeneTraitLootType.ClaimResult claimResult = geneTraitLootType.claimResultsToPlayerAndReturn(serverPlayer, result);
-                sendGeneTraitObtainMessage(serverPlayer, rarity, claimResult);
-            } else {
-                manager.claimResults(result);
-            }
+            var lootType = BiotechLootTypeInit.GENE_TRAIT_LOOT_TYPE.get();
+            LootManager.Context context = LootManager.Context.of(serverPlayer, RandomManager.PROGRESS_RANDOM_ID);
+            LootManager.Request request = LootManager.Request.builder()
+                    .lootType(lootType)
+                    .rolls(ILootType.getPoolCountFromAttribute(getCountFromRarity(rarity), context.random()))
+                    .build();
+            var result = GalaxyLibAPI.getLootManager().roll(request, context);
+            if (!(lootType instanceof GeneTraitLootType geneTraitLootType)) return;
+
+            GeneTraitLootType.ClaimResult claimResult = geneTraitLootType.claimResultsToPlayerAndReturn(serverPlayer, result);
+            sendGeneTraitObtainMessage(serverPlayer, rarity, claimResult);
         }
     }
 

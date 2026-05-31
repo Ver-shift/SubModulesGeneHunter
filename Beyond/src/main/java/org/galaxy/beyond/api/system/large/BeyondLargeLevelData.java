@@ -110,6 +110,20 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
         return false;
     }
 
+    public boolean addNodeChunks(long nodeKey, Collection<Long> chunks) {
+        NodeData node = findNodeDataByKey(nodeKey);
+        if (node == null) return false;
+        List<Long> added = new ArrayList<>();
+        for (long chunk : chunks) {
+            if (node.addPackedChunkIfAbsent(chunk)) {
+                added.add(chunk);
+            }
+        }
+        if (added.isEmpty()) return false;
+        recordDelta(LargeDataDelta.addNodeChunks(nodeKey, added));
+        return true;
+    }
+
     public boolean updateNodePhase(long nodeKey, NodePhase phase) {
         NodeData node = findNodeDataByKey(nodeKey);
         if (node == null || node.getPhase() == phase) return false;

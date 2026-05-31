@@ -21,8 +21,8 @@ public class GeneHunterLootInit {
     /**
      * 注册战利品类型
      */
-    public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(Supplier<T> supplier) {
-        return REGISTRAR.register(supplier.get().getName(), supplier);
+    public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(String name, Supplier<T> supplier) {
+        return REGISTRAR.register(name, supplier);
     }
 
     public static final Supplier<ILootType<?>> FOOD_LOOT_TYPE;
@@ -30,7 +30,7 @@ public class GeneHunterLootInit {
 
 
     static {
-        FOOD_LOOT_TYPE = registerLootType(FoodLootType::new);
-        WEAPON_LOOT_TYPE = registerLootType(WeaponLootType::new);
+        FOOD_LOOT_TYPE = registerLootType("food", FoodLootType::new);
+        WEAPON_LOOT_TYPE = registerLootType("weapon", WeaponLootType::new);
     }
 }

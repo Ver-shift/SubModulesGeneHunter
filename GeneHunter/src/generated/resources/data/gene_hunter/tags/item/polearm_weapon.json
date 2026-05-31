@@ -1,19 +1,19 @@
 {
-  "values": [
-    "simplyswords:iron_spear",
-    "simplyswords:gold_spear",
-    "simplyswords:diamond_spear",
-    "simplyswords:netherite_spear",
-    "simplyswords:runic_spear",
-    "simplyswords:iron_scythe",
-    "simplyswords:gold_scythe",
-    "simplyswords:diamond_scythe",
-    "simplyswords:netherite_scythe",
-    "simplyswords:runic_scythe",
-    "simplyswords:iron_halberd",
-    "simplyswords:gold_halberd",
-    "simplyswords:diamond_halberd",
-    "simplyswords:netherite_halberd",
-    "simplyswords:runic_halberd"
-  ]
+    "values": [
+        "simplyswords:iron_spear",
+        "simplyswords:gold_spear",
+        "simplyswords:diamond_spear",
+        "simplyswords:netherite_spear",
+        "simplyswords:runic_spear",
+        "simplyswords:iron_scythe",
+        "simplyswords:gold_scythe",
+        "simplyswords:diamond_scythe",
+        "simplyswords:netherite_scythe",
+        "simplyswords:runic_scythe",
+        "simplyswords:iron_halberd",
+        "simplyswords:gold_halberd",
+        "simplyswords:diamond_halberd",
+        "simplyswords:netherite_halberd",
+        "simplyswords:runic_halberd"
+    ]
 }

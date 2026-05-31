@@ -1,0 +1,62 @@
+{
+  "type": "gateways:normal",
+  "size": "medium",
+  "color": "#FF4444",
+  "spawn_algorithm": "gateways:inward_spiral",
+  "rules": {
+    "spawn_range": 8.0,
+    "leash_range": 32.0,
+    "player_damage_only": true,
+    "requires_nearby_player": true,
+    "lives": 1
+  },
+  "boss_event": {
+    "mode": "boss_bar",
+    "fog": true
+  },
+  "waves": [
+    {
+      "max_wave_time": 4800,
+      "setup_time": 100,
+      "entities": [
+        {
+          "type": "gateways:standard",
+          "entity": "minecraft:zombie",
+          "count": 1,
+          "modifiers": [
+            {
+              "type": "gateways:attribute",
+              "attribute": "minecraft:generic.max_health",
+              "operation": "add_multiplied_base",
+              "value": 4.0
+            },
+            {
+              "type": "gateways:attribute",
+              "attribute": "minecraft:generic.attack_damage",
+              "operation": "add_multiplied_base",
+              "value": 1.0
+            },
+            {
+              "type": "gateways:attribute",
+              "attribute": "minecraft:generic.movement_speed",
+              "operation": "add_multiplied_base",
+              "value": 0.3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "rewards": [
+    {
+      "type": "gene_hunter:choice"
+    },
+    {
+      "type": "gateways:stack",
+      "stack": {
+        "id": "minecraft:diamond",
+        "count": 3
+      }
+    }
+  ]
+}

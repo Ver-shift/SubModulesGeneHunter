@@ -9,61 +9,49 @@ import org.biotech.api.system.gene.GeneInstance;
 import org.biotech.api.system.gene.GeneRegistryHolder;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.api.init.*;
-import org.galaxylib.api.system.loot.core.ILootTableManager;
 import org.galaxylib.api.system.loot.core.ILootType;
 import org.biotech.api.system.trait.core.ITrait;
+import org.galaxylib.api.system.loot.LootManager;
+import org.galaxylib.api.system.loot.data.LootEntryDefinition;
 import org.biotech.component.TraitComp;
+
+import java.util.Optional;
 
 public class GeneTraitLootType implements ILootType<ITrait> {
 
     public record ClaimResult(IGeneInventoryManager.AddResult addResult, ItemStack stack, int traitCount) {}
 
     @Override
-    public String getName() {
-        return "gene_trait";
-    }
-
-    @Override
-    public ITrait getLoot(ResourceLocation lootId, int count) {
-        return BiotechTraitInit.getTraitById(lootId);
+    public Optional<ITrait> resolve(LootEntryDefinition entry, LootManager.Context context) {
+        return Optional.ofNullable(BiotechTraitInit.getTraitById(entry.id()));
     }
 
     // 使用 GeneRegistryHolder 延迟获取 EMPTY 基因，避免注册时空指针
     private static final GeneRegistryHolder EMPTY_GENE_HOLDER = new GeneRegistryHolder(BiotechGeneInit.EMPTY_GENE);
 
-    @Override
-    public void claimResultsToPlayer(ServerPlayer player, ILootTableManager.LootResult lootResult) {
-        claimResultsToPlayerAndReturn(player, lootResult);
-    }
-
-    public ClaimResult claimResultsToPlayerAndReturn(ServerPlayer player, ILootTableManager.LootResult lootResult) {
-        // 创建 TraitComp 并收集所有词条
-        TraitComp comp = TraitComp.empty();
-        for (var entry : lootResult.result()) {
-            ITrait trait = getLoot(entry.getId(), entry.getCount());
-            if (trait != null) {
-                comp.addTrait(trait);
-            }
-        }
-
-        // 如果收集到了词条，创建 GeneItem 并添加到基因背包
-        if (comp.isEmpty()) {
+    public ClaimResult claimStackToPlayerAndReturn(ServerPlayer player, ItemStack stack) {
+        if (stack.isEmpty()) {
             return new ClaimResult(IGeneInventoryManager.AddResult.EMPTY_ITEM, ItemStack.EMPTY, 0);
         }
-
         var manager = BiotechAPI.getGeneInventoryManager(player);
+        TraitComp comp = stack.get(BiotechDataComponentInit.TRAIT_COMP.get());
+        int traitCount = comp == null ? 0 : comp.size();
+        return new ClaimResult(manager.add(stack), stack.copy(), traitCount);
+    }
 
-        // 使用 GeneRegistryHolder 延迟获取 GeneInstance，避免注册时空指针
-        GeneInstance instance = EMPTY_GENE_HOLDER.getInstance();
+    public ClaimResult claimResultsToPlayerAndReturn(ServerPlayer player, LootManager.Result<?> lootResult) {
+        ItemStack stack = lootResult.stack();
+        if (stack.isEmpty()) {
+            return new ClaimResult(IGeneInventoryManager.AddResult.EMPTY_ITEM, ItemStack.EMPTY, 0);
+        }
+        var manager = BiotechAPI.getGeneInventoryManager(player);
+        return new ClaimResult(manager.add(stack), stack.copy(), lootResult.values().size());
+    }
 
-        // 将 TraitComp 放入 GeneInstance 的组件中
-        instance.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
-
-        // 创建 ItemStack 并设置 GENE_INSTANCE 组件
-        ItemStack stack = new ItemStack(BiotechItemInit.GENE_ITEM.get());
-        stack.set(BiotechDataComponentInit.GENE_INSTANCE.get(), instance);
-
-        return new ClaimResult(manager.add(stack), stack.copy(), comp.size());
+    @Override
+    public LootManager.ClaimResult claim(ServerPlayer player, ItemStack stack, LootManager.Context context) {
+        ClaimResult result = claimStackToPlayerAndReturn(player, stack);
+        return result.addResult().isSuccess() ? LootManager.ClaimResult.success(result.stack()) : LootManager.ClaimResult.empty();
     }
 
     @Override
@@ -77,31 +65,20 @@ public class GeneTraitLootType implements ILootType<ITrait> {
      * 收集所有词条到 TraitComp，然后创建带 GENE_INSTANCE 组件的 GeneItem
      */
     @Override
-    public ItemStack stackLike(ILootTableManager.LootResult lootResult) {
-        // 创建 TraitComp 并收集所有词条
+    public ItemStack createStack(LootManager.Bundle<ITrait> bundle, LootManager.Context context) {
         TraitComp comp = TraitComp.empty();
-        for (var entry : lootResult.result()) {
-            ITrait trait = getLoot(entry.getId(), entry.getCount());
-            if (trait != null) {
-                comp.addTrait(trait);
-            }
-        }
+        bundle.values().forEach(value -> comp.addTrait(value.value()));
 
-        // 如果收集到了词条，创建带 TraitComp 的 GeneItem
         if (!comp.isEmpty()) {
-            // 使用 GeneRegistryHolder 延迟获取 GeneInstance，避免注册时空指针
             GeneInstance instance = EMPTY_GENE_HOLDER.getInstance();
-
-            // 将 TraitComp 放入 GeneInstance 的组件中
             instance.set(BiotechDataComponentInit.TRAIT_COMP.get(), comp);
 
-            // 创建 ItemStack 并设置 GENE_INSTANCE 组件
             ItemStack stack = new ItemStack(BiotechItemInit.GENE_ITEM.get());
             stack.set(BiotechDataComponentInit.GENE_INSTANCE.get(), instance);
-
             return stack;
         }
 
         return ItemStack.EMPTY;
     }
+
 }

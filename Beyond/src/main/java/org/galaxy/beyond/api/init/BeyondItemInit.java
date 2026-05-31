@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.item.LootBag;
 import org.galaxy.beyond.item.TextItem;
+import org.galaxy.beyond.item.WorldSeedItem;
 
 public class BeyondItemInit {
 
@@ -18,6 +19,9 @@ public class BeyondItemInit {
 
     public static final DeferredItem<TextItem> TEST_ITEM =
             ITEMS.register("test_item", key -> new TextItem(new Item.Properties()));
+
+    public static final DeferredItem<WorldSeedItem> WORLD_SEED =
+            ITEMS.register("world_seed", key -> new WorldSeedItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

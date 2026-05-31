@@ -1,16 +1,14 @@
 package org.galaxy.beyond.rogue_event;
 
+import lombok.NonNull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
+import org.galaxy.beyond.api.system.rogue.RogueSpawnHelper;
 
 import java.util.*;
 
@@ -24,23 +22,25 @@ public class MonsterEventType extends RogueEventType {
     private final Set<UUID> spawnedZombies = new HashSet<>();
     private boolean castCalled;
 
-    public MonsterEventType() { super(ID); }
+    public MonsterEventType() {
+        super(ID);
+    }
 
     @Override
     public void cast(Context context) {
         ServerLevel level = context.level();
-        BlockPos nodePos = context.nodePos();
+        BlockPos nodePos = RogueSpawnHelper.nodeBase(level, context.nodePos());
 
         var players = level.getServer().getPlayerList().getPlayers();
         players.forEach(p -> p.sendSystemMessage(Component.translatable("beyond.event.monster.spawn")));
 
-        castCalled = true;
+        spawnedZombies.clear();
         int spawned = 0;
         for (int range = 1; range <= 5 && spawned < 4; range++) {
             for (int dx = -range; dx <= range && spawned < 4; dx++) {
                 for (int dz = -range; dz <= range && spawned < 4; dz++) {
                     BlockPos spawnPos = nodePos.offset(dx, 0, dz);
-                    BlockPos top = findSpawnableTop(level, spawnPos);
+                    BlockPos top = RogueSpawnHelper.findGroundNear(level, spawnPos, nodePos.getY(), 1);
                     if (top == null) continue;
 
                     var zombie = EntityType.ZOMBIE.create(level);
@@ -48,16 +48,18 @@ public class MonsterEventType extends RogueEventType {
 
                     zombie.setPos(top.getX() + 0.5, top.getY(), top.getZ() + 0.5);
                     zombie.addTag("beyond_monster_event");
-                    if (zombie instanceof Mob mob) mob.setPersistenceRequired();
+                    zombie.setPersistenceRequired();
                     level.addFreshEntity(zombie);
                     spawnedZombies.add(zombie.getUUID());
                     spawned++;
                 }
             }
         }
+        castCalled = spawned > 0;
     }
 
     @Override
+    @NonNull
     public Result next(Context context) {
         if (!castCalled) return Result.FAILURE;
         ServerLevel level = context.level();
@@ -72,9 +74,4 @@ public class MonsterEventType extends RogueEventType {
         return Result.FAILURE;
     }
 
-    /** 返回 pos 处最顶上的非空气方块上方一格 */
-    private static BlockPos findSpawnableTop(Level level, BlockPos pos) {
-        int y = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos).getY();
-        return new BlockPos(pos.getX(), y, pos.getZ());
-    }
 }

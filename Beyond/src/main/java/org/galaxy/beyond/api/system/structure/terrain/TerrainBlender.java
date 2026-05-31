@@ -18,7 +18,6 @@ import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.mixin.SinglePoolElementAccessor;
 import org.galaxy.beyond.mixin.StructureTemplateAccessor;
 import org.slf4j.Logger;
@@ -61,7 +60,7 @@ public final class TerrainBlender {
         );
         List<BlockPos> anchors = collectAnchors(level, pieces, solidTag, config, anchorSearchBox);
         if (anchors.isEmpty()) {
-            LOGGER.info("Terrain blend skipped for chunk {}: no anchors in {}", chunkPos, config.solidTag());
+//            LOGGER.info("Terrain blend skipped for chunk {}: no anchors in {}", chunkPos, config.solidTag());
             return;
         }
 
@@ -89,9 +88,9 @@ public final class TerrainBlender {
                 }
             }
         }
-        LOGGER.info("Terrain blend applied for chunk {}: anchors={}, changed={}, radius={}, depth={}",
-                chunkPos, anchors.size(), changed, config.radius(), config.depth());
-        Beyond.debugInfo("Terrain blend structure chunk {} anchors={} changed={}", chunkPos, anchors.size(), changed);
+//        LOGGER.info("Terrain blend applied for chunk {}: anchors={}, changed={}, radius={}, depth={}",
+//                chunkPos, anchors.size(), changed, config.radius(), config.depth());
+        // 地形融合按区块触发，debug 会刷屏；需要排查地形时再临时打开。
     }
 
     private static BoundingBox intersect(BoundingBox first, BoundingBox second) {

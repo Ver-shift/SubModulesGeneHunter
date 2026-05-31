@@ -28,16 +28,16 @@ public class BiotechLootTypeInit {
     /**
      * 注册战利品类型
      */
-    public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(Supplier<T> supplier) {
-        return REGISTRAR.register(supplier.get().getName(), supplier);
+    public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(String name, Supplier<T> supplier) {
+        return REGISTRAR.register(name, supplier);
     }
     public static final Supplier<ILootType<?>> XENE_TRAIT_LOOT_TYPE;
     public static final Supplier<ILootType<?>> GENE_TRAIT_LOOT_TYPE;
     public static final Supplier<ILootType<?>> GENE_LOOT_TYPE;
 
     static {
-        XENE_TRAIT_LOOT_TYPE = registerLootType(XeneTraitLootType::new);
-        GENE_TRAIT_LOOT_TYPE = registerLootType(GeneTraitLootType::new);
-        GENE_LOOT_TYPE = registerLootType(GeneLootType::new);
+        XENE_TRAIT_LOOT_TYPE = registerLootType("xene_trait", XeneTraitLootType::new);
+        GENE_TRAIT_LOOT_TYPE = registerLootType("gene_trait", GeneTraitLootType::new);
+        GENE_LOOT_TYPE = registerLootType("gene", GeneLootType::new);
     }
 }

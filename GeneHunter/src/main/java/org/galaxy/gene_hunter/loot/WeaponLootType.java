@@ -8,9 +8,12 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.galaxy.gene_hunter.api.GeneHunterAPI;
-import org.galaxy.gene_hunter.api.system.GeneHunterData;
 import org.galaxy.gene_hunter.api.util.ItemType;
+import org.galaxylib.api.system.loot.LootManager;
 import org.galaxylib.api.system.loot.core.ILootType;
+import org.galaxylib.api.system.loot.data.LootEntryDefinition;
+
+import java.util.Optional;
 
 /**
  * 武器战利品类型 - 只处理有攻击伤害属性的物品
@@ -18,34 +21,28 @@ import org.galaxylib.api.system.loot.core.ILootType;
 public class WeaponLootType implements ILootType<ItemStack> {
     
     @Override
-    public String getName() {
-        return "weapon";
-    }
-
-    @Override
     public int getPoolCount(ServerPlayer player) {
         return GeneHunterAPI.getChoiceManager(player).getChoiceCount();
     }
 
     @Override
-    public ItemStack getLoot(ResourceLocation lootId, int count) {
-        // 从注册表获取物品
-        var item = BuiltInRegistries.ITEM.get(lootId);
+    public Optional<ItemStack> resolve(LootEntryDefinition entry, LootManager.Context context) {
+        var item = BuiltInRegistries.ITEM.get(entry.id());
         
         // 检查物品是否存在
         if (item == Items.AIR) {
-            return ItemStack.EMPTY;
+            return Optional.empty();
         }
         
         // 创建物品栈
-        ItemStack stack = new ItemStack(item, count);
+        ItemStack stack = new ItemStack(item, entry.count());
         
         // 检测是否是武器（有攻击伤害属性）
         if (ItemType.isWeapon(stack)) {
-            return stack;
+            return Optional.of(stack);
         }
         
-        return ItemStack.EMPTY;
+        return Optional.empty();
     }
 
 

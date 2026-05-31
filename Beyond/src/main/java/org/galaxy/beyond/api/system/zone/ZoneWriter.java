@@ -46,6 +46,14 @@ public class ZoneWriter {
         return zoneChanged || nodeChanged;
     }
 
+    public boolean addNodeChunks(ServerLevel level, NodeData nodeData, Collection<ChunkPos> chunks) {
+        var largeData = BeyondAPI.getLargeLevelData(level);
+        boolean zoneChanged = largeData.addZoneChunks(ZoneType.Node_Zone, chunks);
+        boolean nodeChanged = largeData.addNodeChunks(nodeData.ensureNodeKey(), packChunks(chunks));
+        if (zoneChanged || nodeChanged) sync(level);
+        return zoneChanged || nodeChanged;
+    }
+
     public static List<Long> packChunks(Collection<ChunkPos> chunks) {
         List<Long> packed = new ArrayList<>(chunks.size());
         for (ChunkPos chunk : chunks) {

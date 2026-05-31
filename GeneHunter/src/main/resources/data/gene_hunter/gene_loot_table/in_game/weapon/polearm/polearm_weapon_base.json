@@ -1,7 +1,7 @@
 {
   "identify": "gene_hunter:polearm_weapon_base",
   "note": "长杆武器基础战利品表 - 包含长矛、镰刀、戟",
-  "loot_type": "weapon",
+  "loot_type": "gene_hunter:weapon",
   "pools": [
     {
       "name": "iron_tier",

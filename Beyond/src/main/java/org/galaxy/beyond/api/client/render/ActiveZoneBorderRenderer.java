@@ -10,9 +10,10 @@ import org.galaxy.beyond.api.system.zone.LevelZoneData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
+    private static final double DEBUG_VISIBLE_DISTANCE = 32.0 * 16.0;
+
     @Override
     public void render(Level level, Camera camera, PoseStack poseStack) {
         if (level == null) return;
@@ -31,24 +32,13 @@ public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
         LevelZoneData data = context.data();
         if (data == null || !data.hasZones()) return;
 
-        List<RenderHelper.BorderSegment> segments = context.debugMode()
-                ? allBoundarySegments(data)
-                : nearbyBoundarySegments(data, context.playerX(), context.playerZ(), context.boundaryVisibleDistance());
+        List<RenderHelper.BorderSegment> segments = nearbyBoundarySegments(
+                data,
+                context.playerX(),
+                context.playerZ(),
+                context.debugMode() ? DEBUG_VISIBLE_DISTANCE : context.boundaryVisibleDistance()
+        );
         RenderHelper.renderBorderSegments(segments, CommonConfig.ACTIVE_ZONE_RENDER_COLOR.get(), context.camera(), context.poseStack());
-    }
-
-    private static List<RenderHelper.BorderSegment> allBoundarySegments(LevelZoneData data) {
-        Set<ChunkPos> chunks = data.activeChunks();
-        if (chunks.isEmpty()) return List.of();
-
-        List<RenderHelper.BorderSegment> result = new ArrayList<>();
-        for (ChunkPos pos : chunks) {
-            addBoundarySegment(result, data, pos, Direction.WEST);
-            addBoundarySegment(result, data, pos, Direction.EAST);
-            addBoundarySegment(result, data, pos, Direction.NORTH);
-            addBoundarySegment(result, data, pos, Direction.SOUTH);
-        }
-        return result;
     }
 
     private static List<RenderHelper.BorderSegment> nearbyBoundarySegments(LevelZoneData data, double x, double z, double distance) {
@@ -95,28 +85,6 @@ public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
             case SOUTH -> new RenderHelper.BorderSegment(minX, maxZ, maxX, maxZ);
         };
         if (distanceToSegmentSqr(x, z, segment) <= maxDistanceSqr) result.add(segment);
-    }
-
-    private static void addBoundarySegment(List<RenderHelper.BorderSegment> result, LevelZoneData data, ChunkPos pos,
-                                           Direction direction) {
-        ChunkPos neighbor = switch (direction) {
-            case WEST -> new ChunkPos(pos.x - 1, pos.z);
-            case EAST -> new ChunkPos(pos.x + 1, pos.z);
-            case NORTH -> new ChunkPos(pos.x, pos.z - 1);
-            case SOUTH -> new ChunkPos(pos.x, pos.z + 1);
-        };
-        if (data.hasAny(neighbor)) return;
-
-        double minX = pos.getMinBlockX();
-        double minZ = pos.getMinBlockZ();
-        double maxX = minX + 16.0;
-        double maxZ = minZ + 16.0;
-        result.add(switch (direction) {
-            case WEST -> new RenderHelper.BorderSegment(minX, minZ, minX, maxZ);
-            case EAST -> new RenderHelper.BorderSegment(maxX, minZ, maxX, maxZ);
-            case NORTH -> new RenderHelper.BorderSegment(minX, minZ, maxX, minZ);
-            case SOUTH -> new RenderHelper.BorderSegment(minX, maxZ, maxX, maxZ);
-        });
     }
 
     private static int blockToChunk(double value) {

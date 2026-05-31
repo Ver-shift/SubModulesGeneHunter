@@ -13,8 +13,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import org.galaxylib.GalaxyLib;
-import org.galaxylib.api.GalaxyLibAPI;
-import org.galaxylib.api.system.loot.data.GeneLootTableData;
+import org.galaxylib.api.system.loot.data.LootTableDefinition;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,15 +26,15 @@ import java.util.Map;
  * <p>
  * 从 data/<namespace>/gene_loot_table/ 目录加载 JSON 文件
  */
-public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocation, GeneLootTableData>> {
+public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocation, LootTableDefinition>> {
 
     // 数据包路径前缀
     public static final String PATH_PREFIX = "gene_loot_table";
-    private static volatile Map<ResourceLocation, GeneLootTableData> latestTables = Map.of();
+    private static volatile Map<ResourceLocation, LootTableDefinition> latestTables = Map.of();
 
     @Override
-    protected Map<ResourceLocation, GeneLootTableData> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-        Map<ResourceLocation, GeneLootTableData> tables = new HashMap<>();
+    protected Map<ResourceLocation, LootTableDefinition> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+        Map<ResourceLocation, LootTableDefinition> tables = new HashMap<>();
 
         profiler.startTick();
 
@@ -53,17 +52,15 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
                 // 解析 JSON
                 JsonElement json = JsonParser.parseReader(reader);
 
-                // 使用 CODEC 解析为 GeneLootTableData
-                var result = GeneLootTableData.CODEC.parse(JsonOps.INSTANCE, json);
+                var result = LootTableDefinition.CODEC.parse(JsonOps.INSTANCE, json);
                 if (result.error().isPresent()) {
                     GalaxyLib.LOGGER.error("Failed to parse loot table {}: {}", location, result.error().get().message());
                     continue;
                 }
-                GeneLootTableData table = result.result().orElse(null);
+                LootTableDefinition table = result.result().orElse(null);
 
                 if (table != null) {
-                    // 使用 JSON 中定义的 identify 作为 key
-                    ResourceLocation tableId = table.getIdentify();
+                    ResourceLocation tableId = table.identify();
                     tables.put(tableId, table);
                 }
 
@@ -79,12 +76,9 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, GeneLootTableData> tables, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<ResourceLocation, LootTableDefinition> tables, ResourceManager resourceManager, ProfilerFiller profiler) {
         latestTables = Collections.unmodifiableMap(new HashMap<>(tables));
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server != null) {
-            LevelLootData.get(server).setTables(latestTables);
-        }
+        GalaxyLib.MANAGER.getLootManager().setTables(latestTables);
         GalaxyLib.LOGGER.info("Loaded {} gene loot tables from data packs", tables.size());
 
         // 注意：reload 阶段可能还拿不到稳定的 server 引用，玩家同步放到 OnDatapackSyncEvent。
@@ -93,7 +87,7 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
     /**
      * 将战利品表数据同步到所有在线玩家
      */
-    public static Map<ResourceLocation, GeneLootTableData> getLatestTables() {
+    public static Map<ResourceLocation, LootTableDefinition> getLatestTables() {
         return latestTables;
     }
 
@@ -110,10 +104,7 @@ public class LootPack extends SimplePreparableReloadListener<Map<ResourceLocatio
 
     public static void syncToPlayer(ServerPlayer player) {
         try {
-            var manager = GalaxyLibAPI.getLootTableManager(player);
-            if (manager != null) {
-                manager.init();
-            }
+            GalaxyLib.MANAGER.getLootManager().setTables(latestTables);
         } catch (Exception e) {
             GalaxyLib.LOGGER.error("Failed to sync loot tables to player {}", player.getName().getString(), e);
         }

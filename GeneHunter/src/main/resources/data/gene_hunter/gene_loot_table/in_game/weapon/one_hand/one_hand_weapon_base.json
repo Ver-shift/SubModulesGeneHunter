@@ -1,7 +1,7 @@
 {
   "identify": "gene_hunter:one_hand_weapon_base",
   "note": "单手武器基础战利品表 - 包含刺剑、环刃、短剑、弯刀、双持剑、战刃、长刀、武士刀、长剑",
-  "loot_type": "weapon",
+  "loot_type": "gene_hunter:weapon",
   "pools": [
     {
       "name": "iron_tier",
