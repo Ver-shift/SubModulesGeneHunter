@@ -2,7 +2,6 @@ package org.galaxy.beyond.api.system.structure.terrain;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * Terrain fill settings for {@link TerrainBlendJigsawStructure}.
@@ -14,8 +13,6 @@ import net.minecraft.resources.ResourceLocation;
  * @param maxSurfaceDelta Extra allowed height gap when filling raised structure foundations.
  * @param blendExtension  Extra outward blend distance used for soft terrain shoulders.
  * @param slopeHeight     Maximum height added to nearby terrain shoulder columns.
- * @param anchorMode      How structure footprint anchors are collected.
- * @param solidTag        Block tag that marks template blocks as terrain-supporting foundation blocks.
  */
 public record TerrainBlendConfig(
         int radius,
@@ -24,9 +21,7 @@ public record TerrainBlendConfig(
         int flatnessRadius,
         int maxSurfaceDelta,
         int blendExtension,
-        int slopeHeight,
-        AnchorMode anchorMode,
-        ResourceLocation solidTag
+        int slopeHeight
 ) {
 
     public static final TerrainBlendConfig DEFAULT = new TerrainBlendConfig(
@@ -36,9 +31,7 @@ public record TerrainBlendConfig(
             0,
             8,
             8,
-            4,
-            AnchorMode.SOLID_TAG,
-            ResourceLocation.fromNamespaceAndPath("beyond", "terrain_blend_solid")
+            4
     );
 
     public static final Codec<TerrainBlendConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -48,9 +41,7 @@ public record TerrainBlendConfig(
             Codec.intRange(0, 96).optionalFieldOf("flatness_radius", DEFAULT.flatnessRadius()).forGetter(TerrainBlendConfig::flatnessRadius),
             Codec.intRange(1, 32).optionalFieldOf("max_surface_delta", DEFAULT.maxSurfaceDelta()).forGetter(TerrainBlendConfig::maxSurfaceDelta),
             Codec.intRange(0, 32).optionalFieldOf("blend_extension", DEFAULT.blendExtension()).forGetter(TerrainBlendConfig::blendExtension),
-            Codec.intRange(0, 16).optionalFieldOf("slope_height", DEFAULT.slopeHeight()).forGetter(TerrainBlendConfig::slopeHeight),
-            AnchorMode.CODEC.optionalFieldOf("anchor_mode", DEFAULT.anchorMode()).forGetter(TerrainBlendConfig::anchorMode),
-            ResourceLocation.CODEC.optionalFieldOf("solid_tag", DEFAULT.solidTag()).forGetter(TerrainBlendConfig::solidTag)
+            Codec.intRange(0, 16).optionalFieldOf("slope_height", DEFAULT.slopeHeight()).forGetter(TerrainBlendConfig::slopeHeight)
     ).apply(instance, TerrainBlendConfig::new));
 
     public int maxAllowedSurfaceDrop() {
@@ -59,31 +50,5 @@ public record TerrainBlendConfig(
 
     public int blendRadius() {
         return radius + blendExtension;
-    }
-
-    public enum AnchorMode {
-        SOLID_TAG("solid_tag"),
-        FOOTPRINT("footprint");
-
-        public static final Codec<AnchorMode> CODEC = Codec.STRING.xmap(AnchorMode::byName, AnchorMode::serializedName);
-
-        private final String name;
-
-        AnchorMode(String name) {
-            this.name = name;
-        }
-
-        public String serializedName() {
-            return name;
-        }
-
-        private static AnchorMode byName(String name) {
-            for (AnchorMode mode : values()) {
-                if (mode.name.equals(name)) {
-                    return mode;
-                }
-            }
-            return SOLID_TAG;
-        }
     }
 }

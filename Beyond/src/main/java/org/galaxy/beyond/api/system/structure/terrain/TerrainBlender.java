@@ -1,10 +1,7 @@
 package org.galaxy.beyond.api.system.structure.terrain;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +17,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.galaxy.beyond.mixin.SinglePoolElementAccessor;
 import org.galaxy.beyond.mixin.StructureTemplateAccessor;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,14 +25,22 @@ import java.util.Map;
 
 public final class TerrainBlender {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Block[] IGNORED_TEMPLATE_BLOCKS = {
+            Blocks.AIR,
+            Blocks.CAVE_AIR,
+            Blocks.VOID_AIR,
+            Blocks.STRUCTURE_BLOCK,
+            Blocks.STRUCTURE_VOID,
+            Blocks.JIGSAW
+    };
+    private static final double SLOPE_NOISE_SCALE = 6.0;
+    private static final int SLOPE_NOISE_STRENGTH = 3;
 
     private TerrainBlender() {
     }
 
     public static void blend(WorldGenLevel level, BoundingBox placeBox, ChunkPos chunkPos,
                              PiecesContainer pieces, TerrainBlendConfig config) {
-        TagKey<Block> solidTag = TagKey.create(Registries.BLOCK, config.solidTag());
         BoundingBox chunkBox = new BoundingBox(
                 chunkPos.getMinBlockX(), level.getMinBuildHeight(), chunkPos.getMinBlockZ(),
                 chunkPos.getMaxBlockX(), level.getMaxBuildHeight() - 1, chunkPos.getMaxBlockZ()
@@ -45,52 +49,39 @@ public final class TerrainBlender {
         BoundingBox targetBox = intersect(chunkBox, placeBox);
         if (targetBox == null) return;
 
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         int blendRadius = config.blendRadius();
-        int minX = Math.max(targetBox.minX(), structureBox.minX() - blendRadius);
-        int maxX = Math.min(targetBox.maxX(), structureBox.maxX() + blendRadius);
-        int minZ = Math.max(targetBox.minZ(), structureBox.minZ() - blendRadius);
-        int maxZ = Math.min(targetBox.maxZ(), structureBox.maxZ() + blendRadius);
-        if (minX > maxX || minZ > maxZ) return;
-
-        int blendRadiusSq = blendRadius * blendRadius;
         BoundingBox anchorSearchBox = new BoundingBox(
                 structureBox.minX() - blendRadius, targetBox.minY(), structureBox.minZ() - blendRadius,
                 structureBox.maxX() + blendRadius, targetBox.maxY(), structureBox.maxZ() + blendRadius
         );
-        List<BlockPos> anchors = collectAnchors(level, pieces, solidTag, config, anchorSearchBox);
-        if (anchors.isEmpty()) {
-//            LOGGER.info("Terrain blend skipped for chunk {}: no anchors in {}", chunkPos, config.solidTag());
-            return;
-        }
+        List<BlockPos> anchors = collectAnchors(level, pieces, config.depth(), anchorSearchBox);
+        if (anchors.isEmpty()) return;
 
-        int changed = 0;
+        Footprint footprint = Footprint.create(anchors);
+        int minX = Math.max(targetBox.minX(), footprint.bounds().minX() - blendRadius);
+        int maxX = Math.min(targetBox.maxX(), footprint.bounds().maxX() + blendRadius);
+        int minZ = Math.max(targetBox.minZ(), footprint.bounds().minZ() - blendRadius);
+        int maxZ = Math.min(targetBox.maxZ(), footprint.bounds().maxZ() + blendRadius);
+        if (minX > maxX || minZ > maxZ) return;
+
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        int blendRadiusSq = blendRadius * blendRadius;
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                AnchorDistance nearest = nearestHorizontalDistance(anchors, x, z, blendRadiusSq);
+                AnchorDistance nearest = footprint.nearest(x, z, blendRadiusSq);
                 if (nearest.distanceSq() > blendRadiusSq) continue;
 
                 int anchorY = nearest.anchor().getY();
                 boolean anchorColumn = nearest.distanceSq() == 0;
-                int surfaceY = findTerrainSurfaceY(level, mutable, x, z, anchorColumn ? anchorY - 1 : level.getMaxBuildHeight() - 1);
+                int maxSurfaceY = anchorColumn ? anchorY - 1 : level.getMaxBuildHeight() - 1;
+                int surfaceY = findTerrainSurfaceY(level, mutable, x, z, maxSurfaceY);
                 if (surfaceY <= level.getMinBuildHeight()) continue;
 
-                double factor = 1.0 - (Math.sqrt(nearest.distanceSq()) / blendRadius);
                 ColumnMaterial material = sampleColumnMaterial(level, mutable, x, z, surfaceY);
-                int depth = Math.max(1, (int) Math.ceil(config.foundationDepth() * factor));
-                changed += fillSurfaceFluids(level, mutable, x, z, surfaceY, depth, material);
-                double distance = Math.sqrt(nearest.distanceSq());
-                if (anchorColumn) {
-                    int minFoundationY = foundationTargetY(level, mutable, x, z, anchorY, surfaceY, config);
-                    changed += fillFoundation(level, mutable, x, z, anchorY - 1, minFoundationY, material);
-                } else {
-                    changed += fillTerrainShoulder(level, mutable, x, z, surfaceY, anchorY, distance, config, material);
-                }
+                BlendColumn column = BlendColumn.create(nearest, x, z, surfaceY, config);
+                blendColumn(level, mutable, x, z, column, config, material);
             }
         }
-//        LOGGER.info("Terrain blend applied for chunk {}: anchors={}, changed={}, radius={}, depth={}",
-//                chunkPos, anchors.size(), changed, config.radius(), config.depth());
-        // 地形融合按区块触发，debug 会刷屏；需要排查地形时再临时打开。
     }
 
     private static BoundingBox intersect(BoundingBox first, BoundingBox second) {
@@ -105,55 +96,13 @@ public final class TerrainBlender {
                 : new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    private static List<BlockPos> collectAnchors(WorldGenLevel level, PiecesContainer pieces, TagKey<Block> solidTag,
-                                                 TerrainBlendConfig config, BoundingBox searchBox) {
-        List<BlockPos> anchors = config.anchorMode() == TerrainBlendConfig.AnchorMode.FOOTPRINT
-                ? collectTemplateFootprintAnchors(level, pieces, config.depth(), searchBox)
-                : collectTemplateSolidAnchors(level, pieces, solidTag, config.depth(), searchBox);
+    private static List<BlockPos> collectAnchors(WorldGenLevel level, PiecesContainer pieces,
+                                                 int depth, BoundingBox searchBox) {
+        List<BlockPos> anchors = collectTemplateFootprintAnchors(level, pieces, depth, searchBox);
         if (!anchors.isEmpty()) {
             return anchors;
         }
-        return config.anchorMode() == TerrainBlendConfig.AnchorMode.FOOTPRINT
-                ? collectPlacedFootprintAnchors(level, pieces, config.depth(), searchBox)
-                : collectPlacedSolidAnchors(level, pieces, solidTag, config.depth(), searchBox);
-    }
-
-    private static List<BlockPos> collectTemplateSolidAnchors(WorldGenLevel level, PiecesContainer pieces,
-                                                              TagKey<Block> solidTag, int depth, BoundingBox searchBox) {
-        Map<Long, BlockPos> anchors = new HashMap<>();
-        for (StructurePiece piece : pieces.pieces()) {
-            if (!(piece instanceof PoolElementStructurePiece poolPiece)
-                    || !(poolPiece.getElement() instanceof SinglePoolElement singlePoolElement)) {
-                continue;
-            }
-
-            StructureTemplate template = ((SinglePoolElementAccessor) singlePoolElement)
-                    .beyond$invokeGetTemplate(level.getLevel().getStructureManager());
-            List<StructureTemplate.Palette> palettes = ((StructureTemplateAccessor) template).beyond$getPalettes();
-            if (palettes.isEmpty()) continue;
-
-            List<StructureTemplate.StructureBlockInfo> blocks = palettes.getFirst().blocks();
-            Vec3i size = template.getSize();
-            int minTemplateY = findLowestSolidTemplateY(blocks, solidTag);
-            if (minTemplateY < 0) continue;
-
-            int maxTemplateY = Math.min(size.getY() - 1, minTemplateY + depth - 1);
-            if (maxTemplateY < 0) continue;
-
-            StructurePlaceSettings settings = new StructurePlaceSettings().setRotation(poolPiece.getRotation());
-            BlockPos origin = poolPiece.getPosition();
-            for (StructureTemplate.StructureBlockInfo blockInfo : blocks) {
-                BlockPos relative = blockInfo.pos();
-                if (relative.getY() < minTemplateY || relative.getY() > maxTemplateY || !blockInfo.state().is(solidTag))
-                    continue;
-
-                BlockPos anchor = StructureTemplate.calculateRelativePosition(settings, relative).offset(origin);
-                if (searchBox.isInside(anchor)) {
-                    addLowestAnchor(anchors, anchor);
-                }
-            }
-        }
-        return new ArrayList<>(anchors.values());
+        return collectPlacedFootprintAnchors(level, pieces, depth, searchBox);
     }
 
     private static List<BlockPos> collectTemplateFootprintAnchors(WorldGenLevel level, PiecesContainer pieces,
@@ -196,16 +145,6 @@ public final class TerrainBlender {
         return new ArrayList<>(anchors.values());
     }
 
-    private static int findLowestSolidTemplateY(List<StructureTemplate.StructureBlockInfo> blocks, TagKey<Block> solidTag) {
-        int minY = Integer.MAX_VALUE;
-        for (StructureTemplate.StructureBlockInfo blockInfo : blocks) {
-            if (blockInfo.state().is(solidTag) && blockInfo.pos().getY() < minY) {
-                minY = blockInfo.pos().getY();
-            }
-        }
-        return minY == Integer.MAX_VALUE ? -1 : minY;
-    }
-
     private static int findLowestFootprintTemplateY(List<StructureTemplate.StructureBlockInfo> blocks) {
         int minY = Integer.MAX_VALUE;
         for (StructureTemplate.StructureBlockInfo blockInfo : blocks) {
@@ -214,36 +153,6 @@ public final class TerrainBlender {
             }
         }
         return minY == Integer.MAX_VALUE ? -1 : minY;
-    }
-
-    private static List<BlockPos> collectPlacedSolidAnchors(WorldGenLevel level, PiecesContainer pieces,
-                                                            TagKey<Block> solidTag, int depth, BoundingBox searchBox) {
-        Map<Long, BlockPos> anchors = new HashMap<>();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-        for (StructurePiece piece : pieces.pieces()) {
-            BoundingBox box = piece.getBoundingBox();
-            int minX = Math.max(box.minX(), searchBox.minX());
-            int maxX = Math.min(box.maxX(), searchBox.maxX());
-            int minZ = Math.max(box.minZ(), searchBox.minZ());
-            int maxZ = Math.min(box.maxZ(), searchBox.maxZ());
-            if (minX > maxX || minZ > maxZ) continue;
-
-            int minY = Math.max(Math.max(level.getMinBuildHeight(), box.minY()), searchBox.minY());
-            int maxY = Math.min(Math.min(level.getMaxBuildHeight() - 1, box.minY() + depth - 1), searchBox.maxY());
-            if (minY > maxY) continue;
-
-            for (int x = minX; x <= maxX; x++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    for (int y = minY; y <= maxY; y++) {
-                        mutable.set(x, y, z);
-                        if (level.getBlockState(mutable).is(solidTag)) {
-                            addLowestAnchor(anchors, new BlockPos(x, y, z));
-                        }
-                    }
-                }
-            }
-        }
-        return new ArrayList<>(anchors.values());
     }
 
     private static List<BlockPos> collectPlacedFootprintAnchors(WorldGenLevel level, PiecesContainer pieces,
@@ -282,22 +191,6 @@ public final class TerrainBlender {
         if (existing == null || anchor.getY() < existing.getY()) {
             anchors.put(key, anchor);
         }
-    }
-
-    private static AnchorDistance nearestHorizontalDistance(List<BlockPos> anchors, int x, int z, int cutoffSq) {
-        int best = cutoffSq + 1;
-        BlockPos nearest = BlockPos.ZERO;
-        for (BlockPos anchor : anchors) {
-            int dx = anchor.getX() - x;
-            int dz = anchor.getZ() - z;
-            int dist = dx * dx + dz * dz;
-            if (dist < best) {
-                best = dist;
-                nearest = anchor;
-                if (best == 0) return new AnchorDistance(nearest, 0);
-            }
-        }
-        return new AnchorDistance(nearest, best);
     }
 
     private static int findTerrainSurfaceY(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z, int maxY) {
@@ -339,107 +232,160 @@ public final class TerrainBlender {
         return new ColumnMaterial(top, filler);
     }
 
-    private static int fillSurfaceFluids(WorldGenLevel level, BlockPos.MutableBlockPos pos,
-                                         int x, int z, int surfaceY, int depth, ColumnMaterial material) {
-        pos.set(x, surfaceY, z);
-        if (level.getBlockState(pos).getFluidState().isEmpty()) return 0;
-
-        int minY = Math.max(level.getMinBuildHeight(), surfaceY - depth + 1);
-        int changed = 0;
-        boolean top = true;
-        for (int y = surfaceY; y >= minY; y--) {
-            pos.set(x, y, z);
-            BlockState current = level.getBlockState(pos);
-            if (isFillBlocked(current)) break;
-            level.setBlock(pos, top ? material.top() : material.filler(), Block.UPDATE_CLIENTS);
-            changed += clearUnsupportedPlant(level, pos, x, y + 1, z);
-            changed++;
-            top = false;
+    private static void blendColumn(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z,
+                                    BlendColumn column, TerrainBlendConfig config, ColumnMaterial material) {
+        if (column.targetY() > column.surfaceY()) {
+            fillColumnUp(level, pos, x, z, column.surfaceY() + 1, column.targetY(), material);
+        } else if (column.targetY() < column.surfaceY()) {
+            carveColumnDown(level, pos, x, z, column.surfaceY(), column.targetY(), material);
+        } else {
+            refreshColumnTop(level, pos, x, column.targetY(), z, material);
         }
-        return changed;
+
+        if (column.anchorColumn()) {
+            int bottomY = Math.max(level.getMinBuildHeight(), column.anchorY() - config.foundationDepth());
+            fillFoundation(level, pos, x, z, column.anchorY() - 1, bottomY, material);
+        }
     }
 
-    private static int fillFoundation(WorldGenLevel level, BlockPos.MutableBlockPos pos,
-                                      int x, int z, int startY, int minY, ColumnMaterial material) {
-        int changed = 0;
-        int bottomY = Math.max(level.getMinBuildHeight(), minY);
+    private static void fillColumnUp(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z,
+                                     int startY, int targetY, ColumnMaterial material) {
+        for (int y = startY; y <= targetY; y++) {
+            pos.set(x, y, z);
+            BlockState current = level.getBlockState(pos);
+            if (!canReplaceForBlend(current)) return;
+
+            level.setBlock(pos, y == targetY ? blendTop(material) : blendFiller(material), Block.UPDATE_CLIENTS);
+            clearUnsupportedPlant(level, pos, x, y + 1, z);
+        }
+    }
+
+    private static void carveColumnDown(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z,
+                                        int surfaceY, int targetY, ColumnMaterial material) {
+        for (int y = surfaceY; y > targetY; y--) {
+            pos.set(x, y, z);
+            BlockState current = level.getBlockState(pos);
+            if (!canCarveForBlend(current)) return;
+
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            clearUnsupportedPlant(level, pos, x, y + 1, z);
+        }
+        refreshColumnTop(level, pos, x, targetY, z, material);
+    }
+
+    private static void refreshColumnTop(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int y, int z,
+                                         ColumnMaterial material) {
+        pos.set(x, y, z);
+        BlockState current = level.getBlockState(pos);
+        if (canReplaceForBlend(current) || isBlendMaterial(current)) {
+            level.setBlock(pos, blendTop(material), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private static void fillFoundation(WorldGenLevel level, BlockPos.MutableBlockPos pos,
+                                       int x, int z, int startY, int bottomY, ColumnMaterial material) {
         for (int y = Math.min(startY, level.getMaxBuildHeight() - 1); y >= bottomY; y--) {
             pos.set(x, y, z);
             BlockState current = level.getBlockState(pos);
-            if (isFoundationBlocked(current)) break;
-            level.setBlock(pos, material.filler(), Block.UPDATE_CLIENTS);
-            changed += clearUnsupportedPlant(level, pos, x, y + 1, z);
-            changed++;
+            if (!canReplaceForBlend(current) && !isNaturalSurface(current)) return;
+
+            level.setBlock(pos, blendFiller(material), Block.UPDATE_CLIENTS);
+            clearUnsupportedPlant(level, pos, x, y + 1, z);
         }
-        return changed;
     }
 
-    private static int fillTerrainShoulder(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z,
-                                           int surfaceY, int anchorY, double distance, TerrainBlendConfig config,
-                                           ColumnMaterial material) {
-        if (config.slopeHeight() <= 0 || anchorY <= surfaceY + 1) return 0;
+    private static boolean canReplaceForBlend(BlockState state) {
+        return state.isAir() || !state.getFluidState().isEmpty() || isLoosePlant(state) || isFlower(state);
+    }
 
-        double shoulderFactor = 1.0 - (distance / Math.max(1, config.blendRadius()));
-        int shoulderHeight = (int) Math.ceil(config.slopeHeight() * smoothStep(shoulderFactor));
-        int targetY = Math.min(anchorY - 1, surfaceY + shoulderHeight);
-        int changed = 0;
-        for (int y = surfaceY + 1; y <= targetY; y++) {
-            pos.set(x, y, z);
-            BlockState current = level.getBlockState(pos);
-            if (isFillBlocked(current)) break;
+    private static boolean canCarveForBlend(BlockState state) {
+        return canReplaceForBlend(state) || isBlendMaterial(state);
+    }
 
-            BlockState state = y == targetY ? shoulderTop(material) : material.filler();
-            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
-            changed += clearUnsupportedPlant(level, pos, x, y + 1, z);
-            changed++;
+    private static BlockState blendTop(ColumnMaterial material) {
+        if (isSoilLike(material.top()) || isRockLike(material.top()) || isSoilLike(material.filler()) || isRockLike(material.filler())) {
+            return Blocks.GRASS_BLOCK.defaultBlockState();
         }
-        return changed;
+        return material.top();
     }
 
-    private static int foundationTargetY(WorldGenLevel level, BlockPos.MutableBlockPos pos,
-                                         int x, int z, int anchorY, int surfaceY, TerrainBlendConfig config) {
-        int maxDrop = config.maxAllowedSurfaceDrop();
-        int bottomY = Math.max(level.getMinBuildHeight(), anchorY - maxDrop);
-        for (int y = anchorY - 1; y >= bottomY; y--) {
-            pos.set(x, y, z);
-            if (isStableFoundation(level.getBlockState(pos))) {
-                return y + 1;
-            }
-        }
-        return Math.max(surfaceY, bottomY);
+    private static BlockState blendFiller(ColumnMaterial material) {
+        return isSoilLike(material.filler()) || isRockLike(material.filler())
+                ? Blocks.DIRT.defaultBlockState()
+                : material.filler();
     }
 
-    private static boolean isFillBlocked(BlockState state) {
-        return !state.isAir() && state.getFluidState().isEmpty() && !isLoosePlant(state);
+    private static boolean isSoilLike(BlockState state) {
+        return isNaturalSurface(state)
+                || state.is(Blocks.DIRT)
+                || state.is(Blocks.COARSE_DIRT)
+                || state.is(Blocks.ROOTED_DIRT);
     }
 
-    private static boolean isFoundationBlocked(BlockState state) {
-        return isFillBlocked(state) && !isNaturalSurface(state);
-    }
-
-    private static boolean isStableFoundation(BlockState state) {
-        return isFoundationBlocked(state);
-    }
-
-    private static BlockState shoulderTop(ColumnMaterial material) {
-        return material.top().is(Blocks.GRASS_BLOCK)
-                || material.top().is(Blocks.DIRT)
-                || material.top().is(Blocks.COARSE_DIRT)
-                || material.top().is(Blocks.ROOTED_DIRT)
-                || material.filler().is(Blocks.DIRT)
-                || material.filler().is(Blocks.COARSE_DIRT)
-                || material.filler().is(Blocks.ROOTED_DIRT)
-                ? Blocks.GRASS_BLOCK.defaultBlockState()
-                : material.top();
+    private static boolean isRockLike(BlockState state) {
+        return state.is(Blocks.STONE)
+                || state.is(Blocks.ANDESITE)
+                || state.is(Blocks.DIORITE)
+                || state.is(Blocks.GRANITE)
+                || state.is(Blocks.TUFF)
+                || state.is(Blocks.DEEPSLATE);
     }
 
     private static double smoothStep(double value) {
-        double clamped = Math.max(0.0, Math.min(1.0, value));
+        double clamped = clampUnit(value);
         return clamped * clamped * (3.0 - 2.0 * clamped);
     }
 
-    private static int clearUnsupportedPlant(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int y, int z) {
-        int changed = 0;
+    private static double clampUnit(double value) {
+        if (value < 0.0) return 0.0;
+        return Math.min(value, 1.0);
+    }
+
+    private static int clampNonNegative(int value, int max) {
+        if (value < 0) return 0;
+        return Math.min(value, max);
+    }
+
+    private static int applySlopeNoise(int x, int z, int targetY, int surfaceY, double distance,
+                                       int innerRadius, TerrainBlendConfig config) {
+        double progress = clampUnit((distance - innerRadius) / Math.max(1.0, config.blendRadius() - innerRadius));
+        double mask = Math.sin(progress * Math.PI);
+        if (mask <= 0.0) return targetY;
+
+        int offset = (int) Math.round(columnNoise(x, z) * SLOPE_NOISE_STRENGTH * mask);
+        return Math.min(targetY + offset, surfaceY + config.slopeHeight());
+    }
+
+    private static double columnNoise(int x, int z) {
+        double sampleX = x / SLOPE_NOISE_SCALE;
+        double sampleZ = z / SLOPE_NOISE_SCALE;
+        int minX = (int) Math.floor(sampleX);
+        int minZ = (int) Math.floor(sampleZ);
+        double localX = sampleX - minX;
+        double localZ = sampleZ - minZ;
+        double smoothX = smoothStep(localX);
+        double smoothZ = smoothStep(localZ);
+
+        double north = lerp(noiseAt(minX, minZ), noiseAt(minX + 1, minZ), smoothX);
+        double south = lerp(noiseAt(minX, minZ + 1), noiseAt(minX + 1, minZ + 1), smoothX);
+        return lerp(north, south, smoothZ) * 2.0 - 1.0;
+    }
+
+    private static double noiseAt(int x, int z) {
+        long value = x * 341873128712L + z * 132897987541L;
+        value ^= value >>> 33;
+        value *= 0xff51afd7ed558ccdL;
+        value ^= value >>> 33;
+        value *= 0xc4ceb9fe1a85ec53L;
+        value ^= value >>> 33;
+        return (value & 0xFFFFFFL) / (double) 0x1000000L;
+    }
+
+    private static double lerp(double from, double to, double factor) {
+        return from + (to - from) * factor;
+    }
+
+    private static void clearUnsupportedPlant(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int y, int z) {
         int maxY = Math.min(level.getMaxBuildHeight() - 1, y + 2);
         for (int plantY = y; plantY <= maxY; plantY++) {
             pos.set(x, plantY, z);
@@ -447,9 +393,7 @@ public final class TerrainBlender {
             if (!isLoosePlant(state) && !isFlower(state)) break;
 
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-            changed++;
         }
-        return changed;
     }
 
     private static boolean isLoosePlant(BlockState state) {
@@ -474,7 +418,7 @@ public final class TerrainBlender {
     }
 
     private static boolean isFootprintBlock(BlockState state) {
-        return !state.isAir()
+        return !isIgnoredTemplateBlock(state)
                 && state.getFluidState().isEmpty()
                 && !isLoosePlant(state)
                 && !isFlower(state)
@@ -488,6 +432,13 @@ public final class TerrainBlender {
                 && !state.is(Blocks.JIGSAW)
                 && !state.is(Blocks.STRUCTURE_BLOCK)
                 && !state.is(Blocks.STRUCTURE_VOID);
+    }
+
+    private static boolean isIgnoredTemplateBlock(BlockState state) {
+        for (Block block : IGNORED_TEMPLATE_BLOCKS) {
+            if (state.is(block)) return true;
+        }
+        return state.isAir();
     }
 
     private static boolean isNaturalSurface(BlockState state) {
@@ -527,5 +478,64 @@ public final class TerrainBlender {
     }
 
     private record ColumnMaterial(BlockState top, BlockState filler) {
+    }
+
+    private record BlendColumn(int anchorY, int surfaceY, int targetY, boolean anchorColumn) {
+
+        private static BlendColumn create(AnchorDistance nearest, int x, int z, int surfaceY,
+                                          TerrainBlendConfig config) {
+            int anchorY = nearest.anchor().getY();
+            double distance = Math.sqrt(nearest.distanceSq());
+            int innerRadius = clampNonNegative(config.flatnessRadius(), config.blendRadius() - 1);
+            double weight = blendWeight(distance, innerRadius, config.blendRadius());
+            int targetY = (int) Math.round(lerp(surfaceY, anchorY - 1, weight));
+            if (nearest.distanceSq() != 0) {
+                targetY = applySlopeNoise(x, z, targetY, surfaceY, distance, innerRadius, config);
+            }
+            return new BlendColumn(anchorY, surfaceY, targetY, nearest.distanceSq() == 0);
+        }
+
+        private static double blendWeight(double distance, int innerRadius, int blendRadius) {
+            if (distance <= innerRadius) return 1.0;
+            double outer = Math.max(1.0, blendRadius - innerRadius);
+            return 1.0 - smoothStep((distance - innerRadius) / outer);
+        }
+    }
+
+    private record Footprint(List<BlockPos> anchors, BoundingBox bounds) {
+
+        private static Footprint create(List<BlockPos> anchors) {
+            int minX = Integer.MAX_VALUE;
+            int minY = Integer.MAX_VALUE;
+            int minZ = Integer.MAX_VALUE;
+            int maxX = Integer.MIN_VALUE;
+            int maxY = Integer.MIN_VALUE;
+            int maxZ = Integer.MIN_VALUE;
+            for (BlockPos anchor : anchors) {
+                minX = Math.min(minX, anchor.getX());
+                minY = Math.min(minY, anchor.getY());
+                minZ = Math.min(minZ, anchor.getZ());
+                maxX = Math.max(maxX, anchor.getX());
+                maxY = Math.max(maxY, anchor.getY());
+                maxZ = Math.max(maxZ, anchor.getZ());
+            }
+            return new Footprint(anchors, new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ));
+        }
+
+        private AnchorDistance nearest(int x, int z, int cutoffSq) {
+            int best = cutoffSq + 1;
+            BlockPos nearest = BlockPos.ZERO;
+            for (BlockPos anchor : anchors) {
+                int dx = anchor.getX() - x;
+                int dz = anchor.getZ() - z;
+                int dist = dx * dx + dz * dz;
+                if (dist < best) {
+                    best = dist;
+                    nearest = anchor;
+                    if (best == 0) return new AnchorDistance(nearest, 0);
+                }
+            }
+            return new AnchorDistance(nearest, best);
+        }
     }
 }

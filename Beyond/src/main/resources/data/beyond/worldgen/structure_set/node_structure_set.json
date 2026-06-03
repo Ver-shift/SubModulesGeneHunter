@@ -1,11 +1,11 @@
 {
   "structures": [
     {
-      "structure": "beyond:smal_castle",
+      "structure": "beyond:church",
       "weight": 70
     },
     {
-      "structure": "beyond:lue_duo",
+      "structure": "beyond:pillager_camp",
       "weight": 30
     }
   ],
