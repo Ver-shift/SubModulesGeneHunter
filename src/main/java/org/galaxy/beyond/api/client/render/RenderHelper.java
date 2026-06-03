@@ -2,13 +2,16 @@ package org.galaxy.beyond.api.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.util.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
+import net.minecraft.world.level.Level;
 import org.joml.Matrix4f;
 
 import java.util.List;
@@ -17,6 +20,9 @@ public final class RenderHelper {
     public static final Identifier FORCEFIELD =
             Identifier.withDefaultNamespace("textures/misc/forcefield.png");
     private static final RenderType BORDER_RENDER_TYPE = RenderTypes.beaconBeam(FORCEFIELD, true);
+    private static final float TEXTURE_SCALE = 0.5F;
+    private static final int BOTTOM_FADE_ALPHA = 140;
+    private static final int TOP_FADE_ALPHA = 30;
 
     private RenderHelper() {
     }
@@ -27,28 +33,14 @@ public final class RenderHelper {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
-        double minY = mc.level.getMinY();
-        double maxY = mc.level.getMaxY();
+        BorderRenderState state = BorderRenderState.create(mc.level, mc, camera, r, g, b, bottomAlpha, topAlpha);
+        List<BorderSegment> segments = rectangleSegments(minX, minZ, maxX, maxZ);
 
         poseStack.pushPose();
-        var cameraPos = camera.position();
-        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-        float time = Util.getMillis() / 2500.0F;
-        float offsetU = time / 0.5F;
-        float offsetV = -time;
-        float uLengthX = (float) (maxX - minX);
-        float uLengthZ = (float) (maxZ - minZ);
-        float vHeight = (float) (maxY - minY);
+        translateToCamera(poseStack, camera);
 
         VertexConsumer builder = mc.renderBuffers().bufferSource().getBuffer(BORDER_RENDER_TYPE);
-        Matrix4f matrix = poseStack.last().pose();
-
-        addWall(builder, matrix, minX, maxX, minY, maxY, minZ, minZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthX, vHeight);
-        addWall(builder, matrix, maxX, minX, minY, maxY, maxZ, maxZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthX, vHeight);
-        addWall(builder, matrix, minX, minX, minY, maxY, maxZ, minZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthZ, vHeight);
-        addWall(builder, matrix, maxX, maxX, minY, maxY, minZ, maxZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthZ, vHeight);
-
+        renderSegments(builder, poseStack.last().pose(), segments, state);
         mc.renderBuffers().bufferSource().endBatch(BORDER_RENDER_TYPE);
 
         poseStack.popPose();
@@ -64,26 +56,10 @@ public final class RenderHelper {
             return;
         }
 
-        double minY = mc.level.getMinY();
-        double maxY = mc.level.getMaxY();
-        float time = Util.getMillis() / 2500.0F;
-        float offsetU = time / 0.5F;
-        float offsetV = -time;
-        float uLengthX = (float) (maxX - minX);
-        float uLengthZ = (float) (maxZ - minZ);
-        float vHeight = (float) (maxY - minY);
+        BorderRenderState state = BorderRenderState.create(mc.level, mc, camera, r, g, b, bottomAlpha, topAlpha);
+        List<BorderSegment> segments = rectangleSegments(minX, minZ, maxX, maxZ);
 
-        poseStack.pushPose();
-        var cameraPos = camera.position();
-        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-        collector.submitCustomGeometry(poseStack, BORDER_RENDER_TYPE, (pose, builder) -> {
-            Matrix4f matrix = pose.pose();
-            addWall(builder, matrix, minX, maxX, minY, maxY, minZ, minZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthX, vHeight);
-            addWall(builder, matrix, maxX, minX, minY, maxY, maxZ, maxZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthX, vHeight);
-            addWall(builder, matrix, minX, minX, minY, maxY, maxZ, minZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthZ, vHeight);
-            addWall(builder, matrix, maxX, maxX, minY, maxY, minZ, maxZ, r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLengthZ, vHeight);
-        });
-        poseStack.popPose();
+        submitSegments(segments, camera, poseStack, collector, state);
     }
 
     public static void renderBorder(double minX, double minZ, double maxX, double maxZ,
@@ -116,28 +92,12 @@ public final class RenderHelper {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || segments.isEmpty()) return;
 
-        double minY = mc.level.getMinY();
-        double maxY = mc.level.getMaxY();
-
+        BorderRenderState state = BorderRenderState.create(mc.level, mc, camera, r, g, b, bottomAlpha, topAlpha);
         poseStack.pushPose();
-        var cameraPos = camera.position();
-        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-        float time = Util.getMillis() / 2500.0F;
-        float offsetU = time / 0.5F;
-        float offsetV = -time;
-        float vHeight = (float) (maxY - minY);
+        translateToCamera(poseStack, camera);
 
         VertexConsumer builder = mc.renderBuffers().bufferSource().getBuffer(BORDER_RENDER_TYPE);
-        Matrix4f matrix = poseStack.last().pose();
-
-        for (BorderSegment segment : segments) {
-            float uLength = (float) segment.length();
-            addWall(builder, matrix,
-                    segment.x1(), segment.x2(), minY, maxY, segment.z1(), segment.z2(),
-                    r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLength, vHeight);
-        }
-
+        renderSegments(builder, poseStack.last().pose(), segments, state);
         mc.renderBuffers().bufferSource().endBatch(BORDER_RENDER_TYPE);
 
         poseStack.popPose();
@@ -153,26 +113,8 @@ public final class RenderHelper {
             return;
         }
 
-        double minY = mc.level.getMinY();
-        double maxY = mc.level.getMaxY();
-        float time = Util.getMillis() / 2500.0F;
-        float offsetU = time / 0.5F;
-        float offsetV = -time;
-        float vHeight = (float) (maxY - minY);
-
-        poseStack.pushPose();
-        var cameraPos = camera.position();
-        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-        collector.submitCustomGeometry(poseStack, BORDER_RENDER_TYPE, (pose, builder) -> {
-            Matrix4f matrix = pose.pose();
-            for (BorderSegment segment : segments) {
-                float uLength = (float) segment.length();
-                addWall(builder, matrix,
-                        segment.x1(), segment.x2(), minY, maxY, segment.z1(), segment.z2(),
-                        r, g, b, bottomAlpha, topAlpha, offsetU, offsetV, uLength, vHeight);
-            }
-        });
-        poseStack.popPose();
+        BorderRenderState state = BorderRenderState.create(mc.level, mc, camera, r, g, b, bottomAlpha, topAlpha);
+        submitSegments(segments, camera, poseStack, collector, state);
     }
 
     public static void renderBorderSegments(List<BorderSegment> segments,
@@ -200,22 +142,116 @@ public final class RenderHelper {
         );
     }
 
+    private static void submitSegments(List<BorderSegment> segments, Camera camera, PoseStack poseStack,
+                                       SubmitNodeCollector collector, BorderRenderState state) {
+        poseStack.pushPose();
+        translateToCamera(poseStack, camera);
+        collector.submitCustomGeometry(poseStack, BORDER_RENDER_TYPE, (pose, builder) ->
+                renderSegments(builder, pose.pose(), segments, state));
+        poseStack.popPose();
+    }
+
+    private static void renderSegments(VertexConsumer builder, Matrix4f matrix,
+                                       List<BorderSegment> segments, BorderRenderState state) {
+        for (BorderSegment segment : segments) {
+            addWall(builder, matrix, segment, state);
+        }
+    }
+
     private static void addWall(VertexConsumer builder, Matrix4f matrix,
-                                double x1, double x2, double y1, double y2, double z1, double z2,
-                                int r, int g, int b, int bottomAlpha, int topAlpha,
-                                float uOffset, float vOffset, float uMax, float vMax) {
-        builder.addVertex(matrix, (float) x1, (float) y1, (float) z1).setColor(r, g, b, bottomAlpha).setUv(uOffset, vMax + vOffset);
-        builder.addVertex(matrix, (float) x2, (float) y1, (float) z2).setColor(r, g, b, bottomAlpha).setUv(uMax + uOffset, vMax + vOffset);
-        builder.addVertex(matrix, (float) x2, (float) y2, (float) z2).setColor(r, g, b, topAlpha).setUv(uMax + uOffset, vOffset);
-        builder.addVertex(matrix, (float) x1, (float) y2, (float) z1).setColor(r, g, b, topAlpha).setUv(uOffset, vOffset);
+                                BorderSegment segment, BorderRenderState state) {
+        double minY = state.minY();
+        double maxY = state.maxY();
+        float bottomV = state.bottomV();
+        float topV = state.topV();
+        float startU = state.u(segment.x1(), segment.z1());
+        float endU = startU + (float) segment.length() * TEXTURE_SCALE;
+        int bottomAlpha = state.alpha();
+        int topAlpha = fadeTopAlpha(bottomAlpha);
+        if (bottomAlpha <= 0) return;
+
+        addQuad(builder, matrix, segment, state, minY, maxY, bottomAlpha, topAlpha, startU, endU, bottomV, topV, false);
+        addQuad(builder, matrix, segment, state, minY, maxY, bottomAlpha, topAlpha, startU, endU, bottomV, topV, true);
+    }
+
+    private static void addQuad(VertexConsumer builder, Matrix4f matrix,
+                                BorderSegment segment, BorderRenderState state,
+                                double minY, double maxY, int bottomAlpha, int topAlpha,
+                                float startU, float endU, float bottomV, float topV,
+                                boolean reversed) {
+        if (reversed) {
+            addVertex(builder, matrix, segment.x1(), maxY, segment.z1(), state.r(), state.g(), state.b(), topAlpha, startU, topV);
+            addVertex(builder, matrix, segment.x2(), maxY, segment.z2(), state.r(), state.g(), state.b(), topAlpha, endU, topV);
+            addVertex(builder, matrix, segment.x2(), minY, segment.z2(), state.r(), state.g(), state.b(), bottomAlpha, endU, bottomV);
+            addVertex(builder, matrix, segment.x1(), minY, segment.z1(), state.r(), state.g(), state.b(), bottomAlpha, startU, bottomV);
+            return;
+        }
+
+        addVertex(builder, matrix, segment.x1(), minY, segment.z1(), state.r(), state.g(), state.b(), bottomAlpha, startU, bottomV);
+        addVertex(builder, matrix, segment.x2(), minY, segment.z2(), state.r(), state.g(), state.b(), bottomAlpha, endU, bottomV);
+        addVertex(builder, matrix, segment.x2(), maxY, segment.z2(), state.r(), state.g(), state.b(), topAlpha, endU, topV);
+        addVertex(builder, matrix, segment.x1(), maxY, segment.z1(), state.r(), state.g(), state.b(), topAlpha, startU, topV);
+    }
+
+    private static void addVertex(VertexConsumer builder, Matrix4f matrix,
+                                  double x, double y, double z,
+                                  int r, int g, int b, int alpha, float u, float v) {
+        builder.addVertex(matrix, (float) x, (float) y, (float) z)
+                .setColor(r, g, b, alpha)
+                .setUv(u, v)
+                .setUv2(LightCoordsUtil.FULL_BRIGHT & 65535, LightCoordsUtil.FULL_BRIGHT >> 16 & 65535);
+    }
+
+    private static void translateToCamera(PoseStack poseStack, Camera camera) {
+        var cameraPos = camera.position();
+        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+    }
+
+    private static List<BorderSegment> rectangleSegments(double minX, double minZ, double maxX, double maxZ) {
+        return List.of(
+                new BorderSegment(minX, minZ, maxX, minZ),
+                new BorderSegment(maxX, maxZ, minX, maxZ),
+                new BorderSegment(minX, maxZ, minX, minZ),
+                new BorderSegment(maxX, minZ, maxX, maxZ)
+        );
     }
 
     public record BorderSegment(double x1, double z1, double x2, double z2) {
         double length() {
+            return Math.sqrt(lengthSqr());
+        }
+
+        double lengthSqr() {
             double dx = x2 - x1;
             double dz = z2 - z1;
-            return Math.sqrt(dx * dx + dz * dz);
+            return dx * dx + dz * dz;
         }
+
+    }
+
+    private record BorderRenderState(double minY, double maxY,
+                                     int r, int g, int b, int alpha,
+                                     float topV, float bottomV) {
+        static BorderRenderState create(Level level, Minecraft mc, Camera camera,
+                                        int r, int g, int b, int bottomAlpha, int topAlpha) {
+            var cameraPos = camera.position();
+            double height = Math.max(level.getMaxY() - level.getMinY(), mc.options.getEffectiveRenderDistance() * 32.0);
+            float v0 = (float) (-Mth.frac(cameraPos.y * TEXTURE_SCALE));
+            float v1 = v0 + (float) (height * TEXTURE_SCALE);
+            int alpha = Math.max(bottomAlpha, topAlpha);
+            return new BorderRenderState(
+                    cameraPos.y - height * 0.5,
+                    cameraPos.y + height * 0.5,
+                    r, g, b, Mth.clamp(alpha, 0, 255),
+                    v0, v1
+            );
+        }
+
+        float u(double x, double z) {
+            return ((Mth.floor(Math.abs(x) > Math.abs(z) ? x : z) & 1) * 0.5F)
+                    + (float) (Util.getMillis() % 3000L) / 3000.0F;
+        }
+
     }
 
     public static int alpha(int argb) {
@@ -235,9 +271,6 @@ public final class RenderHelper {
     }
 
     private static int fadeTopAlpha(int bottomAlpha) {
-        return Math.max(0, Math.min(255, bottomAlpha * TOP_FADE_ALPHA / BOTTOM_FADE_ALPHA));
+        return Mth.clamp(bottomAlpha * TOP_FADE_ALPHA / BOTTOM_FADE_ALPHA, 0, 255);
     }
-
-    private static final int BOTTOM_FADE_ALPHA = 140;
-    private static final int TOP_FADE_ALPHA = 30;
 }

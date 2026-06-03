@@ -1,16 +1,19 @@
 package org.galaxy.beyond.api.client.gui.scene;
 
 import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
+import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Transform2D;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
+import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.lowdragmc.lowdraglib2.math.interpolate.Eases;
 import com.lowdragmc.lowdraglib2.syncdata.ISubscription;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
@@ -19,7 +22,7 @@ import org.galaxy.beyond.api.system.rogue.SceneType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SceneLine extends UIElement{
+public class SceneLine extends UIElement {
 
 
     private ProgressType progressType;
@@ -27,7 +30,8 @@ public class SceneLine extends UIElement{
     private List<SceneType> lastScenes = List.of();
     private int lastScenesIndex = -1;
     private float currentOffsetY;
-    private ISubscription scrollAnimation = () -> {};
+    private ISubscription scrollAnimation = () -> {
+    };
 
     public SceneLine(ProgressType progressType) {
         this.progressType = progressType;
@@ -40,7 +44,7 @@ public class SceneLine extends UIElement{
         });
         sceneEntries = new ArrayList<>();
         rebuildEntries(progressType);
-        Beyond.debugInfo("已经加载了" + sceneEntries.size()+ "节点");
+        Beyond.debugInfo("已经加载了" + sceneEntries.size() + "节点");
         addEventListener(UIEvents.TICK, event -> updateScrollPosition());
     }
 
@@ -50,7 +54,7 @@ public class SceneLine extends UIElement{
         }
         sceneEntries.clear();
         for (SceneType sceneType : progressType.getScenes()) {
-            var scene = new SceneEntry(sceneType,sceneEntries.size(),progressType);
+            var scene = new SceneEntry(sceneType, sceneEntries.size(), progressType);
             scene.setId(sceneType.name());
             sceneEntries.add(scene);
             this.addChild(scene);
@@ -121,11 +125,13 @@ public class SceneLine extends UIElement{
         private final SceneType scene;
         private final int index;
         private final ProgressType progressType;
+        private final SpriteTexture texture;
 
-        private SceneEntry(SceneType scene,int index,ProgressType progressType) {
+        private SceneEntry(SceneType scene, int index, ProgressType progressType) {
             this.scene = scene;
             this.index = index;
             this.progressType = progressType;
+            this.texture = textureFor(scene);
 
             this.layout(layout -> {
                 layout.widthPercent(100);
@@ -138,8 +144,8 @@ public class SceneLine extends UIElement{
 
         }
 
-
-        public void drawBackgroundAdditional(GUIContext context) {
+        @Override
+        protected void drawBackgroundAdditional(IGUIContext context) {
             if (scene == null) {
                 return;
             }
@@ -147,6 +153,28 @@ public class SceneLine extends UIElement{
             if (progressType.getScenesIndex() == index) {
                 context.drawTexture(new ColorRectTexture(0x80FFFFFF), (int) getContentX(), (int) getContentY(), getContentWidth(), getContentHeight());
             }
+            drawSceneTexture(context);
+            super.drawBackgroundAdditional(context);
+        }
+
+
+
+        private void drawSceneTexture(IGUIContext context) {
+            if (texture == null) return;
+
+            int size = 16;
+            float x = getContentX() + (getContentWidth() - size) / 2f;
+            float y = getContentY() + (getContentHeight() - size) / 2f;
+            context.drawTexture(texture, x, y, size, size);
+        }
+
+        private static SpriteTexture textureFor(SceneType scene) {
+            return switch (scene) {
+                case HARVEST -> SpriteTexture.of(Identifier.parse("minecraft:textures/item/iron_ingot.png"));
+                case REPOSE -> SpriteTexture.of(Identifier.parse("minecraft:textures/item/gold_ingot.png"));
+                case CLIMAX -> SpriteTexture.of(Identifier.parse("minecraft:textures/item/diamond.png"));
+                case EMPTY -> null;
+            };
         }
     }
 }

@@ -60,6 +60,10 @@ public class Beyond {
         }
     }
 
+    public static void profileInfo(String key, Object... args) {
+        LOGGER.info(key, args);
+    }
+
     public void newRegistry(IEventBus modEventBus) {
         modEventBus.addListener(BeyondRegistries::registerRegistries);
         BeyondDataGenerator.register(modEventBus);

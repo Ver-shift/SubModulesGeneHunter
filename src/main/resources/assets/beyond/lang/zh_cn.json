@@ -67,7 +67,7 @@
   "beyond.configuration.section.beyond.common.toml": "Beyond 配置",
   "beyond.configuration.section.beyond.common.toml.title": "Beyond 配置",
 
-  "beyond.welcome": "欢迎进入肉鸽维度！本维度已绑定安全区结构和节点结构，肉鸽区域、节点、边界和事件只会在配置中的肉鸽维度生效。",
+  "beyond.welcome": "欢迎进入肉鸽维度！进入世界时会加载一部分区域数据，请稍等片刻。本维度已绑定安全区结构和节点结构，肉鸽区域、节点、边界和事件只会在配置中的肉鸽维度生效。",
 
   "beyond.rogue.start": "关卡 %s 开始！所有玩家已准备就绪",
   "beyond.rogue.start.no_progress": "未设置当前关卡，请使用 /beyond config currentProgress 设置",

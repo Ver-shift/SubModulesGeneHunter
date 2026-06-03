@@ -3,6 +3,7 @@ package org.galaxy.beyond.api.system.zone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -98,5 +99,13 @@ public class ZoneManager implements IZoneManager {
         if (!CommonConfig.isRogueDimension(level)) return false;
 
         return activeZoneController.expandFromWorldSeed(level, pos);
+    }
+
+    @Override
+    public void sendActiveZoneProgress(ServerPlayer player) {
+        if (!CommonConfig.isRogueDimension(player.level())) return;
+
+        activeZoneController.sendActiveZoneProgress(player);
+        asyncExpansion.sendActiveZoneProgress(player);
     }
 }

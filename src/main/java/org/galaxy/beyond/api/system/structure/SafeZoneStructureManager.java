@@ -35,7 +35,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
         var data = BeyondAPI.getSafeZoneStructureData(level);
         if (data.getInitialized() >= 1 && !data.getSpawnPos().equals(BlockPos.ZERO)) return;
-        if (data.getSpawnPos().equals(BlockPos.ZERO)) data.setInitialized(0);
+        if (data.getSpawnPos().equals(BlockPos.ZERO)) {
+            data.setInitialized(0);
+            BeyondAPI.syncGlobalData(level);
+        }
 
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         var zoneManager = BeyondAPI.getBeyondManager().getZoneManager();
@@ -47,9 +50,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
             if (box != null) {
                 List<ChunkPos> chunks = structureManager.getStructureChunks(level, nearest);
                 BlockPos safePos = findSafeSpawn(level, chunks, box);
-                if (safePos != null) {
-                    data.setSpawnPos(safePos);
-                }
+                if (safePos == null) safePos = findSafeSpawnAt(level, box.getCenter());
+                if (safePos == null) safePos = findSafeSpawnAt(level, level.getRespawnData().pos());
+                if (safePos == null) return;
+                data.setSpawnPos(safePos);
                 data.setCenterPos(box.getCenter());
                 data.setInitialized(1);
 

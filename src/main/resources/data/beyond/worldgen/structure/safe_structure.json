@@ -3,7 +3,6 @@
   "biomes": "minecraft:sunflower_plains",
   "step": "surface_structures",
   "spawn_overrides": {},
-  "terrain_adaptation": "beard_box",
   "start_pool": "beyond:safe_structure_pool",
   "size": 1,
   "start_height": {

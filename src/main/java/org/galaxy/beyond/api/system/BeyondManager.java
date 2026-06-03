@@ -76,12 +76,14 @@ public class BeyondManager implements IBeyondManager {
     public void playerChangedDimension(ServerPlayer player) {
         safeZoneStructureManager.onPlayerEnterDimension(player);
         safeZoneStructureManager.trySafeZoneSpawn(player);
+        zoneManager.sendActiveZoneProgress(player);
     }
 
     @Override
     public void playerLoggedIn(ServerPlayer player) {
         safeZoneStructureManager.onPlayerEnterDimension(player);
         safeZoneStructureManager.trySafeZoneSpawn(player);
+        zoneManager.sendActiveZoneProgress(player);
     }
 
     @Override

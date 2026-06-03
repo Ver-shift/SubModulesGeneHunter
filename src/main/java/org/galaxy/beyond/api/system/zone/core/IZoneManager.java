@@ -2,6 +2,7 @@ package org.galaxy.beyond.api.system.zone.core;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import org.galaxy.beyond.api.system.node.NodeData;
@@ -27,6 +28,9 @@ public interface IZoneManager {
     void addActiveZone(ServerLevel serverLevel, RogueNodeData nodeData);
 
     boolean expandFromWorldSeed(ServerLevel serverLevel, ChunkPos pos);
+
+    default void sendActiveZoneProgress(ServerPlayer player) {
+    }
 
     default void tick(ServerLevel serverLevel) {
     }
