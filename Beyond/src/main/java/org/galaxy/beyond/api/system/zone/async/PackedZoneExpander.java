@@ -61,17 +61,21 @@ public class PackedZoneExpander {
         }
 
         int needed = newTargetComponents.isEmpty() ? 0 : Math.min(request.minConnections(), newTargetComponents.size());
-        Set<Set<Long>> selected = new LinkedHashSet<>();
+        Set<Set<Long>> selectedNewTargets = new LinkedHashSet<>();
 
         int scanRadius = newTargetComponents.isEmpty()
                 ? request.maxRadius()
-                : selectNearestTargets(request.seeds(), newTargetComponents, selected, request.minRadius(), request.maxRadius(), needed);
-        boolean foundEnoughTargets = needed == 0 || selected.size() >= needed;
+                : selectNearestTargets(request.seeds(), newTargetComponents, selectedNewTargets, request.minRadius(), request.maxRadius(), needed);
+        Set<Set<Long>> coveredTargets = new LinkedHashSet<>(selectedNewTargets);
+        boolean foundEnoughTargets = needed == 0 || selectedNewTargets.size() >= needed;
         int actualRadius = Math.max(request.minRadius(), scanRadius);
         if (foundEnoughTargets)
-            actualRadius = expandRadiusToCoverSelected(request.seeds(), targetComponents, selected, actualRadius);
+            actualRadius = expandRadiusToCoverSelected(request.seeds(), targetComponents, coveredTargets, actualRadius);
         else
             actualRadius = request.maxRadius();
+        if (request.type().scanExpandedAreaTargets()) {
+            actualRadius = scanExpandedAreaTargets(request.seeds(), targetComponents, targetComponents, coveredTargets, actualRadius);
+        }
 
         Set<Long> added = new LinkedHashSet<>();
         for (long chunk : expandCircleMulti(request.seeds(), actualRadius)) {
@@ -80,7 +84,7 @@ public class PackedZoneExpander {
         }
 
         return new ZoneExpansionResult(request.jobId(), List.copyOf(added), actualRadius,
-                discoveredTargets.size(), selected.size(), true);
+                countTargets(coveredTargets, discoveredTargets), countTargets(coveredTargets, newTargetComponents), true);
     }
 
     /**
@@ -151,6 +155,36 @@ public class PackedZoneExpander {
             }
         }
         return radius;
+    }
+
+    /**
+     * 补扫最终打开半径内实际碰到的节点区域。
+     * <p>
+     * 选择阶段只保证满足最低连接数；最终拓展圆可能还覆盖其他节点。如果不补扫这些节点，
+     * 结果统计会偏少，后续区域提示也容易看起来像扫描不完整。
+     */
+    private static int scanExpandedAreaTargets(Set<Long> seeds, List<Set<Long>> allTargets,
+                                               List<Set<Long>> newTargets, Set<Set<Long>> selected, int radius) {
+        int currentRadius = radius;
+        boolean changed;
+        do {
+            changed = false;
+            for (Set<Long> component : newTargets) {
+                if (selected.contains(component) || distanceToSeeds(seeds, component) > currentRadius) continue;
+                selected.add(component);
+                changed = true;
+            }
+            if (changed) currentRadius = expandRadiusToCoverSelected(seeds, allTargets, selected, currentRadius);
+        } while (changed);
+        return currentRadius;
+    }
+
+    private static int countTargets(Set<Set<Long>> selected, List<Set<Long>> targets) {
+        int count = 0;
+        for (Set<Long> target : targets) {
+            if (selected.contains(target)) count++;
+        }
+        return count;
     }
 
     /**

@@ -78,10 +78,10 @@ public class BeyondConfigScreen {
         var grp = new ConfiguratorGroup("beyond.config.group.rogue", false);
         grp.addConfigurator(
                 new StringConfigurator(
-                        "beyond.config.field.dimension",
+                        "beyond.config.field.dimensions",
                         CommonConfig.ROGUE_DIMENSION::get,
                         CommonConfig.ROGUE_DIMENSION::set,
-                        "minecraft:overworld",
+                        "minecraft:overworld|beyond:safe_zone_structure|beyond:node_structure",
                         false
                 )
         );

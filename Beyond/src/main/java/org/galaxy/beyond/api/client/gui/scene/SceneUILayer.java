@@ -8,6 +8,7 @@ import dev.vfyjxf.taffy.style.AlignContent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import org.galaxy.beyond.api.client.gui.UIProvider;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -23,6 +24,7 @@ public class SceneUILayer implements ModularHudLayer {
         var player = mc.player;
         var level = mc.level;
         if (player == null || level == null) return null;
+        if (!CommonConfig.isRogueDimension(level)) return null;
 
         var lzd = BeyondAPI.getLevelZoneData(level);
         var zone = lzd.getZoneType(player.chunkPosition());

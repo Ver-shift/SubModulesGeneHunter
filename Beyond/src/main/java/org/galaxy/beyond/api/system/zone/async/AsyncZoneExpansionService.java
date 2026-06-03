@@ -125,12 +125,10 @@ public class AsyncZoneExpansionService {
     }
 
     private static void tickApplyProgress(ServerLevel level, PendingZoneApply apply) {
-        if (apply.getType() != ZoneExpansionJobType.NODE_UNLOCK && apply.getType() != ZoneExpansionJobType.WORLD_SEED)
-            return;
         int ticks = level.getServer().getTickCount();
         if (ticks % PROGRESS_INTERVAL != 0) return;
         showProgress(level, Component.translatable(
-                "beyond.node.zone_expanding_apply",
+                progressApplyKey(apply.getType()),
                 spinner(ticks),
                 apply.getCursor(),
                 apply.getTotal()
@@ -147,13 +145,24 @@ public class AsyncZoneExpansionService {
         return SPINNER[(ticks / PROGRESS_INTERVAL) % SPINNER.length];
     }
 
+    private static String progressScanKey(ZoneExpansionJobType type) {
+        return type == ZoneExpansionJobType.INITIAL
+                ? "beyond.node.world_initializing_scan"
+                : "beyond.node.zone_expanding_scan";
+    }
+
+    private static String progressApplyKey(ZoneExpansionJobType type) {
+        return type == ZoneExpansionJobType.INITIAL
+                ? "beyond.node.world_initializing_apply"
+                : "beyond.node.zone_expanding_apply";
+    }
+
     private record RunningJob(ZoneExpansionJobType type, CompletableFuture<ZoneExpansionResult> future) {
 
         private void tickProgress(ServerLevel level) {
-            if (type != ZoneExpansionJobType.NODE_UNLOCK && type != ZoneExpansionJobType.WORLD_SEED) return;
             int ticks = level.getServer().getTickCount();
             if (ticks % PROGRESS_INTERVAL != 0) return;
-            showProgress(level, Component.translatable("beyond.node.zone_expanding_scan", spinner(ticks)));
+            showProgress(level, Component.translatable(progressScanKey(type), spinner(ticks)));
         }
     }
 }

@@ -25,6 +25,11 @@ public class ZoneIndicatorEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(LivingEntity mob, int amplification) {
+        if (!CommonConfig.isRogueDimension(mob.level())) {
+            mob.removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this));
+            return true;
+        }
+
         ZoneType zone = BeyondAPI.getBeyondMobData(mob).getZoneType();
         if (amplification == 4 && !mob.level().isClientSide && mob.tickCount % 20 == 0) {
             float health = mob.getHealth();

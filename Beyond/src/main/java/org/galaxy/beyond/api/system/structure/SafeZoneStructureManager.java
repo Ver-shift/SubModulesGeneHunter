@@ -29,11 +29,9 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     private static final int FALLBACK_CHUNK_SIZE = 3;
 
-    private static final TagKey<Structure> SAFE_STRUCTURE_TAG =
-            TagKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath("beyond", "safe_zone_structure"));
-
     public void initialize(ServerLevel level) {
-        if (!level.dimension().equals(CommonConfig.getRogueDimension())) return;
+        var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
+        if (rogueConfig.isEmpty()) return;
 
         var data = BeyondAPI.getSafeZoneStructureData(level);
         if (data.getInitialized() >= 1 && !data.getSpawnPos().equals(BlockPos.ZERO)) return;
@@ -42,7 +40,8 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         var zoneManager = BeyondAPI.getBeyondManager().getZoneManager();
 
-        BlockPos nearest = level.findNearestMapStructure(SAFE_STRUCTURE_TAG, BlockPos.ZERO, 500, false);
+        TagKey<Structure> safeStructureTag = TagKey.create(Registries.STRUCTURE, rogueConfig.get().safeStructureTag());
+        BlockPos nearest = level.findNearestMapStructure(safeStructureTag, BlockPos.ZERO, 500, false);
         if (nearest != null) {
             BoundingBox box = structureManager.getStructureBoundingBox(level, nearest);
             if (box != null) {
@@ -84,7 +83,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
     @Override
     public void onPlayerEnterDimension(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
-        if (!level.dimension().equals(CommonConfig.getRogueDimension())) return;
+        if (!CommonConfig.isRogueDimension(level)) return;
 
         BeyondPlayerData playerData = BeyondAPI.getBeyondPlayerData(player);
         if (playerData.getPlayerRogueData().isFirstSpawnDone()) return;
@@ -109,6 +108,8 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     @Override
     public void trySafeZoneSpawn(ServerPlayer player) {
+        if (!CommonConfig.isRogueDimension(player.level())) return;
+
         var playerData = BeyondAPI.getBeyondPlayerData(player);
         if (playerData.getPlayerZoneData().isSafeZoneInitialized()) return;
 
@@ -137,6 +138,8 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     @Override
     public void playerTick(ServerPlayer player) {
+        if (!CommonConfig.isRogueDimension(player.level())) return;
+
         var zone = BeyondAPI.getBeyondMobData(player).getZoneType();
         int level = switch (zone) {
             case Safe_Zone -> 1;

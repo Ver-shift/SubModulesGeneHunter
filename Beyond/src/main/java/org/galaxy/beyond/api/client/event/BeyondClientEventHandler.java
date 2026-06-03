@@ -56,6 +56,7 @@ public class BeyondClientEventHandler {
         }
         var level = Minecraft.getInstance().level;
         if (level == null) return;
+        if (!CommonConfig.isRogueDimension(level)) return;
 
         ZoneRenderContext context = createRenderContext(event, level);
         if (context == null) return;

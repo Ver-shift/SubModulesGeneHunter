@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
 
 public class WorldSeedItem extends Item {
@@ -22,6 +23,9 @@ public class WorldSeedItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        }
+        if (!CommonConfig.isRogueDimension(serverLevel)) {
+            return InteractionResultHolder.fail(stack);
         }
 
         boolean submitted = BeyondAPI.getBeyondManager().getZoneManager()

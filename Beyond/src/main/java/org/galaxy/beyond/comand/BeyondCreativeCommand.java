@@ -54,6 +54,10 @@ public class BeyondCreativeCommand {
     static int expandSafeZone(CommandSourceStack source, int chunkSize) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = (ServerLevel) player.level();
+        if (!CommonConfig.isRogueDimension(level)) {
+            source.sendFailure(Component.translatable("commands.beyond.rogue_dimension.required"));
+            return 0;
+        }
         if (chunkSize % 2 != 0) {
             source.sendFailure(Component.translatable("commands.beyond.safezone.expand.odd"));
             return 0;
@@ -67,6 +71,10 @@ public class BeyondCreativeCommand {
     static int unlockCurrentNode(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = (ServerLevel) player.level();
+        if (!CommonConfig.isRogueDimension(level)) {
+            source.sendFailure(Component.translatable("commands.beyond.rogue_dimension.required"));
+            return 0;
+        }
         var rogueData = BeyondAPI.getRogueData(level);
         if (BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase() == PlayerPhase.LOBBY) {
             source.sendFailure(Component.translatable("beyond.node.not_in_rogue"));
@@ -101,6 +109,10 @@ public class BeyondCreativeCommand {
     static int teleportToNearestActiveBoundary(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = (ServerLevel) player.level();
+        if (!CommonConfig.isRogueDimension(level)) {
+            source.sendFailure(Component.translatable("commands.beyond.rogue_dimension.required"));
+            return 0;
+        }
         var data = BeyondAPI.getLevelZoneData(level);
         if (data == null || data.getPacked(ZoneType.Active_Zone).isEmpty()) {
             source.sendFailure(Component.translatable("commands.beyond.activeBoundary.not_found"));
@@ -122,6 +134,10 @@ public class BeyondCreativeCommand {
     static int teleportToNearestNode(CommandSourceStack source, String type) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = (ServerLevel) player.level();
+        if (!CommonConfig.isRogueDimension(level)) {
+            source.sendFailure(Component.translatable("commands.beyond.rogue_dimension.required"));
+            return 0;
+        }
         LevelZoneData data = BeyondAPI.getLevelZoneData(level);
         if (data == null) {
             source.sendFailure(Component.translatable("commands.beyond.node.not_found", type));
@@ -150,6 +166,8 @@ public class BeyondCreativeCommand {
     private static void teleportDiscoveredNode(ServerPlayer player, String normalized, String inputType) {
         if (player.isRemoved()) return;
         ServerLevel level = (ServerLevel) player.level();
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         NodeTarget best = findNearestNode(level, normalized, player.getX(), player.getZ());
         if (best == null) {
             player.sendSystemMessage(Component.translatable("commands.beyond.node.not_found", inputType));

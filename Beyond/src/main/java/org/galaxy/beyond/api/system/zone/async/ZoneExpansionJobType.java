@@ -30,7 +30,7 @@ public enum ZoneExpansionJobType {
      *     <li>{@code ACTIVE_ZONE_MAX_EXPAND}：节点数量不够时最终打开的最大半径。</li>
      * </ol>
      */
-    INITIAL,
+    INITIAL(true),
 
     /**
      * 节点解锁后的拓展。
@@ -46,7 +46,7 @@ public enum ZoneExpansionJobType {
      *     <li>{@code ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS}：节点数量不够时最终打开的最大半径。</li>
      * </ol>
      */
-    NODE_UNLOCK,
+    NODE_UNLOCK(true),
 
     /**
      * 世界种子物品触发的拓展。
@@ -62,5 +62,21 @@ public enum ZoneExpansionJobType {
      *     <li>{@code ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS}：节点数量不够时最终打开的最大半径。</li>
      * </ol>
      */
-    WORLD_SEED
+    WORLD_SEED(true);
+
+    private final boolean scanExpandedAreaTargets;
+
+    ZoneExpansionJobType(boolean scanExpandedAreaTargets) {
+        this.scanExpandedAreaTargets = scanExpandedAreaTargets;
+    }
+
+    /**
+     * 是否在最终拓展半径确定后，重新纳入半径内全部节点区域。
+     * <p>
+     * 这是拓展模式的区域补扫策略：先按最近新节点决定半径，再把实际打开范围内碰到的
+     * 其他节点区域一起统计并完整覆盖，避免播报和后续可见节点遗漏。
+     */
+    public boolean scanExpandedAreaTargets() {
+        return scanExpandedAreaTargets;
+    }
 }

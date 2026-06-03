@@ -6,6 +6,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * 通用模组配置文件（COMMON 类型，客户端和服务端均生效）。
  */
@@ -19,7 +22,10 @@ public class CommonConfig {
     public static final ModConfigSpec.BooleanValue DEBUG_MODE;
 
     /**
-     * 肉鸽玩法生效的维度，格式为 "namespace:path"，如 "minecraft:overworld"
+     * 肉鸽玩法生效的维度配置。
+     * <p>
+     * 单条格式：dimension|safe_structure|node_structure，多条用英文分号分隔。
+     * 三项必须全部有效，缺任意一项时整条配置不会生效。
      */
     public static final ModConfigSpec.ConfigValue<String> ROGUE_DIMENSION;
 
@@ -150,8 +156,8 @@ public class CommonConfig {
 
         BUILDER.comment("肉鸽玩法维度配置").push("rogue");
         ROGUE_DIMENSION = BUILDER
-                .comment("肉鸽玩法生效的维度 ID，格式为 \"namespace:path\"")
-                .define("dimension", "minecraft:overworld");
+                .comment("肉鸽玩法维度配置。格式：dimension|safe_structure|node_structure；多条用英文分号分隔。例如：minecraft:overworld|beyond:safe_zone_structure|beyond:node_structure")
+                .define("dimensions", "minecraft:overworld|beyond:safe_zone_structure|beyond:node_structure");
         BUILDER.pop();
 
         BUILDER.comment("活动区域配置").push("active_zone");
@@ -269,10 +275,73 @@ public class CommonConfig {
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     /**
-     * 获取配置中指定的肉鸽玩法维度。
+     * 获取第一条有效肉鸽玩法维度。
      */
     public static ResourceKey<Level> getRogueDimension() {
-        return ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(ROGUE_DIMENSION.get()));
+        return getRogueDimensionConfigs().stream()
+                .findFirst()
+                .map(RogueDimensionConfig::dimension)
+                .orElseGet(() -> ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse("minecraft:overworld")));
+    }
+
+    public static boolean isRogueDimension(Level level) {
+        return isRogueDimension(level.dimension());
+    }
+
+    public static boolean isRogueDimension(ResourceKey<Level> dimension) {
+        return getRogueDimensionConfig(dimension).isPresent();
+    }
+
+    public static Optional<RogueDimensionConfig> getRogueDimensionConfig(Level level) {
+        return getRogueDimensionConfig(level.dimension());
+    }
+
+    public static Optional<RogueDimensionConfig> getRogueDimensionConfig(ResourceKey<Level> dimension) {
+        return getRogueDimensionConfigs().stream()
+                .filter(config -> config.dimension().equals(dimension))
+                .findFirst();
+    }
+
+    public static List<RogueDimensionConfig> getRogueDimensionConfigs() {
+        return ROGUE_DIMENSION.get().lines()
+                .flatMap(line -> List.of(line.split(";")).stream())
+                .map(String::trim)
+                .filter(entry -> !entry.isEmpty())
+                .map(RogueDimensionConfig::parse)
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    public record RogueDimensionConfig(
+            ResourceKey<Level> dimension,
+            ResourceLocation safeStructureTag,
+            ResourceLocation nodeStructureTag
+    ) {
+
+        private static Optional<RogueDimensionConfig> parse(String entry) {
+            String[] parts = entry.split("\\|");
+            if (parts.length != 3) return Optional.empty();
+
+            ResourceLocation dimension = parseLocation(parts[0]);
+            ResourceLocation safeStructure = parseLocation(parts[1]);
+            ResourceLocation nodeStructure = parseLocation(parts[2]);
+            if (dimension == null || safeStructure == null || nodeStructure == null) return Optional.empty();
+
+            return Optional.of(new RogueDimensionConfig(
+                    ResourceKey.create(Registries.DIMENSION, dimension),
+                    safeStructure,
+                    nodeStructure
+            ));
+        }
+
+        private static ResourceLocation parseLocation(String value) {
+            try {
+                String trimmed = value.trim();
+                return trimmed.isEmpty() ? null : ResourceLocation.parse(trimmed);
+            } catch (Exception ignored) {
+                return null;
+            }
+        }
     }
 
     private CommonConfig() {

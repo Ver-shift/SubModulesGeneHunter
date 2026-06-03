@@ -8,6 +8,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 
@@ -17,9 +18,6 @@ import java.util.List;
 import java.util.Set;
 
 public class NodeZoneRegistrar {
-
-    private static final TagKey<Structure> NODE_STRUCTURE_TAG =
-            TagKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath("beyond", "node_structure"));
 
     private final ZoneWriter writer;
     private final ZoneConflictResolver conflictResolver;
@@ -32,8 +30,12 @@ public class NodeZoneRegistrar {
     }
 
     public NodeData addNodeZone(ServerLevel level, BlockPos pos) {
+        var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
+        if (rogueConfig.isEmpty()) return null;
+
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
-        List<ChunkPos> chunks = structureManager.getStructureChunks(level, pos, NODE_STRUCTURE_TAG);
+        TagKey<Structure> nodeStructureTag = TagKey.create(Registries.STRUCTURE, rogueConfig.get().nodeStructureTag());
+        List<ChunkPos> chunks = structureManager.getStructureChunks(level, pos, nodeStructureTag);
         if (chunks.isEmpty()) chunks = List.of(new ChunkPos(pos));
         LevelZoneData levelZoneData = BeyondAPI.getLevelZoneData(level);
         Set<ChunkPos> targets = new LinkedHashSet<>();

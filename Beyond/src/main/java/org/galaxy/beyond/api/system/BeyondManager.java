@@ -44,18 +44,19 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void onLevelLoad(ServerLevel level) {
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         safeZoneStructureManager.initialize(level);
         BeyondAPI.getRogueData(level).initDefaultCaps();
     }
 
     @Override
     public void levelTick(ServerLevel level) {
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         zoneManager.tick(level);
         rogueCapManager.tickZoneEvents(level);
-
-        if (level.dimension().equals(CommonConfig.getRogueDimension())) {
-            rogueManager.tick(level);
-        }
+        rogueManager.tick(level);
     }
 
     @Override
@@ -65,7 +66,8 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void entityTick(LivingEntity entity) {
-        if (entity instanceof Mob mob && !entity.level().isClientSide()) {
+        if (entity instanceof Mob mob && !entity.level().isClientSide()
+                && CommonConfig.isRogueDimension(entity.level())) {
             rogueCapManager.tickMob(mob);
         }
     }

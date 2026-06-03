@@ -26,8 +26,7 @@ public class PlayerInGameCap extends RogueCap {
     @SubscribeEvent
     public static void onPlayerChangeDim(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            var rogueDim = CommonConfig.getRogueDimension();
-            if (event.getFrom().equals(rogueDim) && !event.getTo().equals(rogueDim)) {
+            if (CommonConfig.isRogueDimension(event.getFrom()) && !CommonConfig.isRogueDimension(event.getTo())) {
                 BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().setPhase(PlayerPhase.LOBBY);
                 BeyondAPI.syncPlayerData(player);
             }

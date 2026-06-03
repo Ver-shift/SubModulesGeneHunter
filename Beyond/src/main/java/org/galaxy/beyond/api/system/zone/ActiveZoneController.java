@@ -6,15 +6,19 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureCheckResult;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
+import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.node.NodeData;
@@ -26,25 +30,50 @@ import org.galaxy.beyond.api.system.zone.async.ZoneExpansionRequest;
 import org.galaxy.beyond.api.system.zone.util.PackedChunkPos;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ActiveZoneController {
 
-    private static final TagKey<Structure> NODE_STRUCTURE_TAG =
-            TagKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath("beyond", "node_structure"));
+    private static final int PROGRESS_INTERVAL = 20;
+    private static final int NODE_REGISTRATION_PER_TICK = 1;
+    private static final String[] SPINNER = {"|", "/", "-", "\\"};
 
     private final AsyncZoneExpansionService asyncExpansion;
     private final NodeZoneRegistrar nodeZoneRegistrar;
+    private final Map<ResourceKey<Level>, ZoneExpansionJobType> scanning = new ConcurrentHashMap<>();
+    private final Map<ResourceKey<Level>, PendingNodeRegistration> registering = new ConcurrentHashMap<>();
 
     public ActiveZoneController(AsyncZoneExpansionService asyncExpansion, NodeZoneRegistrar nodeZoneRegistrar) {
         this.asyncExpansion = asyncExpansion;
         this.nodeZoneRegistrar = nodeZoneRegistrar;
     }
 
+    public void tick(ServerLevel level) {
+        if (!CommonConfig.isRogueDimension(level)) return;
+
+        ResourceKey<Level> key = level.dimension();
+        PendingNodeRegistration registration = registering.get(key);
+        if (registration != null) {
+            tickRegistration(level, key, registration);
+            return;
+        }
+
+        ZoneExpansionJobType type = scanning.get(key);
+        if (type == null) return;
+        int ticks = level.getServer().getTickCount();
+        if (ticks % PROGRESS_INTERVAL != 0) return;
+        showProgress(level, Component.translatable(progressScanKey(type), spinner(ticks)));
+    }
+
     public void activeZoneInit(ServerLevel level) {
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         LevelZoneData levelZoneData = BeyondAPI.getLevelZoneData(level);
         Set<Long> safe = new HashSet<>(levelZoneData.getPacked(ZoneType.Safe_Zone));
         if (safe.isEmpty()) return;
@@ -54,10 +83,8 @@ public class ActiveZoneController {
         long seed = centerOf(safe);
         int minNodes = CommonConfig.ACTIVE_ZONE_MIN_NODES.get();
         Set<Long> active = new HashSet<>(levelZoneData.getPacked(ZoneType.Active_Zone));
-        Set<Long> uncompleted = getUncompletedNodeChunks(level);
-        uncompleted.addAll(locateNodeStructureChunks(level, Set.of(seed), minNodes, maxRadius, active));
         asyncExpansion.clear(level);
-        submitExpansion(level, ZoneExpansionJobType.INITIAL, Set.of(seed), uncompleted,
+        scheduleExpansion(level, ZoneExpansionJobType.INITIAL, Set.of(seed), active,
                 minNodes,
                 minRadius,
                 maxRadius);
@@ -66,6 +93,8 @@ public class ActiveZoneController {
     }
 
     public void addActiveZone(ServerLevel level, RogueNodeData nodeData) {
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         Set<Long> seeds = new HashSet<>(nodeData.getNodeData().getNodeChunks());
         if (seeds.isEmpty()) return;
 
@@ -74,9 +103,7 @@ public class ActiveZoneController {
         int minRadius = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
         int maxRadius = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
         Set<Long> active = new HashSet<>(BeyondAPI.getLevelZoneData(level).getPacked(ZoneType.Active_Zone));
-        Set<Long> uncompleted = getUncompletedNodeChunks(level);
-        uncompleted.addAll(locateNodeStructureChunks(level, Set.of(seed), minConnections, maxRadius, active));
-        boolean submitted = submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, Set.of(seed), uncompleted,
+        boolean submitted = scheduleExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, Set.of(seed), active,
                 minConnections,
                 minRadius,
                 maxRadius);
@@ -85,14 +112,14 @@ public class ActiveZoneController {
     }
 
     public boolean expandFromWorldSeed(ServerLevel level, ChunkPos pos) {
+        if (!CommonConfig.isRogueDimension(level)) return false;
+
         int minConnections = CommonConfig.ACTIVE_ZONE_MIN_CONNECTIONS.get();
         int minRadius = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
         int maxRadius = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
         Set<Long> seeds = Set.of(PackedChunkPos.pack(pos));
         Set<Long> active = new HashSet<>(BeyondAPI.getLevelZoneData(level).getPacked(ZoneType.Active_Zone));
-        Set<Long> uncompleted = getUncompletedNodeChunks(level);
-        uncompleted.addAll(locateNodeStructureChunks(level, seeds, minConnections, maxRadius, active));
-        boolean submitted = submitExpansion(level, ZoneExpansionJobType.WORLD_SEED, seeds, uncompleted,
+        boolean submitted = scheduleExpansion(level, ZoneExpansionJobType.WORLD_SEED, seeds, active,
                 minConnections,
                 minRadius,
                 maxRadius);
@@ -102,6 +129,8 @@ public class ActiveZoneController {
     }
 
     public CompletableFuture<NodeData> discoverNearestNode(ServerLevel level, ChunkPos center, int radius) {
+        if (!CommonConfig.isRogueDimension(level)) return CompletableFuture.completedFuture(null);
+
         return CompletableFuture.supplyAsync(() -> findNearestPotentialNodeChunk(level, center, radius))
                 .thenCompose(target -> target == null ? CompletableFuture.completedFuture(null) : loadStructureChunk(level, target))
                 .thenApplyAsync(chunk -> chunk == null ? null
@@ -116,8 +145,11 @@ public class ActiveZoneController {
     }
 
     private static ChunkPos findNearestPotentialNodeChunk(ServerLevel level, ChunkPos center, int radius) {
+        var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
+        if (rogueConfig.isEmpty()) return null;
+
         var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
-        var tag = registry.getTag(NODE_STRUCTURE_TAG);
+        var tag = registry.getTag(TagKey.create(Registries.STRUCTURE, rogueConfig.get().nodeStructureTag()));
         if (tag.isEmpty()) return null;
 
         var state = level.getChunkSource().getGeneratorState();
@@ -179,55 +211,131 @@ public class ActiveZoneController {
         return false;
     }
 
+    private static boolean hasNodeStructure(ServerLevel level, Holder<Structure> holder,
+                                            StructurePlacement placement, ChunkPos pos) {
+        StructureCheckResult result = level.structureManager().checkStructurePresence(pos,
+                holder.value(), placement, false);
+        return result == StructureCheckResult.START_PRESENT || result == StructureCheckResult.CHUNK_LOAD_NEEDED;
+    }
+
     private static int chunkDistance(ChunkPos from, ChunkPos to) {
         int dx = from.x - to.x;
         int dz = from.z - to.z;
         return (int) Math.ceil(Math.sqrt(dx * dx + dz * dz));
     }
 
-    private Set<Long> locateNodeStructureChunks(ServerLevel level, Set<Long> seeds, int needed, int maxRadius, Set<Long> active) {
+    private boolean scheduleExpansion(ServerLevel level, ZoneExpansionJobType type, Set<Long> seeds, Set<Long> active,
+                                      int needed, int minRadius, int maxRadius) {
+        ResourceKey<Level> key = level.dimension();
+        if (asyncExpansion.hasWork(level) || registering.containsKey(key) || scanning.putIfAbsent(key, type) != null)
+            return false;
+
+        CompletableFuture
+                .supplyAsync(() -> locateNodeStructureStarts(level, seeds, needed, maxRadius, active))
+                .whenCompleteAsync((starts, throwable) -> {
+                    scanning.remove(key);
+                    if (throwable != null) {
+                        Beyond.debugInfo("[Zone][SCAN_FAILED] type={}, error={}", type, throwable.toString());
+                        level.getServer().getPlayerList().broadcastSystemMessage(
+                                Component.translatable("commands.beyond.activezone.expand.failed"), false);
+                        return;
+                    }
+
+                    PendingNodeRegistration registration = new PendingNodeRegistration(type, seeds,
+                            needed, minRadius, maxRadius, sortedStarts(starts));
+                    if (registration.isDone()) submitAfterRegistration(level, registration);
+                    else registering.put(key, registration);
+                }, level.getServer());
+        return true;
+    }
+
+    private Set<ChunkPos> locateNodeStructureStarts(ServerLevel level, Set<Long> seeds, int needed,
+                                                    int maxRadius, Set<Long> active) {
+        var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
+        if (rogueConfig.isEmpty()) return Set.of();
+
         int missing = needed - countNewUncompletedNodeAreas(level, active);
         if (missing <= 0) return Set.of();
 
-        Set<Long> located = new HashSet<>();
-        Set<Long> locatedNodes = new HashSet<>();
-        List<BlockPos> probes = discoveryProbes(seeds, maxRadius);
-        for (BlockPos probe : probes) {
-            BlockPos nearest = level.findNearestMapStructure(NODE_STRUCTURE_TAG, probe, maxRadius, false);
-            if (nearest == null) continue;
-            NodeData nodeData = nodeZoneRegistrar.addNodeZone(level, nearest);
-            if (nodeData == null) {
-                long fallback = PackedChunkPos.pack(new ChunkPos(nearest));
-                located.add(fallback);
-                continue;
-            }
-            long nodeKey = nodeData.ensureNodeKey();
-            if (locatedNodes.add(nodeKey)) {
-                located.addAll(nodeData.getNodeChunks());
+        var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
+        var tag = registry.getTag(TagKey.create(Registries.STRUCTURE, rogueConfig.get().nodeStructureTag()));
+        if (tag.isEmpty()) return Set.of();
+
+        ChunkGeneratorStructureState state = level.getChunkSource().getGeneratorState();
+        Set<ChunkPos> located = new HashSet<>();
+        for (Holder<Structure> holder : tag.get()) {
+            for (StructurePlacement placement : state.getPlacementsForStructure(holder)) {
+                scanPlacement(level, state, holder, placement, seeds, maxRadius, located);
             }
         }
         return located;
     }
 
-    private static List<BlockPos> discoveryProbes(Set<Long> seeds, int maxRadius) {
-        int half = Math.max(1, maxRadius / 2);
-        int[][] offsets = {
-                {0, 0},
-                {half, 0}, {-half, 0}, {0, half}, {0, -half},
-                {half, half}, {-half, -half}, {half, -half}, {-half, half},
-                {maxRadius, 0}, {-maxRadius, 0}, {0, maxRadius}, {0, -maxRadius},
-                {maxRadius, maxRadius}, {-maxRadius, -maxRadius}, {maxRadius, -maxRadius}, {-maxRadius, maxRadius}
-        };
-
-        List<BlockPos> probes = new ArrayList<>();
+    private static void scanPlacement(ServerLevel level, ChunkGeneratorStructureState state, Holder<Structure> holder,
+                                      StructurePlacement placement, Set<Long> seeds, int maxRadius,
+                                      Set<ChunkPos> located) {
+        long radiusSqr = (long) maxRadius * maxRadius;
         for (long seed : seeds) {
-            int seedX = PackedChunkPos.x(seed);
-            int seedZ = PackedChunkPos.z(seed);
-            for (int[] offset : offsets) {
-                probes.add(new BlockPos((seedX + offset[0]) << 4, 0, (seedZ + offset[1]) << 4));
+            int centerX = PackedChunkPos.x(seed);
+            int centerZ = PackedChunkPos.z(seed);
+            for (int dx = -maxRadius; dx <= maxRadius; dx++) {
+                long dxSqr = (long) dx * dx;
+                int dzMax = (int) Math.sqrt(radiusSqr - dxSqr);
+                for (int dz = -dzMax; dz <= dzMax; dz++) {
+                    int x = centerX + dx;
+                    int z = centerZ + dz;
+                    if (!placement.isStructureChunk(state, x, z)) continue;
+                    ChunkPos candidate = new ChunkPos(x, z);
+                    if (hasNodeStructure(level, holder, placement, candidate)) located.add(candidate);
+                }
             }
         }
-        return probes;
+    }
+
+    private static List<ChunkPos> sortedStarts(Set<ChunkPos> starts) {
+        return starts.stream()
+                .sorted(Comparator.comparingInt((ChunkPos chunk) -> chunk.x).thenComparingInt(chunk -> chunk.z))
+                .toList();
+    }
+
+    private void tickRegistration(ServerLevel level, ResourceKey<Level> key, PendingNodeRegistration registration) {
+        int ticks = level.getServer().getTickCount();
+        if (ticks % PROGRESS_INTERVAL == 0) {
+            showProgress(level, Component.translatable(progressRegisterKey(registration.type),
+                    spinner(ticks), registration.cursor(), registration.total()));
+        }
+
+        registration.apply(level, nodeZoneRegistrar);
+        if (!registration.isDone()) return;
+
+        registering.remove(key);
+        submitAfterRegistration(level, registration);
+    }
+
+    private void submitAfterRegistration(ServerLevel level, PendingNodeRegistration registration) {
+        Set<Long> uncompleted = getUncompletedNodeChunks(level);
+        uncompleted.addAll(registration.located());
+        boolean submitted = submitExpansion(level, registration.type(), registration.seeds(), uncompleted,
+                registration.needed(), registration.minRadius(), registration.maxRadius());
+        if (!submitted) {
+            level.getServer().getPlayerList().broadcastSystemMessage(
+                    Component.translatable("beyond.node.zone_expanding_busy"), false);
+        }
+    }
+
+    private static void registerNodeStructure(ServerLevel level, NodeZoneRegistrar nodeZoneRegistrar,
+                                              ChunkPos start, Set<Long> located, Set<Long> locatedNodes) {
+        BlockPos nearest = start.getWorldPosition();
+        NodeData nodeData = nodeZoneRegistrar.addNodeZone(level, nearest);
+        if (nodeData == null) {
+            long fallback = PackedChunkPos.pack(new ChunkPos(nearest));
+            located.add(fallback);
+            return;
+        }
+        long nodeKey = nodeData.ensureNodeKey();
+        if (locatedNodes.add(nodeKey)) {
+            located.addAll(nodeData.getNodeChunks());
+        }
     }
 
     private static int countNewUncompletedNodeAreas(ServerLevel level, Set<Long> active) {
@@ -282,6 +390,28 @@ public class ActiveZoneController {
         return asyncExpansion.submit(level, type, request);
     }
 
+    private static void showProgress(ServerLevel level, Component message) {
+        for (var player : level.players()) {
+            player.displayClientMessage(message, true);
+        }
+    }
+
+    private static String progressScanKey(ZoneExpansionJobType type) {
+        return type == ZoneExpansionJobType.INITIAL
+                ? "beyond.node.world_initializing_scan"
+                : "beyond.node.zone_expanding_scan";
+    }
+
+    private static String progressRegisterKey(ZoneExpansionJobType type) {
+        return type == ZoneExpansionJobType.INITIAL
+                ? "beyond.node.world_initializing_register"
+                : "beyond.node.zone_expanding_register";
+    }
+
+    private static String spinner(int ticks) {
+        return SPINNER[(ticks / PROGRESS_INTERVAL) % SPINNER.length];
+    }
+
     private static long centerOf(Set<Long> chunks) {
         long totalX = 0;
         long totalZ = 0;
@@ -300,5 +430,71 @@ public class ActiveZoneController {
             }
         }
         return uncompleted;
+    }
+
+    private static class PendingNodeRegistration {
+
+        private final ZoneExpansionJobType type;
+        private final Set<Long> seeds;
+        private final int needed;
+        private final int minRadius;
+        private final int maxRadius;
+        private final List<ChunkPos> starts;
+        private final Set<Long> located = new HashSet<>();
+        private final Set<Long> locatedNodes = new HashSet<>();
+        private int cursor;
+
+        private PendingNodeRegistration(ZoneExpansionJobType type, Set<Long> seeds, int needed,
+                                        int minRadius, int maxRadius, List<ChunkPos> starts) {
+            this.type = type;
+            this.seeds = Set.copyOf(seeds);
+            this.needed = needed;
+            this.minRadius = minRadius;
+            this.maxRadius = maxRadius;
+            this.starts = new ArrayList<>(starts);
+        }
+
+        private void apply(ServerLevel level, NodeZoneRegistrar nodeZoneRegistrar) {
+            int end = Math.min(cursor + NODE_REGISTRATION_PER_TICK, starts.size());
+            for (; cursor < end; cursor++) {
+                registerNodeStructure(level, nodeZoneRegistrar, starts.get(cursor), located, locatedNodes);
+            }
+        }
+
+        private boolean isDone() {
+            return cursor >= starts.size();
+        }
+
+        private ZoneExpansionJobType type() {
+            return type;
+        }
+
+        private Set<Long> seeds() {
+            return seeds;
+        }
+
+        private int needed() {
+            return needed;
+        }
+
+        private int minRadius() {
+            return minRadius;
+        }
+
+        private int maxRadius() {
+            return maxRadius;
+        }
+
+        private Set<Long> located() {
+            return located;
+        }
+
+        private int cursor() {
+            return cursor;
+        }
+
+        private int total() {
+            return starts.size();
+        }
     }
 }
