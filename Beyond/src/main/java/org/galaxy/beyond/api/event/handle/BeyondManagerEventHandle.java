@@ -15,6 +15,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondAPI;
 
 @EventBusSubscriber
@@ -70,6 +71,7 @@ public class BeyondManagerEventHandle {
         Beyond.SERVER = event.getServer();
         Beyond.OVERWORLD = Beyond.SERVER.overworld();
         BeyondAPI.getBeyondManager().onServerStarted(Beyond.SERVER);
+        BeyondPluginRunner.onServerStarted(Beyond.SERVER);
     }
 
 

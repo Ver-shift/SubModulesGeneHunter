@@ -9,6 +9,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.*;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondManager;
 import org.galaxy.beyond.comand.BeyondCommand;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class Beyond {
 
     public Beyond(ModContainer modContainer, IEventBus modEventBus) {
         MANAGER = new BeyondManager();
+        BeyondPluginRunner.runConstruct();
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
         if (FMLEnvironment.dist == Dist.CLIENT) {
@@ -60,6 +62,8 @@ public class Beyond {
     public void newRegistry(IEventBus modEventBus) {
         modEventBus.addListener(BeyondRegistries::registerRegistries);
         BeyondRegistries.register(modEventBus);
+        BeyondPluginRunner.registerRogueCaps();
+        BeyondPluginRunner.registerRogueEvents();
         BeyondRogueCapInit.register(modEventBus);
         BeyondPhaseInit.register(modEventBus);
         BeyondEventInit.register(modEventBus);

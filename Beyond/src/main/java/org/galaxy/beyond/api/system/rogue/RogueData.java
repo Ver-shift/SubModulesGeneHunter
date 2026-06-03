@@ -15,6 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.init.BeyondRogueCapInit;
+import org.galaxy.beyond.api.event.custom.RogueCapInitEvent;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
 import java.util.List;
@@ -74,13 +76,16 @@ public class RogueData implements IPersistedSerializable {
 
     public void initDefaultCaps() {
         if (!rogueCapData.isEmpty()) return;
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.PROGRESS_START.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.PLAYER_IN_GAME.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.NODE_CAP.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.NODE_ZONE_ENTER.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.ROGUE_INIT.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.ROGUE_PROGRESS_FINISH.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.PLAYER_PROGRESS_FINISH.get()));
+        RogueCapInitEvent event = RogueCapInitEvent.post(
+                new RogueCapInitEvent(this, BeyondPluginRunner.collectDefaultRogueCaps())
+        );
+        for (ResourceLocation id : event.getCapIds()) {
+            BeyondRogueCapInit.getById(id)
+                    .map(net.minecraft.core.Holder.Reference::value)
+                    .ifPresentOrElse(cap -> rogueCapData.add(new RogueCapData(cap)), () -> {
+                        throw new IllegalStateException("Default RogueCap is not registered: " + id);
+                    });
+        }
     }
 
     public RoguePhase getPhase() {

@@ -9,6 +9,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.BeyondGlobalData;
 import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
@@ -95,14 +96,18 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Resourc
             return;
         }
 
+        Map<ResourceLocation, ProgressDefinition> merged = new HashMap<>(BeyondPluginRunner.collectProgress());
+        merged.putAll(preparations);
+
         var oldKeys = globalData.getRogueDefinition().getRogueProgress().keySet();
-        LOGGER.info("Replacing {} old progress definitions with {} new ones", oldKeys.size(), preparations.size());
+        LOGGER.info("Replacing {} old progress definitions with {} new ones", oldKeys.size(), merged.size());
         LOGGER.debug("  Old keys: {}", oldKeys);
-        LOGGER.debug("  New keys: {}", preparations.keySet());
+        LOGGER.debug("  New keys: {}", merged.keySet());
 
         globalData.getRogueDefinition().getRogueProgress().clear();
-        globalData.getRogueDefinition().getRogueProgress().putAll(preparations);
+        globalData.getRogueDefinition().getRogueProgress().putAll(merged);
 
-        LOGGER.info("Applied {} progress definitions to GlobalData", preparations.size());
+        BeyondPluginRunner.onReload();
+        LOGGER.info("Applied {} progress definitions to GlobalData", merged.size());
     }
 }
