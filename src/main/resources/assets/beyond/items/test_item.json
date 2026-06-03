@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "beyond:item/loot_bag"
+    "model": "beyond:item/test_item"
   }
 }

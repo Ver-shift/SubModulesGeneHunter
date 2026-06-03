@@ -32,17 +32,28 @@ public class StructureManager implements IStructureManager {
         var cp = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
         var registry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
         return !level.structureManager().startsForStructure(cp, structure ->
-                registry.get(registry.getId(structure))
-                        .map(holder -> holder.is(tag))
-                        .orElse(false)
+                registry.wrapAsHolder(structure).is(tag)
         ).isEmpty();
     }
 
     @Override
     public List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos) {
         List<StructureStart> starts = getAllStarts(level, pos);
-        if (starts.isEmpty()) return List.of();
+        return chunksOf(starts);
+    }
 
+    @Override
+    public List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos, TagKey<Structure> tag) {
+        var cp = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
+        var registry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+        List<StructureStart> starts = level.structureManager().startsForStructure(cp, structure ->
+                registry.wrapAsHolder(structure).is(tag)
+        );
+        return chunksOf(starts);
+    }
+
+    private static List<ChunkPos> chunksOf(List<StructureStart> starts) {
+        if (starts.isEmpty()) return List.of();
         Set<ChunkPos> chunks = new HashSet<>();
         for (StructureStart start : starts) {
             BoundingBox box = start.getBoundingBox();
@@ -52,7 +63,9 @@ public class StructureManager implements IStructureManager {
             int maxCZ = box.maxZ() >> 4;
             chunks.addAll(new ZoneHelper.Bounds(minCX, minCZ, maxCX, maxCZ).allChunks());
         }
-        return new ArrayList<>(chunks);
+        return chunks.stream()
+                .sorted(Comparator.comparingInt(ChunkPos::x).thenComparingInt(ChunkPos::z))
+                .toList();
     }
 
     @Override

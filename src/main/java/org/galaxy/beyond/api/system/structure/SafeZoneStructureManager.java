@@ -13,7 +13,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.storage.LevelData;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondMobEffectInit;
@@ -30,11 +29,9 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     private static final int FALLBACK_CHUNK_SIZE = 3;
 
-    private static final TagKey<Structure> SAFE_STRUCTURE_TAG =
-            TagKey.create(Registries.STRUCTURE, Identifier.fromNamespaceAndPath("beyond", "safe_zone_structure"));
-
     public void initialize(ServerLevel level) {
-        if (!level.dimension().equals(CommonConfig.getRogueDimension())) return;
+        var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
+        if (rogueConfig.isEmpty()) return;
 
         var data = BeyondAPI.getSafeZoneStructureData(level);
         if (data.getInitialized() >= 1 && !data.getSpawnPos().equals(BlockPos.ZERO)) return;
@@ -43,7 +40,8 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         var structureManager = BeyondAPI.getBeyondManager().getStructureManager();
         var zoneManager = BeyondAPI.getBeyondManager().getZoneManager();
 
-        BlockPos nearest = level.findNearestMapStructure(SAFE_STRUCTURE_TAG, BlockPos.ZERO, 500, false);
+        TagKey<Structure> safeStructureTag = TagKey.create(Registries.STRUCTURE, rogueConfig.get().safeStructureTag());
+        BlockPos nearest = level.findNearestMapStructure(safeStructureTag, BlockPos.ZERO, 500, false);
         if (nearest != null) {
             BoundingBox box = structureManager.getStructureBoundingBox(level, nearest);
             if (box != null) {
@@ -85,7 +83,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
     @Override
     public void onPlayerEnterDimension(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
-        if (!level.dimension().equals(CommonConfig.getRogueDimension())) return;
+        if (!CommonConfig.isRogueDimension(level)) return;
 
         BeyondPlayerData playerData = BeyondAPI.getBeyondPlayerData(player);
         if (playerData.getPlayerRogueData().isFirstSpawnDone()) return;
@@ -96,25 +94,19 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         BlockPos spawnPos = safeZone.getSpawnPos();
         if (!spawnPos.equals(BlockPos.ZERO)) {
             player.teleportTo(level, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
-                    Set.of(), player.getYRot(), player.getXRot(), true);
+                    Set.of(), player.getYRot(), player.getXRot(), false);
         }
 
         playerData.getPlayerRogueData().setFirstSpawnDone(true);
+        // TODO 补充正式 Wiki 链接，之后可以改成可点击文本，引导玩家查看玩法说明。
         player.sendSystemMessage(Component.translatable("beyond.welcome"));
 
-        if (!spawnPos.equals(BlockPos.ZERO)) {
-            player.setRespawnPosition(
-                    new ServerPlayer.RespawnConfig(
-                            LevelData.RespawnData.of(
-                                    level.dimension(), spawnPos, player.getYRot(), player.getXRot()
-                            ), true
-                    ), false
-            );
-        }
     }
 
     @Override
     public void trySafeZoneSpawn(ServerPlayer player) {
+        if (!CommonConfig.isRogueDimension(player.level())) return;
+
         var playerData = BeyondAPI.getBeyondPlayerData(player);
         if (playerData.getPlayerZoneData().isSafeZoneInitialized()) return;
 
@@ -143,26 +135,27 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     @Override
     public void playerTick(ServerPlayer player) {
-        if (!CommonConfig.DEBUG_MODE.get()) return;
+        if (!CommonConfig.isRogueDimension(player.level())) return;
 
         var zone = BeyondAPI.getBeyondMobData(player).getZoneType();
         int level = switch (zone) {
             case Safe_Zone -> 1;
             case Node_Zone -> 2;
             case Active_Zone -> 3;
-            default -> 0;
+            case Empty -> 4;
         };
         if (level > 0) {
+            boolean visible = CommonConfig.DEBUG_MODE.get();
             player.addEffect(new MobEffectInstance(
                     BeyondMobEffectInit.ZONE_INDICATOR, -1, level - 1,
-                    false, false, false));
+                    false, visible, visible));
         }
     }
 
     private void teleportToSafeZone(ServerPlayer player, ServerLevel level, BlockPos pos,
                                     BeyondPlayerData playerData) {
         player.teleportTo(level, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
-                Set.of(), player.getYRot(), player.getXRot(), true);
+                Set.of(), player.getYRot(), player.getXRot(), false);
         playerData.getPlayerZoneData().setSafeZoneInitialized(true);
     }
 

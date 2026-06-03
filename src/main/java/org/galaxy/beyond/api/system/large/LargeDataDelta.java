@@ -22,7 +22,9 @@ public record LargeDataDelta(
     public enum Type {
         FULL_REPLACE,
         ADD_ZONE_CHUNKS,
+        REMOVE_ZONE_CHUNKS,
         ADD_NODE_DATA,
+        REMOVE_NODE_DATA,
         UPDATE_NODE_PHASE,
         UPDATE_NODE_COLOR,
         ADD_NODE_CHUNKS
@@ -32,9 +34,17 @@ public record LargeDataDelta(
         return new LargeDataDelta(Type.ADD_ZONE_CHUNKS, zoneType, List.copyOf(chunks), null, 0L, null, null);
     }
 
+    public static LargeDataDelta removeZoneChunks(ZoneType zoneType, List<Long> chunks) {
+        return new LargeDataDelta(Type.REMOVE_ZONE_CHUNKS, zoneType, List.copyOf(chunks), null, 0L, null, null);
+    }
+
     public static LargeDataDelta addNodeData(NodeData nodeData) {
         NodeData copy = nodeData.copy();
         return new LargeDataDelta(Type.ADD_NODE_DATA, ZoneType.Empty, List.of(), copy, copy.ensureNodeKey(), null, null);
+    }
+
+    public static LargeDataDelta removeNodeData(long nodeKey) {
+        return new LargeDataDelta(Type.REMOVE_NODE_DATA, ZoneType.Empty, List.of(), null, nodeKey, null, null);
     }
 
     public static LargeDataDelta updateNodePhase(long nodeKey, NodePhase phase) {
@@ -56,7 +66,12 @@ public record LargeDataDelta(
                 buf.writeEnum(zoneType);
                 writeLongs(buf, chunks);
             }
+            case REMOVE_ZONE_CHUNKS -> {
+                buf.writeEnum(zoneType);
+                writeLongs(buf, chunks);
+            }
             case ADD_NODE_DATA -> NodeData.writeFull(buf, nodeData);
+            case REMOVE_NODE_DATA -> buf.writeLong(nodeKey);
             case UPDATE_NODE_PHASE -> {
                 buf.writeLong(nodeKey);
                 buf.writeUtf(phaseId.toString());
@@ -77,7 +92,9 @@ public record LargeDataDelta(
         Type type = buf.readEnum(Type.class);
         return switch (type) {
             case ADD_ZONE_CHUNKS -> addZoneChunks(buf.readEnum(ZoneType.class), readLongs(buf));
+            case REMOVE_ZONE_CHUNKS -> removeZoneChunks(buf.readEnum(ZoneType.class), readLongs(buf));
             case ADD_NODE_DATA -> addNodeData(NodeData.readFull(buf));
+            case REMOVE_NODE_DATA -> removeNodeData(buf.readLong());
             case UPDATE_NODE_PHASE -> {
                 long nodeKey = buf.readLong();
                 Identifier phaseId = Identifier.parse(buf.readUtf());

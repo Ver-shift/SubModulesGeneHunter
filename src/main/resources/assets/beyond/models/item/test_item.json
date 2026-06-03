@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beyond:item/test_item"
+    "layer0": "beyond:item/world_seed"
   }
 }

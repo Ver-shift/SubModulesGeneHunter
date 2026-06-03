@@ -33,6 +33,11 @@ bin/
 .superpowers/
 docs/
 
+### Local tools and generated docs ###
+.qoder/
+doc/
+tmp/
+
 ### Mac OS ###
 .DS_Store
 

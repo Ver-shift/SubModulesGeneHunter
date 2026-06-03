@@ -13,7 +13,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
-import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
@@ -21,6 +20,7 @@ import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 import org.galaxy.beyond.api.system.rogue.player.RoguePlayerManager;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 玩家结算 Cap —— 场景结束后逐人结算，点击确认，全员确认后传送回安全区。
@@ -131,11 +131,8 @@ public class PlayerProgressFinishCap extends RogueCap {
 
         for (var p : players) {
             p.teleportTo(activeLevel, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
-                    java.util.Set.of(), p.getYRot(), p.getXRot(), true);
-            var rogueData = BeyondAPI.getRogueData(activeLevel);
-            rogueData.removeRoguePlayer(p.getUUID());
+                    Set.of(), p.getYRot(), p.getXRot(), false);
         }
-        BeyondAPI.syncGlobalData(activeLevel);
         activeLevel.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.settle.teleport_success"), false);
     }
@@ -164,7 +161,7 @@ public class PlayerProgressFinishCap extends RogueCap {
                         .then(Commands.literal("confirm")
                                 .executes(ctx -> {
                                     if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
-                                        var cap = findActive(player.level());
+                                        var cap = findActive((ServerLevel) player.level());
                                         if (cap != null) cap.onConfirm(player);
                                         return 1;
                                     }

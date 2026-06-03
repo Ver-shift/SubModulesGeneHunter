@@ -61,6 +61,10 @@ public abstract class RogueProgressProvider implements DataProvider {
     /** 子类在此注册关卡 */
     protected abstract void registerProgress(List<Entry> entries);
 
+    protected Entry entry(String name, ProgressDefinition definition) {
+        return new Entry(name, definition);
+    }
+
     // ============================================================
     // DSL —— 供 BaseProgress 子类使用
     // ============================================================

@@ -5,7 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Items;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
 import org.galaxy.beyond.api.system.rogue.player.RoguePlayerManager;
 
@@ -24,11 +24,10 @@ public class RewardEventType extends RogueEventType {
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.translatable("beyond.event.reward.grant"), false);
 
-        var rogueIds = BeyondAPI.getRogueData(context.level()).getRoguePlayerIds();
-
-        level.getServer().getPlayerList().getPlayers().stream()
-                .filter(p -> rogueIds.contains(p.getUUID()))
-                .forEach(p -> RoguePlayerManager.giveItem(p, Items.IRON_INGOT));
+        var ctx = new RogueContext();
+        for (var player : ctx.playersInRogue(level)) {
+            RoguePlayerManager.giveItem(player, Items.IRON_INGOT);
+        }
     }
 
     @Override

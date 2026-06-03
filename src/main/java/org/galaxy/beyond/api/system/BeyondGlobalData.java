@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import lombok.Data;
 import org.galaxy.beyond.api.system.random.RogueRandom;
 import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
+import org.galaxy.beyond.api.util.CompatUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,11 +64,11 @@ public class BeyondGlobalData implements IPersistedSerializable {
 
     public Map<ResourceKey<Level>, BeyondDimensionData> dimensionDataMapDeserialize(CompoundTag c) {
         var m = new ConcurrentHashMap<ResourceKey<Level>, BeyondDimensionData>();
-        var keys = c.getListOrEmpty("keys");
-        var values = c.getListOrEmpty("values");
+        var keys = CompatUtil.getStringListOrEmpty(c, "keys");
+        var values = CompatUtil.getCompoundListOrEmpty(c, "values");
         for (int i = 0; i < keys.size(); i++) {
             Tag key = keys.get(i);
-            var loc = Identifier.parse(key.asString().orElse(""));
+            var loc = Identifier.parse(CompatUtil.asString(key));
             BeyondDimensionData data = i < values.size()
                     ? BeyondDimensionData.CODEC_DIRECT.parse(NbtOps.INSTANCE, values.get(i)).result().orElseGet(BeyondDimensionData::new)
                     : new BeyondDimensionData();

@@ -29,6 +29,7 @@ public class BeyondAttachmentInit {
                     () -> AttachmentType.builder(BeyondPlayerData::new)
                             .serialize(BeyondPlayerData.CODEC)
                             .sync(BeyondPlayerData.STREAM_CODEC)
+                            .copyOnDeath()
                             .build());
 
     public static final Supplier<AttachmentType<BeyondMobData>> MOB_DATA =
@@ -36,6 +37,7 @@ public class BeyondAttachmentInit {
                     () -> AttachmentType.builder(BeyondMobData::new)
                             .serialize(BeyondMobData.CODEC)
                             .sync(BeyondMobData.STREAM_CODEC)
+                            .copyOnDeath()
                             .build());
 
     public static final Supplier<AttachmentType<BeyondLargeLevelData>> LARGE_LEVEL_DATA =

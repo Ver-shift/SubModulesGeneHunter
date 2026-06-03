@@ -3,10 +3,14 @@ package org.galaxy.beyond;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.config.CommonConfig;
+import org.galaxy.beyond.api.datagen.BeyondDataGenerator;
 import org.galaxy.beyond.api.init.*;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondManager;
 import org.galaxy.beyond.comand.BeyondCommand;
 import org.slf4j.Logger;
@@ -36,9 +40,12 @@ public class Beyond {
 
     public Beyond(ModContainer modContainer, IEventBus modEventBus) {
         MANAGER = new BeyondManager();
+        BeyondPluginRunner.runConstruct();
 
         modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
-        BeyondConfigScreen.register(modContainer);
+        if (FMLEnvironment.getDist() == Dist.CLIENT) {
+            BeyondConfigScreen.register(modContainer);
+        }
         newRegistry(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(BeyondCommand::register);
@@ -55,7 +62,10 @@ public class Beyond {
 
     public void newRegistry(IEventBus modEventBus) {
         modEventBus.addListener(BeyondRegistries::registerRegistries);
+        BeyondDataGenerator.register(modEventBus);
         BeyondRegistries.register(modEventBus);
+        BeyondPluginRunner.registerRogueCaps();
+        BeyondPluginRunner.registerRogueEvents();
         BeyondRogueCapInit.register(modEventBus);
         BeyondPhaseInit.register(modEventBus);
         BeyondEventInit.register(modEventBus);
@@ -65,6 +75,7 @@ public class Beyond {
         BeyondCreativeTabInit.register(modEventBus);
         BeyondAttachmentInit.register(modEventBus);
         BeyondMobEffectInit.register(modEventBus);
+        BeyondStructureInit.register(modEventBus);
     }
 
 

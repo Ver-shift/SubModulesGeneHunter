@@ -6,20 +6,16 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.block.NodeBlock;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.*;
 import org.galaxy.beyond.api.system.rogue.core.*;
-import org.galaxy.beyond.api.system.zone.ZoneHelper;
-import org.galaxy.beyond.api.system.zone.ZoneType;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 节点交互 Cap —— 入口分发，具体步进逻辑委托给 {@link RogueEncounterRunner}。
@@ -29,7 +25,9 @@ public class NodeCap extends RogueCap {
 
     public static final Identifier ID = Beyond.asResource("node");
 
-    public NodeCap() { super(ID); }
+    public NodeCap() {
+        super(ID);
+    }
 
     // ---- 方块点击 ----
 
@@ -37,7 +35,7 @@ public class NodeCap extends RogueCap {
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(event.getLevel().getBlockState(event.getPos()).getBlock()
-                instanceof org.galaxy.beyond.block.NodeBlock)) return;
+                instanceof NodeBlock)) return;
         if (!isInRogue(player)) {
             player.sendSystemMessage(Component.translatable("beyond.node.not_in_rogue"));
             return;
@@ -46,9 +44,10 @@ public class NodeCap extends RogueCap {
     }
 
     private static void handleNodeClick(ServerPlayer player, BlockPos pos) {
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
         IRogueContext ctx = new RogueContext();
-        RogueNodeData nodeData = ensureNodeData(level, ChunkPos.containing(pos), ctx);
+        BlockPos nodePos = normalizeNodePos(level, pos);
+        RogueNodeData nodeData = ensureNodeData(level, nodePos, ctx);
         if (nodeData.getNodeData() == null) return;
 
         if (ctx.getPhase(level) == RoguePhase.LOBBY) {
@@ -92,67 +91,42 @@ public class NodeCap extends RogueCap {
 
     // ---- ensureNodeData ----
 
-    private static RogueNodeData ensureNodeData(ServerLevel level, ChunkPos clickedChunk, IRogueContext ctx) {
+    private static RogueNodeData ensureNodeData(ServerLevel level, BlockPos clickedPos, IRogueContext ctx) {
+        ChunkPos clickedChunk = org.galaxy.beyond.api.util.CompatUtil.chunkPos(clickedPos);
         var rogueData = ctx.getRogueData(level);
         RogueNodeData current = rogueData.getRogueNodeData();
 
         if (current != null && current.getNodeData() != null) {
             if (clickedChunk.equals(current.getNodeChunk())
                     || current.getNodeData().containsChunk(clickedChunk)) {
+                current.setNodePos(clickedPos);
                 return current;
             }
         }
 
-        List<ChunkPos> cluster = findNodeCluster(level, clickedChunk);
-        NodeData nodeData = null;
-        for (ChunkPos c : cluster) {
-            nodeData = BeyondAPI.findNodeData(level, c);
-            if (nodeData != null) break;
-        }
-        if (nodeData == null) {
-            nodeData = new NodeData(randomNodeColor(level));
-            cluster.forEach(nodeData::addChunkPos);
-            BeyondAPI.getLargeLevelData(level).addNodeData(nodeData);
-        } else {
-            NodeData updated = nodeData.copy();
-            cluster.forEach(updated::addChunkPosIfAbsent);
-            BeyondAPI.getLargeLevelData(level).addOrUpdateNodeData(updated);
-        }
+        NodeData nodeData = BeyondAPI.findNodeData(level, clickedChunk);
+        if (nodeData == null) return new RogueNodeData();
 
         RogueNodeData next = new RogueNodeData();
         next.setNodeData(nodeData);
         next.setNodeChunk(clickedChunk);
+        next.setNodePos(clickedPos);
         rogueData.setRogueNodeData(next);
         BeyondAPI.syncGlobalData(level);
         return next;
     }
 
-    private static List<ChunkPos> findNodeCluster(ServerLevel level, ChunkPos seed) {
-        var entries = BeyondAPI.getLevelZoneData(level).getZoneEntries();
-        var nodeChunks = entries.stream()
-                .filter(e -> e.getValue() == ZoneType.Node_Zone)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-        for (var comp : ZoneHelper.findConnectedComponents(nodeChunks)) {
-            if (comp.contains(seed)) return new ArrayList<>(comp);
+    private static BlockPos normalizeNodePos(ServerLevel level, BlockPos pos) {
+        var state = level.getBlockState(pos);
+        if (state.getBlock() instanceof NodeBlock
+                && state.getValue(NodeBlock.HALF) == DoubleBlockHalf.UPPER) {
+            return pos.below();
         }
-        return new ArrayList<>(List.of(seed));
+        return pos;
     }
 
     private static boolean isInRogue(ServerPlayer player) {
-        return BeyondAPI.getRogueData(player.level())
-                .getRoguePlayerIds().contains(player.getUUID());
+        return BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase() != PlayerPhase.LOBBY;
     }
 
-    private static NodeColor randomNodeColor(ServerLevel level) {
-        int g = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_GREEN_WEIGHT.get();
-        int o = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_ORANGE_WEIGHT.get();
-        int r = org.galaxy.beyond.api.config.CommonConfig.NODE_COLOR_RED_WEIGHT.get();
-        int total = g + o + r;
-        if (total <= 0) return NodeColor.ORANGE;
-        int roll = level.getRandom().nextInt(total);
-        if (roll < g) return NodeColor.GREEN;
-        if (roll < g + o) return NodeColor.ORANGE;
-        return NodeColor.RED;
-    }
 }

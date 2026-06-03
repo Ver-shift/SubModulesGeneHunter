@@ -5,7 +5,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * 通用模组配置文件（COMMON 类型，客户端和服务端均生效）。
@@ -14,33 +16,135 @@ public class CommonConfig {
 
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    /** 是否输出 Beyond 模块的调试信息 */
+    /**
+     * 是否输出 Beyond 模块的调试信息
+     */
     public static final ModConfigSpec.BooleanValue DEBUG_MODE;
 
-    /** 肉鸽玩法生效的维度，格式为 "namespace:path"，如 "minecraft:overworld" */
+    /**
+     * 肉鸽玩法生效的维度配置。
+     * <p>
+     * 单条格式：dimension|safe_structure|node_structure，多条用英文分号分隔。
+     * 三项必须全部有效，缺任意一项时整条配置不会生效。
+     */
     public static final ModConfigSpec.ConfigValue<String> ROGUE_DIMENSION;
 
-    /** 安全区向外最小拓展距离（区块数） */
+    /**
+     * 安全区向外最小拓展距离（区块数）
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_EXPAND;
-    /** 安全区向外最大拓展距离（区块数），超过仍未满足条件则以当前范围注册 */
+    /**
+     * 安全区向外最大拓展距离（区块数），超过仍未满足条件则以当前范围注册
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MAX_EXPAND;
-    /** 初始活动区至少需要覆盖的节点数量 */
+    /**
+     * 初始活动区至少需要覆盖的节点数量
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_NODES;
-    /** 节点完成后向外拓展的初始半径（区块数） */
+    /**
+     * 节点完成后向外拓展的初始半径（区块数）
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_EXPAND_RADIUS;
-    /** 节点完成后向外拓展时允许扫描的最大半径（区块数） */
+    /**
+     * 节点完成后向外拓展时允许扫描的最大半径（区块数）
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS;
-    /** 节点拓展后至少需要扫描到的其他未完成节点连接数 */
+    /**
+     * 节点拓展后至少需要扫描到的其他未完成节点连接数
+     */
     public static final ModConfigSpec.IntValue ACTIVE_ZONE_MIN_CONNECTIONS;
+    /**
+     * 玩家距离活动区边界多少区块内才显示边界
+     */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS;
+    /**
+     * 可活动区域边界实际渲染 ARGB 颜色
+     */
+    public static final ModConfigSpec.IntValue ACTIVE_ZONE_RENDER_COLOR;
 
-    /** 节点颜色权重：绿色 */
+    /**
+     * 是否渲染全部区域边界和节点提示
+     */
+    public static final ModConfigSpec.BooleanValue ZONE_RENDER_ENABLED;
+    /**
+     * 是否渲染安全区边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_SAFE_ZONE_BORDER;
+    /**
+     * 是否渲染可活动区边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_ACTIVE_ZONE_BORDER;
+    /**
+     * 是否渲染绿色节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_GREEN_NODES;
+    /**
+     * 是否渲染橙色节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_ORANGE_NODES;
+    /**
+     * 是否渲染红色节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_RED_NODES;
+    /**
+     * 是否渲染蓝色已解锁节点边界
+     */
+    public static final ModConfigSpec.BooleanValue RENDER_BLUE_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_SAFE_ZONE_BORDER;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_ACTIVE_ZONE_BORDER;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_GREEN_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_ORANGE_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_RED_NODES;
+    public static final ModConfigSpec.BooleanValue DEBUG_SHOW_BLUE_NODES;
+
+    /**
+     * 节点颜色权重：绿色
+     */
     public static final ModConfigSpec.IntValue NODE_COLOR_GREEN_WEIGHT;
-    /** 节点颜色权重：橙色 */
+    /**
+     * 节点颜色权重：橙色
+     */
     public static final ModConfigSpec.IntValue NODE_COLOR_ORANGE_WEIGHT;
-    /** 节点颜色权重：红色 */
+    /**
+     * 节点颜色权重：红色
+     */
     public static final ModConfigSpec.IntValue NODE_COLOR_RED_WEIGHT;
+    /**
+     * 非安全区内最多显示多少个最近的绿色节点
+     */
+    public static final ModConfigSpec.IntValue VISIBLE_GREEN_NODE_COUNT;
+    /**
+     * 非安全区内最多显示多少个最近的橙色节点
+     */
+    public static final ModConfigSpec.IntValue VISIBLE_ORANGE_NODE_COUNT;
+    /**
+     * 非安全区内最多显示多少个最近的红色节点
+     */
+    public static final ModConfigSpec.IntValue VISIBLE_RED_NODE_COUNT;
+    /**
+     * 非安全区内最多显示多少个最近的蓝色已解锁节点
+     */
+    public static final ModConfigSpec.IntValue VISIBLE_BLUE_NODE_COUNT;
+    /**
+     * 绿色节点实际渲染 ARGB 颜色
+     */
+    public static final ModConfigSpec.IntValue GREEN_NODE_RENDER_COLOR;
+    /**
+     * 橙色节点实际渲染 ARGB 颜色
+     */
+    public static final ModConfigSpec.IntValue ORANGE_NODE_RENDER_COLOR;
+    /**
+     * 红色节点实际渲染 ARGB 颜色
+     */
+    public static final ModConfigSpec.IntValue RED_NODE_RENDER_COLOR;
+    /**
+     * 蓝色已解锁节点实际渲染 ARGB 颜色
+     */
+    public static final ModConfigSpec.IntValue BLUE_NODE_RENDER_COLOR;
 
-    /** 玩家离开安全区的最小冷却时间（秒），防止频繁出入触发游戏入口流程 */
+    /**
+     * 玩家离开安全区的最小冷却时间（秒），防止频繁出入触发游戏入口流程
+     */
     public static final ModConfigSpec.IntValue LOBBY_COOLDOWN_SECONDS;
 
     static {
@@ -52,8 +156,8 @@ public class CommonConfig {
 
         BUILDER.comment("肉鸽玩法维度配置").push("rogue");
         ROGUE_DIMENSION = BUILDER
-                .comment("肉鸽玩法生效的维度 ID，格式为 \"namespace:path\"")
-                .define("dimension", "minecraft:overworld");
+                .comment("肉鸽玩法维度配置。格式：dimension|safe_structure|node_structure；多条用英文分号分隔。例如：minecraft:overworld|beyond:safe_zone_structure|beyond:node_structure")
+                .define("dimensions", "minecraft:overworld|beyond:safe_zone_structure|beyond:node_structure");
         BUILDER.pop();
 
         BUILDER.comment("活动区域配置").push("active_zone");
@@ -75,6 +179,54 @@ public class CommonConfig {
         ACTIVE_ZONE_MIN_CONNECTIONS = BUILDER
                 .comment("节点扩张后至少需要扫描到的其他未完成节点连接数，防止玩家卡关。")
                 .defineInRange("minConnections", 3, 1, 100);
+        ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS = BUILDER
+                .comment("玩家距离活动区边界多少区块内才显示边界。")
+                .defineInRange("borderVisibleChunks", 8, 0, 64);
+        ACTIVE_ZONE_RENDER_COLOR = BUILDER
+                .comment("可活动区域边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("activeZoneRenderColor", 0x64DCDCDC, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        BUILDER.pop();
+
+        BUILDER.comment("区域渲染配置").push("render");
+        ZONE_RENDER_ENABLED = BUILDER
+                .comment("是否启用 Beyond 区域边界和节点提示渲染。")
+                .define("zoneRenderEnabled", true);
+        RENDER_SAFE_ZONE_BORDER = BUILDER
+                .comment("是否渲染安全区边界。")
+                .define("safeZoneBorder", true);
+        RENDER_ACTIVE_ZONE_BORDER = BUILDER
+                .comment("是否渲染可活动区外边界。")
+                .define("activeZoneBorder", true);
+        RENDER_GREEN_NODES = BUILDER
+                .comment("是否渲染绿色节点边界。")
+                .define("greenNodes", true);
+        RENDER_ORANGE_NODES = BUILDER
+                .comment("是否渲染橙色节点边界。")
+                .define("orangeNodes", true);
+        RENDER_RED_NODES = BUILDER
+                .comment("是否渲染红色节点边界。")
+                .define("redNodes", true);
+        RENDER_BLUE_NODES = BUILDER
+                .comment("是否渲染蓝色已解锁节点边界。")
+                .define("blueNodes", true);
+        DEBUG_SHOW_SAFE_ZONE_BORDER = BUILDER
+                .comment("Debug 模式下是否显示安全区边界。")
+                .define("debugShowSafeZoneBorder", true);
+        DEBUG_SHOW_ACTIVE_ZONE_BORDER = BUILDER
+                .comment("Debug 模式下是否显示完整可活动区边界。")
+                .define("debugShowActiveZoneBorder", true);
+        DEBUG_SHOW_GREEN_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部绿色节点边界。")
+                .define("debugShowGreenNodes", true);
+        DEBUG_SHOW_ORANGE_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部橙色节点边界。")
+                .define("debugShowOrangeNodes", true);
+        DEBUG_SHOW_RED_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部红色节点边界。")
+                .define("debugShowRedNodes", true);
+        DEBUG_SHOW_BLUE_NODES = BUILDER
+                .comment("Debug 模式下是否显示全部蓝色已解锁节点边界。")
+                .define("debugShowBlueNodes", true);
         BUILDER.pop();
 
         BUILDER.comment("节点颜色权重配置").push("node_color");
@@ -87,6 +239,30 @@ public class CommonConfig {
         NODE_COLOR_RED_WEIGHT = BUILDER
                 .comment("红色节点的生成权重（默认 20）")
                 .defineInRange("redWeight", 20, 0, 1000);
+        VISIBLE_GREEN_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近绿色节点数量。")
+                .defineInRange("visibleGreenCount", 1, 0, 64);
+        VISIBLE_ORANGE_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近橙色节点数量。")
+                .defineInRange("visibleOrangeCount", 1, 0, 64);
+        VISIBLE_RED_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近红色节点数量。")
+                .defineInRange("visibleRedCount", 1, 0, 64);
+        VISIBLE_BLUE_NODE_COUNT = BUILDER
+                .comment("玩家在非安全区时可见的最近蓝色已解锁节点数量。")
+                .defineInRange("visibleBlueCount", 1, 0, 64);
+        GREEN_NODE_RENDER_COLOR = BUILDER
+                .comment("绿色节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("greenRenderColor", 0x8C00FF00, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        ORANGE_NODE_RENDER_COLOR = BUILDER
+                .comment("橙色节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("orangeRenderColor", 0x8CFFA500, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        RED_NODE_RENDER_COLOR = BUILDER
+                .comment("红色节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("redRenderColor", 0x8CFF0000, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        BLUE_NODE_RENDER_COLOR = BUILDER
+                .comment("蓝色已解锁节点边界渲染颜色，ARGB 格式，包含透明度。")
+                .defineInRange("blueRenderColor", 0x8C0000FF, Integer.MIN_VALUE, Integer.MAX_VALUE);
         BUILDER.pop();
 
         BUILDER.comment("大厅/准备阶段配置").push("lobby");
@@ -99,11 +275,75 @@ public class CommonConfig {
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     /**
-     * 获取配置中指定的肉鸽玩法维度。
+     * 获取第一条有效肉鸽玩法维度。
      */
     public static ResourceKey<Level> getRogueDimension() {
-        return ResourceKey.create(Registries.DIMENSION, Identifier.parse(ROGUE_DIMENSION.get()));
+        return getRogueDimensionConfigs().stream()
+                .findFirst()
+                .map(RogueDimensionConfig::dimension)
+                .orElseGet(() -> ResourceKey.create(Registries.DIMENSION, Identifier.parse("minecraft:overworld")));
     }
+
+    public static boolean isRogueDimension(Level level) {
+        return isRogueDimension(level.dimension());
+    }
+
+    public static boolean isRogueDimension(ResourceKey<Level> dimension) {
+        return getRogueDimensionConfig(dimension).isPresent();
+    }
+
+    public static Optional<RogueDimensionConfig> getRogueDimensionConfig(Level level) {
+        return getRogueDimensionConfig(level.dimension());
+    }
+
+    public static Optional<RogueDimensionConfig> getRogueDimensionConfig(ResourceKey<Level> dimension) {
+        return getRogueDimensionConfigs().stream()
+                .filter(config -> config.dimension().equals(dimension))
+                .findFirst();
+    }
+
+    public static List<RogueDimensionConfig> getRogueDimensionConfigs() {
+        return ROGUE_DIMENSION.get().lines()
+                .flatMap(line -> List.of(line.split(";")).stream())
+                .map(String::trim)
+                .filter(entry -> !entry.isEmpty())
+                .map(RogueDimensionConfig::parse)
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    public record RogueDimensionConfig(
+            ResourceKey<Level> dimension,
+            Identifier safeStructureTag,
+            Identifier nodeStructureTag
+    ) {
+
+        private static Optional<RogueDimensionConfig> parse(String entry) {
+            String[] parts = entry.split("\\|");
+            if (parts.length != 3) return Optional.empty();
+
+            Identifier dimension = parseLocation(parts[0]);
+            Identifier safeStructure = parseLocation(parts[1]);
+            Identifier nodeStructure = parseLocation(parts[2]);
+            if (dimension == null || safeStructure == null || nodeStructure == null) return Optional.empty();
+
+            return Optional.of(new RogueDimensionConfig(
+                    ResourceKey.create(Registries.DIMENSION, dimension),
+                    safeStructure,
+                    nodeStructure
+            ));
+        }
+
+        private static Identifier parseLocation(String value) {
+            try {
+                String trimmed = value.trim();
+                return trimmed.isEmpty() ? null : Identifier.parse(trimmed);
+            } catch (Exception ignored) {
+                return null;
+            }
+        }
+    }
+
     private CommonConfig() {
     }
 }

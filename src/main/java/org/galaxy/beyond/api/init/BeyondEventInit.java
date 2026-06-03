@@ -2,6 +2,7 @@ package org.galaxy.beyond.api.init;
 
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
+import net.minecraft.core.Holder;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
 import org.galaxy.beyond.rogue_event.*;
 
@@ -29,7 +30,9 @@ public class BeyondEventInit {
     }
 
     public static RogueEventType get(Identifier id) {
-        return BeyondRegistries.ROGUE_EVENT_TYPE.get(registryKey(id)).map(h -> h.value()).orElse(null);
+        return BeyondRegistries.ROGUE_EVENT_TYPE.get(registryKey(id))
+                .map(Holder::value)
+                .orElse(null);
     }
 
     // ---- internal ----

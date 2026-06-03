@@ -1,90 +1,87 @@
 package org.galaxy.beyond.api.client.render;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.WorldBorderRenderer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-import java.util.*;
+import java.util.Set;
 
-/**
- * 安全区边框 —— 单矩形，颜色随玩家 Phase 变化（蓝→橙→红）。
- */
 public class SafeZoneBorderRenderer extends ZoneBorderRenderer {
+    private static final int BLUE_R = 64;
+    private static final int BLUE_G = 120;
+    private static final int BLUE_B = 220;
+    private static final int ORANGE_R = 220;
+    private static final int ORANGE_G = 140;
+    private static final int ORANGE_B = 30;
+    private static final int RED_R = 200;
+    private static final int RED_G = 30;
+    private static final int RED_B = 30;
 
-    private static final float ALPHA = 0.65F;
-    private static final int R_BLUE = 64, G_BLUE = 120, B_BLUE = 220;
-    private static final int R_ORANGE = 220, G_ORANGE = 140, B_ORANGE = 30;
-    private static final int R_RED = 200, G_RED = 30, B_RED = 30;
-
-    private double lastMinX, lastMinZ, lastMaxX, lastMaxZ;
-    private int frameCounter;
-    private int curR = R_BLUE, curG = G_BLUE, curB = B_BLUE;
-    private int tgtR = R_BLUE, tgtG = G_BLUE, tgtB = B_BLUE;
-
-    public void render(Level level, Vec3 cameraPos, PoseStack ps) {
+    @Override
+    public void render(Level level, Camera camera, PoseStack poseStack) {
         if (level == null) return;
-        LevelZoneData lzd = BeyondAPI.getLevelZoneData(level);
-        if (lzd == null || !lzd.hasZones()) return;
-//        WorldBorderRenderer
-        Set<ChunkPos> safeSet = lzd.safeChunks();
-        if (safeSet.isEmpty()) return;
-        ZoneHelper.Bounds b = ZoneHelper.boundsOf(safeSet);
-        float halfHeight = (level.getMaxY() - level.getMinY()) * 0.5f;
+        LevelZoneData data = BeyondAPI.getLevelZoneData(level);
+        if (data == null || !data.hasZones()) return;
 
-        double bx1 = b.minX() * 16.0, bx2 = (b.maxX() + 1) * 16.0;
-        double bz1 = b.minZ() * 16.0, bz2 = (b.maxZ() + 1) * 16.0;
+        Set<ChunkPos> safeChunks = data.safeChunks();
+        if (safeChunks.isEmpty()) return;
 
-        if (needsRebuild || bx1 != lastMinX || bz1 != lastMinZ || bx2 != lastMaxX || bz2 != lastMaxZ) {
-            ensureBuffer(16);
-            try (ByteBufferBuilder bb = ByteBufferBuilder.exactlySized(16 * DefaultVertexFormat.POSITION_TEX.getVertexSize())) {
-                BufferBuilder builder = new BufferBuilder(bb, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                RenderHelper.writeBoxWalls(builder, (float) (bx2 - bx1), (float) (bz2 - bz1), halfHeight);
-                try (MeshData md = builder.buildOrThrow()) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.vertexBuffer.slice(), md.vertexBuffer());
-                }
-            }
-            indexCount = 24;
-            lastMinX = bx1;
-            lastMinZ = bz1;
-            lastMaxX = bx2;
-            lastMaxZ = bz2;
-            needsRebuild = false;
+        ZoneHelper.Bounds bounds = ZoneHelper.boundsOf(safeChunks);
+        int[] color = currentColor();
+        RenderHelper.renderBorder(
+                bounds.minX() * 16.0,
+                bounds.minZ() * 16.0,
+                (bounds.maxX() + 1) * 16.0,
+                (bounds.maxZ() + 1) * 16.0,
+                color[0], color[1], color[2],
+                BOTTOM_ALPHA, TOP_ALPHA,
+                camera, poseStack
+        );
+    }
+
+    @Override
+    public void render(ZoneRenderContext context) {
+        if (!ZoneRenderConfig.safeZoneBorder(context)) return;
+        LevelZoneData data = context.data();
+        if (data == null || !data.hasZones()) return;
+
+        Set<ChunkPos> safeChunks = data.safeChunks();
+        if (safeChunks.isEmpty()) return;
+
+        ZoneHelper.Bounds bounds = ZoneHelper.boundsOf(safeChunks);
+        int[] color = colorOf(context.playerPhase());
+        RenderHelper.submitBorder(
+                bounds.minX() * 16.0,
+                bounds.minZ() * 16.0,
+                (bounds.maxX() + 1) * 16.0,
+                (bounds.maxZ() + 1) * 16.0,
+                color[0], color[1], color[2],
+                BOTTOM_ALPHA, TOP_ALPHA,
+                context.camera(), context.poseStack(), context.submitNodeCollector()
+        );
+    }
+
+    private static int[] currentColor() {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return new int[]{BLUE_R, BLUE_G, BLUE_B};
+
+        try {
+            return colorOf(BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase());
+        } catch (Exception ignored) {
         }
 
-        frameCounter++;
-        if (frameCounter % 20 == 0) updateColor();
-        drawBorder("Safe zone", curR / 255f, curG / 255f, curB / 255f, ALPHA,
-                lastMinX - cameraPos.x, -cameraPos.y, lastMinZ - cameraPos.z);
+        return new int[]{BLUE_R, BLUE_G, BLUE_B};
     }
 
-    private void updateColor() {
-        var player = Minecraft.getInstance().player;
-        if (player == null) { tgtR=R_BLUE; tgtG=G_BLUE; tgtB=B_BLUE; return; }
-        try {
-            var phase = BeyondAPI.getBeyondPlayerData(player).getPlayerRogueData().getPhase();
-            if (phase == PlayerPhase.LOBBY)          { tgtR=R_BLUE; tgtG=G_BLUE; tgtB=B_BLUE; }
-            else if (phase == PlayerPhase.PRE_ROGUE)  { tgtR=R_ORANGE; tgtG=G_ORANGE; tgtB=B_ORANGE; }
-            else                                      { tgtR=R_RED; tgtG=G_RED; tgtB=B_RED; }
-        } catch (Exception e) { tgtR=R_BLUE; tgtG=G_BLUE; tgtB=B_BLUE; }
-        float rate = 0.1f;
-        curR += (int)((tgtR - curR) * rate + 0.5f);
-        curG += (int)((tgtG - curG) * rate + 0.5f);
-        curB += (int)((tgtB - curB) * rate + 0.5f);
+    private static int[] colorOf(PlayerPhase phase) {
+        if (phase == PlayerPhase.PRE_ROGUE) return new int[]{ORANGE_R, ORANGE_G, ORANGE_B};
+        if (phase != null && phase != PlayerPhase.LOBBY) return new int[]{RED_R, RED_G, RED_B};
+        return new int[]{BLUE_R, BLUE_G, BLUE_B};
     }
-
-    @Override protected void rebuildBuffer() {}
 }

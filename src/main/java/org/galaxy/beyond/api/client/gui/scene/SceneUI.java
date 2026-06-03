@@ -22,6 +22,7 @@ public class SceneUI extends UIElement {
         this.style(style -> {
             style.background(Sprites.BORDER);
         });
+        this.setOverflowVisible(false);
         RoguePhase roguePhase = BeyondAPI.getRogueData(player.level()).getPhase();
         Beyond.debugInfo("现在的phase状态就是这样的"+roguePhase.name());
 

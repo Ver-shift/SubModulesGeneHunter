@@ -47,6 +47,9 @@ public class BeyondAPI {
     }
 
     public static BeyondDimensionData getRogueDimensionData(Level level) {
+        if (CommonConfig.isRogueDimension(level)) {
+            return getBeyondDimensionData(level);
+        }
         return getBeyondDimensionData(level, CommonConfig.getRogueDimension());
     }
 

@@ -7,7 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -17,6 +17,11 @@ public interface IStructureManager {
      * 获取位置所在区块中所有结构占据的区块集合。
      */
     List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos);
+
+    /**
+     * 获取位置所在区块中匹配指定 tag 的结构占据的区块集合。
+     */
+    List<ChunkPos> getStructureChunks(ServerLevel level, Vec3i pos, TagKey<Structure> tag);
 
     /**
      * 获取该位置所有结构的合并包围盒，若没有结构则返回 null。

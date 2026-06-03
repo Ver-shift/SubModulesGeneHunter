@@ -15,6 +15,7 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondAPI;
 
 @EventBusSubscriber
@@ -61,8 +62,7 @@ public class BeyondManagerEventHandle {
 
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event){
-        LevelChunk chunk = event.getChunk();
-        if (chunk.getLevel() instanceof ServerLevel level) {
+        if (event.getChunk() instanceof LevelChunk chunk && chunk.getLevel() instanceof ServerLevel level) {
             BeyondAPI.getBeyondManager().onChunkLoad(chunk);
         }
     }
@@ -71,6 +71,7 @@ public class BeyondManagerEventHandle {
         Beyond.SERVER = event.getServer();
         Beyond.OVERWORLD = Beyond.SERVER.overworld();
         BeyondAPI.getBeyondManager().onServerStarted(Beyond.SERVER);
+        BeyondPluginRunner.onServerStarted(Beyond.SERVER);
     }
 
 

@@ -51,4 +51,8 @@ public class BeyondRogueCapInit {
     public static Supplier<RogueCap> registerCap(Supplier<? extends RogueCap> sup) {
         return BeyondRegistries.ROGUE_CAP_REGISTER.register(sup.get().getId().getPath(), sup);
     }
+
+    public static Supplier<RogueCap> registerCap(Identifier id, Supplier<? extends RogueCap> sup) {
+        return BeyondRegistries.ROGUE_CAP_REGISTER.register(id.getPath(), sup);
+    }
 }

@@ -2,20 +2,17 @@ package org.galaxy.beyond.api.client.gui.scene;
 
 import com.lowdragmc.lowdraglib2.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
-import com.lowdragmc.lowdraglib2.gui.ui.data.Clip;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Transform2D;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
-import com.lowdragmc.lowdraglib2.gui.ui.rendering.IGUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
-import com.lowdragmc.lowdraglib2.gui.util.DrawerHelperClient;
 import com.lowdragmc.lowdraglib2.math.interpolate.Eases;
 import com.lowdragmc.lowdraglib2.syncdata.ISubscription;
 import dev.vfyjxf.taffy.style.FlexDirection;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.client.Minecraft;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
 import org.galaxy.beyond.api.system.rogue.SceneType;
 
@@ -25,8 +22,9 @@ import java.util.List;
 public class SceneLine extends UIElement{
 
 
-    private final ProgressType progressType;
-    private final List<SceneEntry> sceneEntries;
+    private ProgressType progressType;
+    private List<SceneEntry> sceneEntries;
+    private List<SceneType> lastScenes = List.of();
     private int lastScenesIndex = -1;
     private float currentOffsetY;
     private ISubscription scrollAnimation = () -> {};
@@ -40,28 +38,32 @@ public class SceneLine extends UIElement{
             layout.flexDirection(FlexDirection.COLUMN);
 
         });
-        this.style(layout -> {
-            layout.clip(Clip.SCISSOR);
-        });
-
-
         sceneEntries = new ArrayList<>();
+        rebuildEntries(progressType);
+        Beyond.debugInfo("已经加载了" + sceneEntries.size()+ "节点");
+        addEventListener(UIEvents.TICK, event -> updateScrollPosition());
+    }
+
+    private void rebuildEntries(ProgressType progressType) {
+        for (SceneEntry entry : sceneEntries) {
+            removeChild(entry);
+        }
+        sceneEntries.clear();
         for (SceneType sceneType : progressType.getScenes()) {
             var scene = new SceneEntry(sceneType,sceneEntries.size(),progressType);
             scene.setId(sceneType.name());
             sceneEntries.add(scene);
             this.addChild(scene);
         }
-        Beyond.debugInfo("已经加载了" + sceneEntries.size()+ "节点");
-        addEventListener(UIEvents.TICK, event -> updateScrollPosition());
+        lastScenes = List.copyOf(progressType.getScenes());
     }
 
-    @Override
-    protected void drawBackgroundAdditional(IGUIContext context) {
+    public void drawBackgroundAdditional(GUIContext context) {
         //在中间渲染一个半透明的薄膜
     }
 
     private void updateScrollPosition() {
+        refreshProgressType();
         if (sceneEntries.isEmpty()) {
             return;
         }
@@ -81,6 +83,18 @@ public class SceneLine extends UIElement{
             applyScrollOffset(targetOffsetY);
         }
         lastScenesIndex = scenesIndex;
+    }
+
+    private void refreshProgressType() {
+        var level = Minecraft.getInstance().level;
+        if (level == null) return;
+
+        ProgressType current = BeyondAPI.getProgressType(level);
+        if (current == progressType && current.getScenes().equals(lastScenes)) return;
+
+        progressType = current;
+        lastScenesIndex = -1;
+        rebuildEntries(progressType);
     }
 
     private int clampedScenesIndex() {
@@ -125,35 +139,14 @@ public class SceneLine extends UIElement{
         }
 
 
-        @Override
-        protected void drawBackgroundAdditional(IGUIContext context) {
-            if (!(context instanceof GUIContext gui)) {
-                super.drawBackgroundAdditional(context);
-                return;
-            }
-
+        public void drawBackgroundAdditional(GUIContext context) {
             if (scene == null) {
-                super.drawBackgroundAdditional(context);
                 return;
             }
 
-            ItemStack item = itemFor(scene);
-            if (!item.isEmpty()) {
-                DrawerHelperClient.drawItemStack(gui, item,(int) getContentX(),(int) getContentY(), 0);
-            }
             if (progressType.getScenesIndex() == index) {
                 context.drawTexture(new ColorRectTexture(0x80FFFFFF), (int) getContentX(), (int) getContentY(), getContentWidth(), getContentHeight());
             }
-            super.drawBackgroundAdditional(context);
-        }
-
-        private static ItemStack itemFor(SceneType scene) {
-            return switch (scene) {
-                case HARVEST -> new ItemStack(Items.IRON_INGOT);
-                case REPOSE -> new ItemStack(Items.CAMPFIRE);
-                case CLIMAX -> new ItemStack(Items.DRAGON_HEAD);
-                case EMPTY -> ItemStack.EMPTY;
-            };
         }
     }
 }

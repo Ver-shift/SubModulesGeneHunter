@@ -4,6 +4,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+
 import net.minecraft.util.random.WeightedList;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.event.custom.ResolveEvent;
@@ -48,7 +49,8 @@ public class DefinitionManager implements IDefinitionManager {
             WeightedList<EventTask> tasks = encounter.eventsAsWeightedList();
             if (tasks.isEmpty()) continue;
 
-            EventTask task = tasks.getRandomOrThrow(random);
+            EventTask task = tasks.getRandom(random).orElse(null);
+            if (task == null) continue;
 
             ResolveEvent.ResolveEventTaskEvent event = new ResolveEvent.ResolveEventTaskEvent(level, encounter, task);
             var event1 = NeoForge.EVENT_BUS.post(event);
@@ -87,7 +89,7 @@ public class DefinitionManager implements IDefinitionManager {
         for (SceneRoll roll : rolls) {
             WeightedList<SceneType> list = roll.asWeightedList();
             if (!list.isEmpty()) {
-                result.add(list.getRandomOrThrow(random));
+                list.getRandom(random).ifPresent(result::add);
             }
         }
 

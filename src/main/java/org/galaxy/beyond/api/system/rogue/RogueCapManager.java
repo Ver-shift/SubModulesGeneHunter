@@ -6,8 +6,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.NeoForge;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.event.custom.LivingChangeZoneEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.init.BeyondAttachmentInit;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -15,7 +17,7 @@ import org.galaxy.beyond.api.system.zone.ZoneType;
 import java.util.List;
 
 /**
- * IRogueCap 事件分发器 —— 从 {@link RogueData#rogueCapData} 读取全局 cap 列表并分发事件。
+ * IRogueCap 事件分发器 —— 从 RogueData 读取全局 cap 列表并分发事件。
  */
 public class RogueCapManager {
 
@@ -30,6 +32,8 @@ public class RogueCapManager {
     // ============================================================
 
     public void tickZoneEvents(ServerLevel level) {
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         var caps = getCaps(level);
         LevelZoneData lzd = getLZD(level);
 
@@ -38,13 +42,14 @@ public class RogueCapManager {
         for (ServerPlayer player : level.players()) {
             var mobData = BeyondAPI.getBeyondMobData(player);
             ZoneType oldZone = mobData.getZoneType();
-            ZoneType newZone = lzd.getZoneType(ChunkPos.containing(player.getOnPos()));
+            ZoneType newZone = lzd.getZoneType(org.galaxy.beyond.api.util.CompatUtil.chunkPos(player.blockPosition()));
             if (newZone == null) newZone = ZoneType.Empty;
 
             dispatchLivingTick(caps, player);
 
             if (oldZone != newZone) {
                 mobData.setZoneType(newZone);
+                player.syncData(BeyondAttachmentInit.MOB_DATA.get());
                 NeoForge.EVENT_BUS.post(new LivingChangeZoneEvent(player, oldZone, newZone));
                 dispatchChangeZone(caps, player, oldZone, newZone);
             }
@@ -53,8 +58,10 @@ public class RogueCapManager {
 
     public void tickMob(Mob mob) {
         ServerLevel level = (ServerLevel) mob.level();
+        if (!CommonConfig.isRogueDimension(level)) return;
+
         LevelZoneData lzd = getLZD(level);
-        ZoneType newZone = lzd.getZoneType(ChunkPos.containing(mob.blockPosition()));
+        ZoneType newZone = lzd.getZoneType(org.galaxy.beyond.api.util.CompatUtil.chunkPos(mob.blockPosition()));
         if (newZone == null) return;
 
         var caps = getCaps(level);
@@ -62,6 +69,7 @@ public class RogueCapManager {
         if (mobData.getZoneType() != newZone) {
             dispatchChangeZone(caps, mob, mobData.getZoneType(), newZone);
             mobData.setZoneType(newZone);
+            mob.syncData(BeyondAttachmentInit.MOB_DATA.get());
         }
         dispatchLivingTick(caps, mob);
     }

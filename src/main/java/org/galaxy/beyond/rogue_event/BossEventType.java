@@ -1,15 +1,15 @@
 package org.galaxy.beyond.rogue_event;
 
+import lombok.NonNull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.Level;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
+import org.galaxy.beyond.api.system.rogue.RogueSpawnHelper;
 
 import java.util.UUID;
 
@@ -22,28 +22,33 @@ public class BossEventType extends RogueEventType {
 
     private UUID bossId;
 
-    public BossEventType() { super(ID); }
+    public BossEventType() {
+        super(ID);
+    }
 
     @Override
     public void cast(Context context) {
         ServerLevel level = context.level();
-        BlockPos nodePos = context.nodePos();
+        BlockPos nodePos = RogueSpawnHelper.nodeBase(level, context.nodePos());
 
         level.getServer().getPlayerList().getPlayers()
                 .forEach(p -> p.sendSystemMessage(Component.translatable("beyond.event.boss.spawn")));
 
-        BlockPos spawnPos = findSpawnableTop(level, nodePos);
+        BlockPos spawnPos = RogueSpawnHelper.findGroundNear(level, nodePos, nodePos.getY(), 2);
+        if (spawnPos == null) return;
+
         var golem = EntityType.IRON_GOLEM.create(level, EntitySpawnReason.EVENT);
         if (golem == null) return;
 
         golem.setPos(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
         golem.addTag("beyond_boss_event");
-        if (golem instanceof Mob mob) mob.setPersistenceRequired();
+        golem.setPersistenceRequired();
         level.addFreshEntity(golem);
         bossId = golem.getUUID();
     }
 
     @Override
+    @NonNull
     public Result next(Context context) {
         if (bossId == null) return Result.FAILURE;
         var entity = context.level().getEntity(bossId);
@@ -54,8 +59,4 @@ public class BossEventType extends RogueEventType {
         return Result.FAILURE;
     }
 
-    private static BlockPos findSpawnableTop(Level level, BlockPos pos) {
-        int y = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos).getY();
-        return new BlockPos(pos.getX(), y, pos.getZ());
-    }
 }

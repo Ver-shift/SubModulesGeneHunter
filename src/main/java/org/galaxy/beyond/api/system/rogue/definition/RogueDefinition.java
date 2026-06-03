@@ -10,6 +10,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.galaxy.beyond.api.util.CompatUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,9 +55,9 @@ public class RogueDefinition implements IPersistedSerializable {
 
     public Map<Identifier, ProgressDefinition> rogueProgressDeserialize(CompoundTag c) {
         var m = new HashMap<Identifier, ProgressDefinition>();
-        var keys = c.getListOrEmpty("keys");
+        var keys = CompatUtil.getStringListOrEmpty(c, "keys");
         for (Tag e : keys) {
-            m.put(Identifier.parse(e.asString().orElse("")), new ProgressDefinition());
+            m.put(Identifier.parse(CompatUtil.asString(e)), new ProgressDefinition());
         }
         return m;
     }

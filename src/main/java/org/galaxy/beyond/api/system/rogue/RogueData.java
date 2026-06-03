@@ -15,13 +15,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.init.BeyondRogueCapInit;
+import org.galaxy.beyond.api.event.custom.RogueCapInitEvent;
+import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
+import org.galaxy.beyond.api.util.CompatUtil;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Data
@@ -48,12 +47,6 @@ public class RogueData implements IPersistedSerializable {
     @Persisted
     @ReadOnlyManaged(serializeMethod = "rogueCapDataSerialize", deserializeMethod = "rogueCapDataDeserialize")
     private final List<RogueCapData> rogueCapData = new CopyOnWriteArrayList<>();
-
-    @Persisted
-    private List<String> roguePlayerIdStrings = new ArrayList<>();
-
-    @Persisted
-    private List<String> safeZonePlayerIdStrings = new ArrayList<>();
 
     public ProgressType getProgressType() {
         if (progressType == null) {
@@ -82,53 +75,18 @@ public class RogueData implements IPersistedSerializable {
         getProgressType().setActive(active);
     }
 
-    public Set<UUID> getRoguePlayerIds() {
-        return toStringSet(roguePlayerIdStrings);
-    }
-
-    public boolean addRoguePlayer(UUID playerId) {
-        String id = playerId.toString();
-        if (roguePlayerIdStrings.contains(id)) return false;
-        safeZonePlayerIdStrings.remove(id);
-        return roguePlayerIdStrings.add(id);
-    }
-
-    public boolean removeRoguePlayer(UUID playerId) {
-        return roguePlayerIdStrings.remove(playerId.toString());
-    }
-
-    public boolean isRoguePlayer(UUID playerId) {
-        return roguePlayerIdStrings.contains(playerId.toString());
-    }
-
-    public Set<UUID> getSafeZonePlayerIds() {
-        return toStringSet(safeZonePlayerIdStrings);
-    }
-
-    public boolean addSafeZonePlayer(UUID playerId) {
-        String id = playerId.toString();
-        if (safeZonePlayerIdStrings.contains(id)) return false;
-        roguePlayerIdStrings.remove(id);
-        return safeZonePlayerIdStrings.add(id);
-    }
-
-    public boolean removeSafeZonePlayer(UUID playerId) {
-        return safeZonePlayerIdStrings.remove(playerId.toString());
-    }
-
-    public boolean isSafeZonePlayer(UUID playerId) {
-        return safeZonePlayerIdStrings.contains(playerId.toString());
-    }
-
     public void initDefaultCaps() {
         if (!rogueCapData.isEmpty()) return;
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.PROGRESS_START.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.PLAYER_IN_GAME.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.NODE_CAP.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.NODE_ZONE_ENTER.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.ROGUE_INIT.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.ROGUE_PROGRESS_FINISH.get()));
-        rogueCapData.add(new RogueCapData(BeyondRogueCapInit.PLAYER_PROGRESS_FINISH.get()));
+        RogueCapInitEvent event = RogueCapInitEvent.post(
+                new RogueCapInitEvent(this, BeyondPluginRunner.collectDefaultRogueCaps())
+        );
+        for (Identifier id : event.getCapIds()) {
+            BeyondRogueCapInit.getById(id)
+                    .map(net.minecraft.core.Holder.Reference::value)
+                    .ifPresentOrElse(cap -> rogueCapData.add(new RogueCapData(cap)), () -> {
+                        throw new IllegalStateException("Default RogueCap is not registered: " + id);
+                    });
+        }
     }
 
     public RoguePhase getPhase() {
@@ -148,17 +106,6 @@ public class RogueData implements IPersistedSerializable {
         getProgressType().resetSceneIndex();
     }
 
-    private static Set<UUID> toStringSet(List<String> strings) {
-        Set<UUID> set = new LinkedHashSet<>();
-        for (String value : strings) {
-            try {
-                set.add(UUID.fromString(value));
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-        return set;
-    }
-
     @SuppressWarnings("unused")
     private CompoundTag rogueCapDataSerialize(List<RogueCapData> list) {
         CompoundTag tag = new CompoundTag();
@@ -174,7 +121,7 @@ public class RogueData implements IPersistedSerializable {
     @SuppressWarnings("unused")
     private List<RogueCapData> rogueCapDataDeserialize(CompoundTag tag) {
         List<RogueCapData> list = new CopyOnWriteArrayList<>();
-        ListTag items = tag.getListOrEmpty("items");
+        ListTag items = CompatUtil.getCompoundListOrEmpty(tag, "items");
         for (int i = 0; i < items.size(); i++) {
             RogueCapData.CODEC.codec().parse(NbtOps.INSTANCE, items.get(i))
                     .result().ifPresent(list::add);

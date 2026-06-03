@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "beyond:block/node_block"
+      }
+    }
+  ]
+}

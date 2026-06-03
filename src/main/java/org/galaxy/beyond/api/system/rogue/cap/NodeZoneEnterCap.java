@@ -10,6 +10,7 @@ import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.core.NodePhase;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
+import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
 /**
@@ -33,18 +34,22 @@ public class NodeZoneEnterCap extends RogueCap {
         if (now - data.getLastNodeEnterTime() < ENTER_COOLDOWN_TICKS) return;
         data.setLastNodeEnterTime(now);
 
-        ChunkPos at = ChunkPos.containing(player.getOnPos());
+        ChunkPos at = org.galaxy.beyond.api.util.CompatUtil.chunkPos(player.blockPosition());
         var nodeData = BeyondAPI.findNodeData(player.level(), at);
         if (nodeData == null) return;
 
         var colorName = nodeData.getColor().name().toLowerCase();
+        var color = Component.translatable("beyond.node.color." + colorName);
+
+        if (BeyondAPI.getRogueData(player.level()).getPhase() == RoguePhase.LOBBY) {
+            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone_not_started", color));
+            return;
+        }
 
         if (nodeData.getPhase() == NodePhase.UNLOCKED) {
-            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone_unlocked",
-                    Component.translatable("beyond.node.color." + colorName)));
+            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone_unlocked", color));
         } else {
-            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone",
-                    Component.translatable("beyond.node.color." + colorName)));
+            player.sendSystemMessage(Component.translatable("beyond.node.enter_zone", color));
         }
     }
 }

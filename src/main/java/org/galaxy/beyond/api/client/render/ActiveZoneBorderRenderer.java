@@ -1,93 +1,118 @@
 package org.galaxy.beyond.api.client.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
+import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * 不规则活跃区域渲染 —— 只画活跃区与节点区/空地的交界，避免安全区边界重叠。
- */
 public class ActiveZoneBorderRenderer extends ZoneBorderRenderer {
+    private static final double DEBUG_VISIBLE_DISTANCE = 32.0 * 16.0;
 
-    private static final float R = 220f/255f, G = 220f/255f, B = 220f/255f, A = 0.35f;
-
-    private int lastHash;
-
-    public void render(Level level, Vec3 cameraPos, PoseStack ps) {
+    @Override
+    public void render(Level level, Camera camera, PoseStack poseStack) {
         if (level == null) return;
-        LevelZoneData lzd = BeyondAPI.getLevelZoneData(level);
-        if (lzd == null || !lzd.hasZones()) return;
+        LevelZoneData data = BeyondAPI.getLevelZoneData(level);
+        if (data == null || !data.hasZones()) return;
 
-        Set<ChunkPos> activeSet = lzd.activeChunks();
-        if (activeSet.isEmpty()) return;
-
-        int hash = activeSet.hashCode();
-        if (needsRebuild || hash != lastHash) {
-            rebuildBuffer(activeSet, lzd, (float) level.getMinY(), (float) level.getMaxY());
-            lastHash = hash;
-            needsRebuild = false;
-        }
-
-        drawBorder("Active zone", R, G, B, A, -cameraPos.x, -cameraPos.y, -cameraPos.z);
+        var cameraPos = camera.position();
+        List<RenderHelper.BorderSegment> segments = nearbyBoundarySegments(data, cameraPos.x, cameraPos.z,
+                CommonConfig.ACTIVE_ZONE_BORDER_VISIBLE_CHUNKS.get() * 16.0);
+        RenderHelper.renderBorderSegments(segments, CommonConfig.ACTIVE_ZONE_RENDER_COLOR.get(), camera, poseStack);
     }
 
-    @Override protected void rebuildBuffer() {}
+    @Override
+    public void render(ZoneRenderContext context) {
+        if (!ZoneRenderConfig.activeZoneBorder(context)) return;
+        LevelZoneData data = context.data();
+        if (data == null || !data.hasZones()) return;
 
-    private void rebuildBuffer(Set<ChunkPos> activeSet, LevelZoneData lzd, float minY, float maxY) {
-        record Wall(float at, float s0, float s1, boolean xFixed) {}
-        List<Wall> walls = new ArrayList<>();
-
-        for (ChunkPos c : activeSet) {
-            int cx = c.getMinBlockX() >> 4, cz = c.getMinBlockZ() >> 4;
-            float x0 = cx * 16f, z0 = cz * 16f, x1 = x0 + 16f, z1 = z0 + 16f;
-
-            ChunkPos e = new ChunkPos(cx + 1, cz), w = new ChunkPos(cx - 1, cz);
-            ChunkPos s = new ChunkPos(cx, cz + 1), n = new ChunkPos(cx, cz - 1);
-
-            // 只画与节点区/空地交界（不画与安全区/活跃区的边）
-            if (isBorder(e, activeSet, lzd)) walls.add(new Wall(x1, z0, z1, true));
-            if (isBorder(w, activeSet, lzd)) walls.add(new Wall(x0, z0, z1, true));
-            if (isBorder(s, activeSet, lzd)) walls.add(new Wall(z1, x0, x1, false));
-            if (isBorder(n, activeSet, lzd)) walls.add(new Wall(z0, x0, x1, false));
-        }
-
-        indexCount = walls.size() * 6;
-        if (indexCount == 0) return;
-        ensureBuffer(walls.size() * 4);
-
-        try (ByteBufferBuilder bb = ByteBufferBuilder.exactlySized(walls.size() * 4 * DefaultVertexFormat.POSITION_TEX.getVertexSize())) {
-            BufferBuilder builder = new BufferBuilder(bb, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            float bottom = minY + 1f, top = maxY;
-
-            for (Wall wl : walls) {
-                if (wl.xFixed()) {
-                    builder.addVertex(wl.at(), bottom, wl.s0()).setUv(0, 0);
-                    builder.addVertex(wl.at(), bottom, wl.s1()).setUv(0, 1);
-                    builder.addVertex(wl.at(), top, wl.s1()).setUv(1, 1);
-                    builder.addVertex(wl.at(), top, wl.s0()).setUv(1, 0);
-                } else {
-                    builder.addVertex(wl.s0(), bottom, wl.at()).setUv(0, 0);
-                    builder.addVertex(wl.s1(), bottom, wl.at()).setUv(0, 1);
-                    builder.addVertex(wl.s1(), top, wl.at()).setUv(1, 1);
-                    builder.addVertex(wl.s0(), top, wl.at()).setUv(1, 0);
-                }
-            }
-
-            try (MeshData md = builder.buildOrThrow()) {
-                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.vertexBuffer.slice(), md.vertexBuffer());
-            }
-        }
+        List<RenderHelper.BorderSegment> segments = nearbyBoundarySegments(
+                data,
+                context.playerX(),
+                context.playerZ(),
+                context.debugMode() ? DEBUG_VISIBLE_DISTANCE : context.boundaryVisibleDistance()
+        );
+        RenderHelper.submitBorderSegments(segments, CommonConfig.ACTIVE_ZONE_RENDER_COLOR.get(),
+                context.camera(), context.poseStack(), context.submitNodeCollector());
     }
 
-    /** 仅当邻居不是活跃区也不是安全区时画墙（即：空地 或 节点区） */
-    private static boolean isBorder(ChunkPos nb, Set<ChunkPos> activeSet, LevelZoneData lzd) {
-        if (activeSet.contains(nb)) return false;
-        return !lzd.isSafe(nb);
+    private static List<RenderHelper.BorderSegment> nearbyBoundarySegments(LevelZoneData data, double x, double z, double distance) {
+        if (distance <= 0.0) return List.of();
+
+        List<RenderHelper.BorderSegment> result = new ArrayList<>();
+        int centerX = blockToChunk(x);
+        int centerZ = blockToChunk(z);
+        int radius = Math.max(1, (int) Math.ceil(distance / 16.0) + 1);
+        double maxDistanceSqr = distance * distance;
+
+        for (int cx = centerX - radius; cx <= centerX + radius; cx++) {
+            for (int cz = centerZ - radius; cz <= centerZ + radius; cz++) {
+                ChunkPos pos = new ChunkPos(cx, cz);
+                if (!data.isActive(pos)) continue;
+
+                addBoundarySegment(result, data, pos, x, z, maxDistanceSqr, Direction.WEST);
+                addBoundarySegment(result, data, pos, x, z, maxDistanceSqr, Direction.EAST);
+                addBoundarySegment(result, data, pos, x, z, maxDistanceSqr, Direction.NORTH);
+                addBoundarySegment(result, data, pos, x, z, maxDistanceSqr, Direction.SOUTH);
+            }
+        }
+        return result;
+    }
+
+    private static void addBoundarySegment(List<RenderHelper.BorderSegment> result, LevelZoneData data, ChunkPos pos,
+                                           double x, double z, double maxDistanceSqr, Direction direction) {
+        ChunkPos neighbor = switch (direction) {
+            case WEST -> new ChunkPos(pos.x() - 1, pos.z());
+            case EAST -> new ChunkPos(pos.x() + 1, pos.z());
+            case NORTH -> new ChunkPos(pos.x(), pos.z() - 1);
+            case SOUTH -> new ChunkPos(pos.x(), pos.z() + 1);
+        };
+        if (data.hasAny(neighbor)) return;
+
+        double minX = pos.getMinBlockX();
+        double minZ = pos.getMinBlockZ();
+        double maxX = minX + 16.0;
+        double maxZ = minZ + 16.0;
+        RenderHelper.BorderSegment segment = switch (direction) {
+            case WEST -> new RenderHelper.BorderSegment(minX, minZ, minX, maxZ);
+            case EAST -> new RenderHelper.BorderSegment(maxX, minZ, maxX, maxZ);
+            case NORTH -> new RenderHelper.BorderSegment(minX, minZ, maxX, minZ);
+            case SOUTH -> new RenderHelper.BorderSegment(minX, maxZ, maxX, maxZ);
+        };
+        if (distanceToSegmentSqr(x, z, segment) <= maxDistanceSqr) result.add(segment);
+    }
+
+    private static int blockToChunk(double value) {
+        return (int) Math.floor(value / 16.0);
+    }
+
+    private static double distanceToSegmentSqr(double x, double z, RenderHelper.BorderSegment segment) {
+        double dx = segment.x2() - segment.x1();
+        double dz = segment.z2() - segment.z1();
+        double lengthSqr = dx * dx + dz * dz;
+        if (lengthSqr <= 0.0) return distanceSqr(x, z, segment.x1(), segment.z1());
+
+        double t = ((x - segment.x1()) * dx + (z - segment.z1()) * dz) / lengthSqr;
+        t = Math.max(0.0, Math.min(1.0, t));
+        return distanceSqr(x, z, segment.x1() + dx * t, segment.z1() + dz * t);
+    }
+
+    private static double distanceSqr(double x1, double z1, double x2, double z2) {
+        double dx = x1 - x2;
+        double dz = z1 - z2;
+        return dx * dx + dz * dz;
+    }
+
+    private enum Direction {
+        WEST,
+        EAST,
+        NORTH,
+        SOUTH
     }
 }

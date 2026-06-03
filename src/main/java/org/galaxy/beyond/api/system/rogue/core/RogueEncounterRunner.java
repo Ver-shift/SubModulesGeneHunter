@@ -1,15 +1,13 @@
 package org.galaxy.beyond.api.system.rogue.core;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.event.custom.RogueEncounterEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.*;
-
-import java.util.List;
 
 /**
  * 节点遭遇运行器 —— 管理单个节点的遭遇解析 → 事件步进 → 解锁全流程。
@@ -88,7 +86,9 @@ public class RogueEncounterRunner {
     // ON_EVENT → 步进 / 解锁
     // ============================================================
 
-    /** 推进到下一个事件或解锁。返回 true 表示节点已结束。 */
+    /**
+     * 推进到下一个事件或解锁。返回 true 表示节点已结束。
+     */
     public boolean advanceEvent(ServerPlayer player) {
         if (!nodeData.hasEncounter()) return false;
 
@@ -106,7 +106,7 @@ public class RogueEncounterRunner {
 
         // 最后一个事件 → 解锁
         if (curIdx >= nodeData.eventCount() - 1) {
-            unlockNode();
+            forceUnlockNode();
             return true;
         }
 
@@ -142,7 +142,7 @@ public class RogueEncounterRunner {
     // 解锁 / 通关
     // ============================================================
 
-    private void unlockNode() {
+    public void forceUnlockNode() {
         var encData = nodeData.getEncounterData();
         nodeData.markUnlocked(level);
 
@@ -161,11 +161,11 @@ public class RogueEncounterRunner {
 
         BeyondAPI.getBeyondManager().getZoneManager().addActiveZone(level, nodeData);
         BeyondAPI.syncGlobalData(level);
-        level.getServer().getPlayerList().broadcastSystemMessage(
-                Component.translatable("beyond.node.zone_expanded"), false);
 
-        RogueEncounterEvent.post(new RogueEncounterEvent.Complete(
-                level, encData.getType(), encData.getEvents(), ctx));
+        if (encData != null && encData.getEvents() != null && encData.getEvents().hasEvents()) {
+            RogueEncounterEvent.post(new RogueEncounterEvent.Complete(
+                    level, encData.getType(), encData.getEvents(), ctx));
+        }
 
         if (allDone) {
             ctx.setPhase(level, RoguePhase.PROGRESS_FINISH);
@@ -226,10 +226,17 @@ public class RogueEncounterRunner {
         return c;
     }
 
-    public boolean isPreNode() { return nodeData.getNodePhase() == NodePhase.PRE_NODE; }
-    public boolean isPreEvent() { return nodeData.getNodePhase() == NodePhase.PRE_EVENT; }
+    public boolean isPreNode() {
+        return nodeData.getNodePhase() == NodePhase.PRE_NODE;
+    }
 
-    /** 对当前事件的 RogueEventType 执行 cast */
+    public boolean isPreEvent() {
+        return nodeData.getNodePhase() == NodePhase.PRE_EVENT;
+    }
+
+    /**
+     * 对当前事件的 RogueEventType 执行 cast
+     */
     private void castCurrentEvent(EncounterType encType) {
         var instances = nodeData.getEncounterData().getEvents().getEventInstances();
         int idx = nodeData.getCurrentEventIndex();
@@ -239,6 +246,12 @@ public class RogueEncounterRunner {
     }
 
     private RogueEventType.Context runnerContext(EncounterType encType) {
-        return new RogueEventType.Context(encType, level, nodeData.getNodeChunk().getWorldPosition());
+        return new RogueEventType.Context(encType, level, nodePos(), ctx);
+    }
+
+    private BlockPos nodePos() {
+        BlockPos pos = nodeData.getNodePos();
+        if (pos != null && !pos.equals(BlockPos.ZERO)) return pos;
+        return nodeData.getNodeChunk().getWorldPosition();
     }
 }

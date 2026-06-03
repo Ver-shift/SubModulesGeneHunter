@@ -9,10 +9,15 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public enum NodeColor implements IPersistedSerializable {
+    /** 已解锁或已完成的节点。 */
     BLUE(0x0000FF),
+    /** 绿色未完成节点，通常对应较轻量的事件。 */
     GREEN(0x00FF00),
+    /** 橙色未完成节点，通常对应普通遭遇。 */
     ORANGE(0xFFA500),
+    /** 红色未完成节点，通常对应高风险遭遇。 */
     RED(0xFF0000),
+    /** 空节点或无法解析时的兜底值。 */
     EMPTY(0xFFFFFF);
 
     @Persisted

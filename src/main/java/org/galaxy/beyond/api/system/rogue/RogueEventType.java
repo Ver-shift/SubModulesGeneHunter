@@ -57,12 +57,23 @@ public abstract class RogueEventType implements IPersistedSerializable {
     @NonNull
     public abstract Result next(Context context);
 
-    public record Context(EncounterType type, ServerLevel level, BlockPos nodePos) {}
+    /**
+     * Rogue 事件运行上下文。
+     *
+     * @param type         当前遭遇类型
+     * @param level        事件所在服务端世界
+     * @param nodePos      玩家点击的节点方块位置；双高节点统一传入下半部分位置
+     * @param rogueContext 当前 Rogue 上下文，供事件读取玩家、阶段和全局数据
+     */
+    public record Context(EncounterType type, ServerLevel level, BlockPos nodePos, IRogueContext rogueContext) {
+    }
 
     public enum Result {
         SUCCESS, FAILURE, EMPTY;
 
-        public boolean isSuccess() { return this == SUCCESS; }
+        public boolean isSuccess() {
+            return this == SUCCESS;
+        }
     }
 
     private static RogueEventType resolve(Identifier id) {

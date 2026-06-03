@@ -11,6 +11,6 @@ public class BeyondPackInit {
 
     @SubscribeEvent
     public static void onAddReloadListeners(AddServerReloadListenersEvent event) {
-        event.addListener(Beyond.asResource("rogue_progress"), new ProgressDataPack());
+        event.addListener(Beyond.asResource("progress_data"), new ProgressDataPack());
     }
 }
