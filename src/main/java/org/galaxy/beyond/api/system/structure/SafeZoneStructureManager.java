@@ -77,7 +77,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         if (!CommonConfig.isRogueDimension(level)) return;
 
         BeyondPlayerData playerData = BeyondAPI.getBeyondPlayerData(player);
-        if (playerData.getPlayerRogueData().isFirstSpawnDone()) return;
+        if (playerData.getPlayerRogueData().isFirstSpawnDone()) {
+            BeyondAdvancements.grantWelcome(player);
+            return;
+        }
 
         var safeZone = BeyondAPI.getSafeZoneStructureData(level);
         if (safeZone.getInitialized() < 1) return;
@@ -98,7 +101,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         if (!CommonConfig.isRogueDimension(player.level())) return;
 
         var playerData = BeyondAPI.getBeyondPlayerData(player);
-        if (playerData.getPlayerZoneData().isSafeZoneInitialized()) return;
+        if (playerData.getPlayerZoneData().isSafeZoneInitialized()) {
+            BeyondAdvancements.grantWelcome(player);
+            return;
+        }
 
         ServerLevel level = (ServerLevel) player.level();
         var safeZoneData = BeyondAPI.getSafeZoneStructureData(level);
@@ -148,6 +154,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         player.teleportTo(level, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
                 Set.of(), player.getYRot(), player.getXRot(), false);
         playerData.getPlayerZoneData().setSafeZoneInitialized(true);
+        BeyondAdvancements.grantWelcome(player);
     }
 
     private boolean isValidSpawnBlock(ServerLevel level, BlockPos pos) {

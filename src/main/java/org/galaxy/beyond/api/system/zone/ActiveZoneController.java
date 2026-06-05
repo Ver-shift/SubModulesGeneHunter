@@ -45,11 +45,10 @@ public class ActiveZoneController {
         long seed = centerOf(safe);
         int minNodes = CommonConfig.ACTIVE_ZONE_MIN_NODES.get();
         discoverNodeStructures(level, Set.of(seed), minNodes, maxRadius);
-        Set<Long> targets = getExpansionTargetNodeChunks(level, Set.of(seed), maxRadius);
-        logTargetScan(ZoneExpansionJobType.INITIAL, Set.of(seed), minNodes, maxRadius, targets,
-                countExpansionTargetNodeAreas(level, Set.of(seed), maxRadius));
+        List<Set<Long>> targetAreas = getExpansionTargetNodeAreas(level, Set.of(seed), maxRadius);
+        logTargetScan(ZoneExpansionJobType.INITIAL, Set.of(seed), minNodes, maxRadius, targetAreas);
         asyncExpansion.clear(level);
-        submitExpansion(level, ZoneExpansionJobType.INITIAL, Set.of(seed), targets,
+        submitExpansion(level, ZoneExpansionJobType.INITIAL, Set.of(seed), targetAreas,
                 minNodes,
                 minRadius,
                 maxRadius);
@@ -66,10 +65,9 @@ public class ActiveZoneController {
         int minRadius = CommonConfig.ACTIVE_ZONE_NODE_EXPAND_RADIUS.get();
         int maxRadius = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
         discoverNodeStructures(level, Set.of(seed), minConnections, maxRadius);
-        Set<Long> targets = getExpansionTargetNodeChunks(level, Set.of(seed), maxRadius);
-        logTargetScan(ZoneExpansionJobType.NODE_UNLOCK, Set.of(seed), minConnections, maxRadius, targets,
-                countExpansionTargetNodeAreas(level, Set.of(seed), maxRadius));
-        boolean submitted = submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, Set.of(seed), targets,
+        List<Set<Long>> targetAreas = getExpansionTargetNodeAreas(level, Set.of(seed), maxRadius);
+        logTargetScan(ZoneExpansionJobType.NODE_UNLOCK, Set.of(seed), minConnections, maxRadius, targetAreas);
+        boolean submitted = submitExpansion(level, ZoneExpansionJobType.NODE_UNLOCK, Set.of(seed), targetAreas,
                 minConnections,
                 minRadius,
                 maxRadius);
@@ -83,10 +81,9 @@ public class ActiveZoneController {
         int maxRadius = CommonConfig.ACTIVE_ZONE_NODE_MAX_EXPAND_RADIUS.get();
         Set<Long> seeds = Set.of(PackedChunkPos.pack(pos));
         discoverNodeStructures(level, seeds, minConnections, maxRadius);
-        Set<Long> targets = getExpansionTargetNodeChunks(level, seeds, maxRadius);
-        logTargetScan(ZoneExpansionJobType.WORLD_SEED, seeds, minConnections, maxRadius, targets,
-                countExpansionTargetNodeAreas(level, seeds, maxRadius));
-        boolean submitted = submitExpansion(level, ZoneExpansionJobType.WORLD_SEED, seeds, targets,
+        List<Set<Long>> targetAreas = getExpansionTargetNodeAreas(level, seeds, maxRadius);
+        logTargetScan(ZoneExpansionJobType.WORLD_SEED, seeds, minConnections, maxRadius, targetAreas);
+        boolean submitted = submitExpansion(level, ZoneExpansionJobType.WORLD_SEED, seeds, targetAreas,
                 minConnections,
                 minRadius,
                 maxRadius);
@@ -99,7 +96,7 @@ public class ActiveZoneController {
         int before = countExpansionTargetNodeAreas(level, seeds, maxRadius);
         if (before >= needed) return;
 
-        List<BlockPos> probes = discoveryProbes(seeds, maxRadius);
+        List<BlockPos> probes = discoveryProbes(seeds, needed, maxRadius);
         for (BlockPos probe : probes) {
             if (countExpansionTargetNodeAreas(level, seeds, maxRadius) >= needed) break;
 
@@ -112,25 +109,30 @@ public class ActiveZoneController {
         }
     }
 
-    private static List<BlockPos> discoveryProbes(Set<Long> seeds, int maxRadius) {
-        int half = Math.max(1, maxRadius / 2);
-        int[][] offsets = {
-                {0, 0},
-                {half, 0}, {-half, 0}, {0, half}, {0, -half},
-                {half, half}, {-half, -half}, {half, -half}, {-half, half},
-                {maxRadius, 0}, {-maxRadius, 0}, {0, maxRadius}, {0, -maxRadius},
-                {maxRadius, maxRadius}, {-maxRadius, -maxRadius}, {maxRadius, -maxRadius}, {-maxRadius, maxRadius}
-        };
-
+    private static List<BlockPos> discoveryProbes(Set<Long> seeds, int needed, int maxRadius) {
+        int step = Math.max(4, maxRadius / Math.max(needed, 8));
         List<BlockPos> probes = new ArrayList<>();
         for (long seed : seeds) {
             int seedX = PackedChunkPos.x(seed);
             int seedZ = PackedChunkPos.z(seed);
-            for (int[] offset : offsets) {
-                probes.add(new BlockPos((seedX + offset[0]) << 4, 0, (seedZ + offset[1]) << 4));
+            for (int radius = 0; radius <= maxRadius; radius += step) {
+                addProbeRing(probes, seedX, seedZ, radius, step);
             }
         }
         return probes;
+    }
+
+    private static void addProbeRing(List<BlockPos> probes, int seedX, int seedZ, int radius, int step) {
+        if (radius == 0) {
+            probes.add(new BlockPos(seedX << 4, 0, seedZ << 4));
+            return;
+        }
+        for (int offset = -radius; offset <= radius; offset += step) {
+            probes.add(new BlockPos((seedX + offset) << 4, 0, (seedZ - radius) << 4));
+            probes.add(new BlockPos((seedX + offset) << 4, 0, (seedZ + radius) << 4));
+            probes.add(new BlockPos((seedX - radius) << 4, 0, (seedZ + offset) << 4));
+            probes.add(new BlockPos((seedX + radius) << 4, 0, (seedZ + offset) << 4));
+        }
     }
 
     private static int countExpansionTargetNodeAreas(ServerLevel level, Set<Long> seeds, int maxRadius) {
@@ -141,9 +143,10 @@ public class ActiveZoneController {
         return count;
     }
 
-    private boolean submitExpansion(ServerLevel level, ZoneExpansionJobType type, Set<Long> seeds, Set<Long> uncompleted,
+    private boolean submitExpansion(ServerLevel level, ZoneExpansionJobType type, Set<Long> seeds, List<Set<Long>> targetAreas,
                                     int minConnections, int minRadius, int maxRadius) {
         LevelZoneData data = BeyondAPI.getLevelZoneData(level);
+        Set<Long> targetChunks = flatten(targetAreas);
         long jobId = asyncExpansion.nextJobId();
         ZoneExpansionRequest request = new ZoneExpansionRequest(
                 jobId,
@@ -152,7 +155,8 @@ public class ActiveZoneController {
                 new HashSet<>(data.getPacked(ZoneType.Safe_Zone)),
                 new HashSet<>(data.getPacked(ZoneType.Node_Zone)),
                 new HashSet<>(data.getPacked(ZoneType.Active_Zone)),
-                Set.copyOf(uncompleted),
+                Set.copyOf(targetChunks),
+                copyTargetAreas(targetAreas),
                 minConnections,
                 minRadius,
                 maxRadius
@@ -170,12 +174,26 @@ public class ActiveZoneController {
         return PackedChunkPos.pack(Math.round((float) totalX / chunks.size()), Math.round((float) totalZ / chunks.size()));
     }
 
-    private static Set<Long> getExpansionTargetNodeChunks(ServerLevel level, Set<Long> seeds, int maxRadius) {
-        Set<Long> targets = new HashSet<>();
+    private static List<Set<Long>> getExpansionTargetNodeAreas(ServerLevel level, Set<Long> seeds, int maxRadius) {
+        List<Set<Long>> targets = new ArrayList<>();
         for (NodeData nodeData : BeyondAPI.getNodeDatas(level)) {
-            if (isExpansionTarget(nodeData, seeds, maxRadius)) targets.addAll(nodeData.getNodeChunks());
+            if (isExpansionTarget(nodeData, seeds, maxRadius)) {
+                targets.add(new HashSet<>(nodeData.getNodeChunks()));
+            }
         }
         return targets;
+    }
+
+    private static Set<Long> flatten(List<Set<Long>> targetAreas) {
+        Set<Long> chunks = new HashSet<>();
+        for (Set<Long> area : targetAreas) chunks.addAll(area);
+        return chunks;
+    }
+
+    private static List<Set<Long>> copyTargetAreas(List<Set<Long>> targetAreas) {
+        List<Set<Long>> copy = new ArrayList<>(targetAreas.size());
+        for (Set<Long> area : targetAreas) copy.add(Set.copyOf(area));
+        return List.copyOf(copy);
     }
 
     private static boolean isExpansionTarget(NodeData nodeData, Set<Long> seeds, int maxRadius) {
@@ -205,10 +223,10 @@ public class ActiveZoneController {
     }
 
     private static void logTargetScan(ZoneExpansionJobType type, Set<Long> seeds, int needed, int maxRadius,
-                                      Set<Long> targets, int targetAreas) {
+                                      List<Set<Long>> targetAreas) {
         Beyond.profileInfo(
                 "[Zone][TARGET_SCAN] type={}, seeds={}, targetChunks={}, targetAreas={}, needed={}, maxRadius={}",
-                type, seeds.size(), targets.size(), targetAreas, needed, maxRadius
+                type, seeds.size(), flatten(targetAreas).size(), targetAreas.size(), needed, maxRadius
         );
     }
 }

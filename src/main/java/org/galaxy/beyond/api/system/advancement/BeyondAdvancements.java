@@ -15,6 +15,7 @@ public final class BeyondAdvancements {
     public static void grantWelcome(ServerPlayer player) {
         AdvancementHolder advancement = player.level().getServer().getAdvancements().get(Beyond.asResource(WELCOME_MY_ROGUE));
         if (advancement == null) return;
+        if (player.getAdvancements().getOrStartProgress(advancement).isDone()) return;
 
         player.getAdvancements().award(advancement, ENTERED);
     }

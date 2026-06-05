@@ -104,15 +104,17 @@ public class BeyondCreativeCommand {
         ChunkPos chunk = PackedChunkPos.unpack(target.getNodeChunks().iterator().next());
         player.teleportTo(level, chunk.getMinBlockX() + 8.0, player.getY(), chunk.getMinBlockZ() + 8.0,
                 Set.of(), player.getYRot(), player.getXRot(), false);
-        source.sendSuccess(() -> Component.translatable("commands.beyond.node.teleport.success", type), true);
+        source.sendSuccess(() -> Component.translatable("commands.beyond.node.teleport.success",
+                type, chunk.x(), chunk.z()), true);
         return 1;
     }
 
     private static NodeData nearestNode(ServerLevel level, ChunkPos center, String type) {
         NodeData best = null;
         long bestDistance = Long.MAX_VALUE;
+        Set<Long> active = Set.copyOf(BeyondAPI.getLevelZoneData(level).getPacked(ZoneType.Active_Zone));
         for (NodeData nodeData : BeyondAPI.getNodeDatas(level)) {
-            if (!matches(nodeData, center, type)) continue;
+            if (!matches(nodeData, active, type)) continue;
             long distance = nearestDistance(nodeData, center);
             if (distance < bestDistance) {
                 best = nodeData;
@@ -122,17 +124,17 @@ public class BeyondCreativeCommand {
         return best;
     }
 
-    private static boolean matches(NodeData nodeData, ChunkPos center, String type) {
+    private static boolean matches(NodeData nodeData, Set<Long> active, String type) {
         if ("unlocked".equalsIgnoreCase(type)) return nodeData.getPhase() == NodePhase.UNLOCKED;
         if ("locked".equalsIgnoreCase(type)) return nodeData.getPhase() != NodePhase.UNLOCKED;
-        if ("inside".equalsIgnoreCase(type)) return contains(nodeData, center);
-        if ("outside".equalsIgnoreCase(type)) return !contains(nodeData, center);
+        if ("inside".equalsIgnoreCase(type)) return isInsideActiveZone(nodeData, active);
+        if ("outside".equalsIgnoreCase(type)) return !isInsideActiveZone(nodeData, active);
         return true;
     }
 
-    private static boolean contains(NodeData nodeData, ChunkPos chunk) {
+    private static boolean isInsideActiveZone(NodeData nodeData, Set<Long> active) {
         for (long packed : nodeData.getNodeChunks()) {
-            if (packed == PackedChunkPos.pack(chunk)) return true;
+            if (active.contains(packed)) return true;
         }
         return false;
     }

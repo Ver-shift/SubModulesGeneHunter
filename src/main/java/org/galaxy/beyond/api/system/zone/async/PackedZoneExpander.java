@@ -19,16 +19,14 @@ public class PackedZoneExpander {
         LongLinkedOpenHashSet added = new LongLinkedOpenHashSet();
 
         LongSet beforeReachable = floodReachable(request.seeds(), safe, node, active);
-        LongSet newTargets = copyOf(request.uncompleted());
-        newTargets.removeAll(beforeReachable);
+        List<LongSet> targetAreas = targetAreasOutsideReachable(request.targetNodeAreas(), beforeReachable);
 
-        List<LongSet> targetComponents = connectedComponents(newTargets);
-        int needed = targetComponents.isEmpty() ? 0 : Math.min(request.minConnections(), targetComponents.size());
+        int needed = targetAreas.isEmpty() ? 0 : Math.min(request.minConnections(), targetAreas.size());
         int actualRadius = -1;
         int reached = 0;
         int furthestReached = 0;
-        TargetStats targetStats = analyzeTargets(request.seeds(), targetComponents);
-        ZoneProfiler.logExpansionPlan(request.jobId(), newTargets.size(), targetComponents.size(), needed,
+        TargetStats targetStats = analyzeTargets(request.seeds(), targetAreas);
+        ZoneProfiler.logExpansionPlan(request.jobId(), countChunks(targetAreas), targetAreas.size(), needed,
                 targetStats.nearestDistance(), targetStats.furthestDistance(), targetStats.largestComponent());
 
         for (int radius = 1; radius <= request.maxRadius(); radius++) {
@@ -45,10 +43,10 @@ public class PackedZoneExpander {
             }
 
             LongSet reachable = floodReachable(request.seeds(), safe, node, active);
-            reached = countReachedComponents(targetComponents, reachable);
+            reached = countReachedComponents(targetAreas, reachable);
             if (reached < needed) continue;
 
-            furthestReached = furthestReachedDistance(request.seeds(), targetComponents, reachable);
+            furthestReached = furthestReachedDistance(request.seeds(), targetAreas, reachable);
             actualRadius = Math.min(Math.max(radius, furthestReached), request.maxRadius());
             for (int extraRadius = radius + 1; extraRadius <= actualRadius; extraRadius++) {
                 addRing(request.seeds(), extraRadius, safe, node, active, added);
@@ -58,19 +56,43 @@ public class PackedZoneExpander {
 
         boolean success = actualRadius >= 0;
         ZoneProfiler.logExpansionResult(request.jobId(), success, actualRadius, reached, needed,
-                targetComponents.size(), added.size());
+                targetAreas.size(), added.size());
         return new ZoneExpansionResult(
                 request.jobId(),
                 toList(added),
                 actualRadius,
                 0,
                 reached,
-                targetComponents.size(),
+                targetAreas.size(),
                 needed,
                 targetStats.nearestDistance(),
                 furthestReached,
                 success
         );
+    }
+
+    private static List<LongSet> targetAreasOutsideReachable(List<Set<Long>> areas, LongSet reachable) {
+        List<LongSet> targets = new ArrayList<>();
+        for (Set<Long> area : areas) {
+            LongSet copy = copyOf(area);
+            if (copy.isEmpty() || intersects(copy, reachable)) continue;
+            targets.add(copy);
+        }
+        return targets;
+    }
+
+    private static boolean intersects(LongSet chunks, LongSet other) {
+        LongIterator iterator = chunks.iterator();
+        while (iterator.hasNext()) {
+            if (other.contains(iterator.nextLong())) return true;
+        }
+        return false;
+    }
+
+    private static int countChunks(List<LongSet> areas) {
+        int count = 0;
+        for (LongSet area : areas) count += area.size();
+        return count;
     }
 
     private static int countReachedComponents(List<LongSet> components, LongSet reachable) {
@@ -140,25 +162,6 @@ public class PackedZoneExpander {
         return visited;
     }
 
-    private static List<LongSet> connectedComponents(LongSet chunks) {
-        LongOpenHashSet remaining = new LongOpenHashSet(chunks);
-        List<LongSet> components = new ArrayList<>();
-        while (!remaining.isEmpty()) {
-            long seed = remaining.iterator().nextLong();
-            LongOpenHashSet component = new LongOpenHashSet();
-            LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
-            remaining.remove(seed);
-            queue.enqueue(seed);
-            while (!queue.isEmpty()) {
-                long chunk = queue.dequeueLong();
-                component.add(chunk);
-                enqueueRemainingNeighbors(chunk, remaining, queue);
-            }
-            components.add(component);
-        }
-        return components;
-    }
-
     private static void addRing(Set<Long> seeds, int radius, LongSet safe, LongSet node, LongSet active,
                                 LongLinkedOpenHashSet added) {
         if (radius == 0) {
@@ -205,23 +208,6 @@ public class PackedZoneExpander {
                                          LongSet visited, LongArrayFIFOQueue queue) {
         if (!visited.add(chunk)) return;
         if (hasAny(safe, node, active, chunk)) queue.enqueue(chunk);
-    }
-
-    private static void enqueueRemainingNeighbors(long chunk, LongOpenHashSet remaining, LongArrayFIFOQueue queue) {
-        int x = x(chunk);
-        int z = z(chunk);
-        removeAndEnqueue(pack(x + 1, z), remaining, queue);
-        removeAndEnqueue(pack(x - 1, z), remaining, queue);
-        removeAndEnqueue(pack(x, z + 1), remaining, queue);
-        removeAndEnqueue(pack(x, z - 1), remaining, queue);
-        removeAndEnqueue(pack(x + 1, z + 1), remaining, queue);
-        removeAndEnqueue(pack(x - 1, z - 1), remaining, queue);
-        removeAndEnqueue(pack(x + 1, z - 1), remaining, queue);
-        removeAndEnqueue(pack(x - 1, z + 1), remaining, queue);
-    }
-
-    private static void removeAndEnqueue(long chunk, LongOpenHashSet remaining, LongArrayFIFOQueue queue) {
-        if (remaining.remove(chunk)) queue.enqueue(chunk);
     }
 
     private static void addActive(long chunk, LongSet safe, LongSet node, LongSet active, LongLinkedOpenHashSet added) {
