@@ -5,8 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.ModFileScanData;
-import org.galaxy.beyond.api.init.BeyondEventInit;
-import org.galaxy.beyond.api.init.BeyondRogueCapInit;
+
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
 import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
@@ -39,6 +38,8 @@ public final class BeyondPluginRunner {
     private static final Map<Identifier, ProgressDefinition> MANUAL_PROGRESS = new LinkedHashMap<>();
     private static final Map<Identifier, ProgressDefinition> PLUGIN_PROGRESS = new LinkedHashMap<>();
     private static final List<Identifier> DEFAULT_CAP_IDS = new ArrayList<>();
+    private static final RogueCapRegistration CAP_REGISTRATION = new RogueCapRegistration();
+    private static final RogueEventRegistration EVENT_REGISTRATION = new RogueEventRegistration();
 
     private static boolean scanned;
     private static boolean constructed;
@@ -63,7 +64,7 @@ public final class BeyondPluginRunner {
 
     public static void registerCap(Supplier<? extends RogueCap> supplier) {
         if (supplier == null) return;
-        BeyondRogueCapInit.registerCap(supplier);
+        CAP_REGISTRATION.addCap(supplier.get().getId(), supplier);
     }
 
     public static void registerDefaultCap(Identifier id) {
@@ -72,12 +73,19 @@ public final class BeyondPluginRunner {
     }
 
     public static List<Identifier> collectDefaultRogueCaps() {
-        return List.copyOf(DEFAULT_CAP_IDS);
+        loadPlugins();
+        RogueCapInit registration = new RogueCapInit();
+        for (Identifier id : DEFAULT_CAP_IDS) {
+            registration.initCap(id);
+        }
+        for (IRoguePlugin plugin : PLUGINS) {
+            plugin.initRogueCaps(registration);
+        }
+        return registration.getCapIds();
     }
 
     public static void registerEvent(Identifier id, Supplier<? extends RogueEventType> supplier) {
-        if (id == null || supplier == null) return;
-        BeyondEventInit.register(id, supplier::get);
+        EVENT_REGISTRATION.addEvent(id, supplier);
     }
 
     public static void registerProgress(Identifier id, ProgressDefinition definition) {
@@ -107,7 +115,7 @@ public final class BeyondPluginRunner {
         loadPlugins();
         capsRegistered = true;
         for (IRoguePlugin plugin : PLUGINS) {
-            plugin.registerRogueCaps(BeyondPluginRunner::registerCap);
+            plugin.registerRogueCaps(CAP_REGISTRATION);
         }
     }
 
@@ -116,17 +124,18 @@ public final class BeyondPluginRunner {
         loadPlugins();
         eventsRegistered = true;
         for (IRoguePlugin plugin : PLUGINS) {
-            plugin.registerRogueEvents(BeyondPluginRunner::registerEvent);
+            plugin.registerRogueEvents(EVENT_REGISTRATION);
         }
     }
 
     public static Map<Identifier, ProgressDefinition> collectProgress() {
         loadPlugins();
         PLUGIN_PROGRESS.clear();
-        IProgressRegistration registration = PLUGIN_PROGRESS::put;
+        ProgressRegistration registration = new ProgressRegistration();
         for (IRoguePlugin plugin : PLUGINS) {
             plugin.registerProgress(registration);
         }
+        PLUGIN_PROGRESS.putAll(registration.getProgress());
 
         Map<Identifier, ProgressDefinition> progress = new LinkedHashMap<>();
         progress.putAll(MANUAL_PROGRESS);

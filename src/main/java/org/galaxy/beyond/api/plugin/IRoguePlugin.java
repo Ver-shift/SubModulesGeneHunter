@@ -17,13 +17,16 @@ public interface IRoguePlugin {
     default void onConstruct(BeyondPluginContext context) {
     }
 
-    default void registerRogueCaps(IRogueCapRegistration registration) {
+    default void registerRogueCaps(RogueCapRegistration registration) {
     }
 
-    default void registerRogueEvents(IRogueEventRegistration registration) {
+    default void registerRogueEvents(RogueEventRegistration registration) {
     }
 
-    default void registerProgress(IProgressRegistration registration) {
+    default void registerProgress(ProgressRegistration registration) {
+    }
+
+    default void initRogueCaps(RogueCapInit registration) {
     }
 
     default void onReload(BeyondPluginContext context) {
