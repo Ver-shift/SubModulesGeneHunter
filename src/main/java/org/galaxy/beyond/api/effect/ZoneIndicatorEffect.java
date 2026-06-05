@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.rogue.RogueRuntime;
 import org.galaxy.beyond.api.system.zone.ZoneType;
 
 public class ZoneIndicatorEffect extends MobEffect {
@@ -26,7 +27,7 @@ public class ZoneIndicatorEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(ServerLevel level, LivingEntity mob, int amplification) {
-        if (!CommonConfig.isRogueDimension(mob.level())) {
+        if (!RogueRuntime.isActive(mob.level())) {
             mob.removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this));
             return true;
         }

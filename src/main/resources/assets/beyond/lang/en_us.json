@@ -67,7 +67,8 @@
   "beyond.configuration.section.beyond.common.toml": "Beyond Configs",
   "beyond.configuration.section.beyond.common.toml.title": "Beyond Configs",
 
-  "beyond.welcome": "Welcome to the rogue dimension! The world will load some zone data when you enter, please wait a moment. This dimension is bound to safe and node structures. Rogue zones, nodes, borders, and events only work in configured rogue dimensions.",
+  "advancements.beyond.welcome_my_rogue.title": "Welcome to My Rogue",
+  "advancements.beyond.welcome_my_rogue.description": "Enter the rogue dimension for the first time",
 
   "beyond.rogue.start": "Level %s started! All players ready",
   "beyond.rogue.start.no_progress": "No level set, use /beyond config currentProgress first",

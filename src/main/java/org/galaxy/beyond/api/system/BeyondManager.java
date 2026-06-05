@@ -14,6 +14,7 @@ import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueCapManager;
 import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
+import org.galaxy.beyond.api.system.rogue.RogueRuntime;
 import org.galaxy.beyond.api.system.rogue.definition.DefinitionManager;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.StructureManager;
@@ -52,7 +53,7 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void levelTick(ServerLevel level) {
-        if (!CommonConfig.isRogueDimension(level)) return;
+        if (!RogueRuntime.isActive(level)) return;
 
         zoneManager.tick(level);
         rogueCapManager.tickZoneEvents(level);
@@ -67,7 +68,7 @@ public class BeyondManager implements IBeyondManager {
     @Override
     public void entityTick(LivingEntity entity) {
         if (entity instanceof Mob mob && !entity.level().isClientSide()
-                && CommonConfig.isRogueDimension(entity.level())) {
+                && RogueRuntime.isActive(entity.level())) {
             rogueCapManager.tickMob(mob);
         }
     }

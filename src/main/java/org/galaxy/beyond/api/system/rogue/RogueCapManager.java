@@ -4,9 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.common.NeoForge;
-import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.event.custom.LivingChangeZoneEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.init.BeyondAttachmentInit;
@@ -32,7 +30,7 @@ public class RogueCapManager {
     // ============================================================
 
     public void tickZoneEvents(ServerLevel level) {
-        if (!CommonConfig.isRogueDimension(level)) return;
+        if (!RogueRuntime.isActive(level)) return;
 
         var caps = getCaps(level);
         LevelZoneData lzd = getLZD(level);
@@ -58,7 +56,7 @@ public class RogueCapManager {
 
     public void tickMob(Mob mob) {
         ServerLevel level = (ServerLevel) mob.level();
-        if (!CommonConfig.isRogueDimension(level)) return;
+        if (!RogueRuntime.isActive(level)) return;
 
         LevelZoneData lzd = getLZD(level);
         ZoneType newZone = lzd.getZoneType(org.galaxy.beyond.api.util.CompatUtil.chunkPos(mob.blockPosition()));

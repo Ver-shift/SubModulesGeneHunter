@@ -25,7 +25,7 @@ public class ZoneManager implements IZoneManager {
     private final SafeZoneRegistrar safeZoneRegistrar = new SafeZoneRegistrar(writer, conflictResolver);
     private final NodeZoneRegistrar nodeZoneRegistrar = new NodeZoneRegistrar(writer, conflictResolver, nodeColorPicker);
     private final AsyncZoneExpansionService asyncExpansion = new AsyncZoneExpansionService();
-    private final ActiveZoneController activeZoneController = new ActiveZoneController(asyncExpansion, nodeZoneRegistrar);
+    private final ActiveZoneController activeZoneController = new ActiveZoneController(asyncExpansion);
 
     @Override
     public void onChunkLoad(ChunkAccess chunk) {
@@ -43,7 +43,6 @@ public class ZoneManager implements IZoneManager {
     public void tick(ServerLevel level) {
         if (!CommonConfig.isRogueDimension(level)) return;
 
-        activeZoneController.tick(level);
         asyncExpansion.tick(level);
     }
 
@@ -76,7 +75,15 @@ public class ZoneManager implements IZoneManager {
     public CompletableFuture<NodeData> discoverNearestNode(ServerLevel level, ChunkPos center, int radius) {
         if (!CommonConfig.isRogueDimension(level)) return CompletableFuture.completedFuture(null);
 
-        return activeZoneController.discoverNearestNode(level, center, radius);
+        var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
+        if (rogueConfig.isEmpty()) return CompletableFuture.completedFuture(null);
+
+        BlockPos searchPos = new BlockPos(center.x() << 4, 0, center.z() << 4);
+        TagKey<Structure> nodeStructureTag = TagKey.create(Registries.STRUCTURE, rogueConfig.get().nodeStructureTag());
+        BlockPos nearest = level.findNearestMapStructure(nodeStructureTag, searchPos, radius, false);
+        if (nearest == null) return CompletableFuture.completedFuture(null);
+
+        return CompletableFuture.completedFuture(nodeZoneRegistrar.addNodeZone(level, nearest));
     }
 
     // ---- Active Zone ----
@@ -105,7 +112,6 @@ public class ZoneManager implements IZoneManager {
     public void sendActiveZoneProgress(ServerPlayer player) {
         if (!CommonConfig.isRogueDimension(player.level())) return;
 
-        activeZoneController.sendActiveZoneProgress(player);
         asyncExpansion.sendActiveZoneProgress(player);
     }
 }

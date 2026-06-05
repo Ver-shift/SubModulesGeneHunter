@@ -1,11 +1,9 @@
 package org.galaxy.beyond.api.system.structure;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -18,6 +16,8 @@ import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondMobEffectInit;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.BeyondPlayerData;
+import org.galaxy.beyond.api.system.advancement.BeyondAdvancements;
+import org.galaxy.beyond.api.system.rogue.RogueRuntime;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.zone.ZoneHelper;
 import org.galaxy.beyond.api.system.zone.ZoneType;
@@ -26,8 +26,6 @@ import java.util.*;
 
 @SuppressWarnings("deprecation")
 public class SafeZoneStructureManager implements ISafeZoneStructureManager {
-
-    private static final int FALLBACK_CHUNK_SIZE = 3;
 
     public void initialize(ServerLevel level) {
         var rogueConfig = CommonConfig.getRogueDimensionConfig(level);
@@ -70,18 +68,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
             }
         }
 
-        // 回退：以世界出生点为中心创建最小安全区
-        BlockPos worldSpawn = level.getRespawnData().pos();
-        BlockPos safePos = findSafeSpawnAt(level, worldSpawn);
-        if (safePos != null) {
-            data.setSpawnPos(safePos);
-        }
-        data.setCenterPos(worldSpawn);
-        data.setInitialized(1);
-        zoneManager.addSafeZone(level, FALLBACK_CHUNK_SIZE, worldSpawn);
-        zoneManager.activeZoneInit(level);
-        BeyondAPI.syncGlobalData(level);
-        Beyond.debugInfo("Safe zone initialized via fallback at {}", safePos);
+        Beyond.debugInfo("Safe zone initialization skipped: no safe zone structure found in {}", level.dimension());
     }
 
     @Override
@@ -102,8 +89,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
         }
 
         playerData.getPlayerRogueData().setFirstSpawnDone(true);
-        // TODO 补充正式 Wiki 链接，之后可以改成可点击文本，引导玩家查看玩法说明。
-        player.sendSystemMessage(Component.translatable("beyond.welcome"));
+        BeyondAdvancements.grantWelcome(player);
 
     }
 
@@ -139,7 +125,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
 
     @Override
     public void playerTick(ServerPlayer player) {
-        if (!CommonConfig.isRogueDimension(player.level())) return;
+        if (!RogueRuntime.isActive(player.level())) {
+            player.removeEffect(BeyondMobEffectInit.ZONE_INDICATOR);
+            return;
+        }
 
         var zone = BeyondAPI.getBeyondMobData(player).getZoneType();
         int level = switch (zone) {
@@ -148,12 +137,10 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
             case Active_Zone -> 3;
             case Empty -> 4;
         };
-        if (level > 0) {
-            boolean visible = CommonConfig.DEBUG_MODE.get();
-            player.addEffect(new MobEffectInstance(
-                    BeyondMobEffectInit.ZONE_INDICATOR, -1, level - 1,
-                    false, visible, visible));
-        }
+        boolean visible = CommonConfig.DEBUG_MODE.get();
+        player.addEffect(new MobEffectInstance(
+                BeyondMobEffectInit.ZONE_INDICATOR, -1, level - 1,
+                false, visible, visible));
     }
 
     private void teleportToSafeZone(ServerPlayer player, ServerLevel level, BlockPos pos,
