@@ -12,7 +12,8 @@ import dev.vfyjxf.taffy.style.FlexDirection;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
+import org.biotech.api.init.BiotechLootTypeInit;
+import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.gene_hunter.ui.element.Choice;
 
 import static org.galaxy.gene_hunter.api.GeneHunterAPI.getChoiceManager;
@@ -25,8 +26,8 @@ public class ChoiceContainer {
         return createGeneInventoryUI(player);
     }
 
-    public static void rogueRewardEvent(ServerPlayer player) {
-        getChoiceManager(player).startRoll(GeneHunterLootInit.WEAPON_LOOT_TYPE.get());
+    public static void rogueRewardEvent(ServerPlayer player, NodeColor nodeColor) {
+        getChoiceManager(player).startRoll(BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get(), nodeColor);
     }
 
     public static ModularUI createGeneInventoryUI(Player player) {

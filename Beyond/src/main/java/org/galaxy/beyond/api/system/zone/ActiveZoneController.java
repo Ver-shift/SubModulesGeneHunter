@@ -1,11 +1,9 @@
 package org.galaxy.beyond.api.system.zone;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -324,12 +322,10 @@ public class ActiveZoneController {
     }
 
     private static void registerNodeStructure(ServerLevel level, NodeZoneRegistrar nodeZoneRegistrar,
-                                              ChunkPos start, Set<Long> located, Set<Long> locatedNodes) {
-        BlockPos nearest = start.getWorldPosition();
-        NodeData nodeData = nodeZoneRegistrar.addNodeZone(level, nearest);
+                                               ChunkPos start, Set<Long> located, Set<Long> locatedNodes) {
+        NodeData nodeData = nodeZoneRegistrar.addNodeZone(level, List.of(start));
         if (nodeData == null) {
-            long fallback = PackedChunkPos.pack(new ChunkPos(nearest));
-            located.add(fallback);
+            located.add(PackedChunkPos.pack(start));
             return;
         }
         long nodeKey = nodeData.ensureNodeKey();

@@ -58,4 +58,9 @@ public class BossEventType extends RogueEventType {
         return Result.FAILURE;
     }
 
+    @Override
+    public int auto() {
+        return 20;
+    }
+
 }

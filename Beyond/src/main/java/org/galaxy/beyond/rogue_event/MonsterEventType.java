@@ -74,4 +74,9 @@ public class MonsterEventType extends RogueEventType {
         return Result.FAILURE;
     }
 
+    @Override
+    public int auto() {
+        return 20;
+    }
+
 }

@@ -5,13 +5,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.event.custom.LootBagOpenEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondItemInit;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
-import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
@@ -150,7 +151,11 @@ public class ProgressStartCap extends RogueCap {
         }
 
         // 首次开袋：给装备，设为 PRE_ROGUE
-        RoguePlayerManager.giveItem(player, Items.IRON_SWORD);
+        LootBagOpenEvent lootEvent = LootBagOpenEvent.post(level, player, ctx);
+        if (!lootEvent.hasRewards()) {
+            lootEvent.addReward(new ItemStack(Items.IRON_SWORD));
+        }
+        lootEvent.getRewards().forEach(stack -> RoguePlayerManager.giveItem(player, stack));
         ctx.setPlayerPhase(player, PlayerPhase.PRE_ROGUE);
 
         // 确保全局 phase 进入 PRE_ROGUE（第一个人开袋时触发）

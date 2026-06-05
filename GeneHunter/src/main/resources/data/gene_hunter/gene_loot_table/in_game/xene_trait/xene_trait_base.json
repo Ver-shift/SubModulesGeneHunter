@@ -4,6 +4,28 @@
   "loot_type": "biotech:xene_trait",
   "pools": [
     {
+      "name": "basic_attribute",
+      "base_weight": 10,
+      "entries": [
+        {
+          "id": "biotech:speed_trait",
+          "weight": 3
+        },
+        {
+          "id": "biotech:attack_speed_trait",
+          "weight": 1
+        },
+        {
+          "id": "biotech:health_trait",
+          "weight": 1
+        },
+        {
+          "id": "gene_hunter:one_hand_weapon_damage_trait",
+          "weight": 2
+        }
+      ]
+    },
+    {
       "name": "normal_attribute",
       "base_weight": 10,
       "entries": [
@@ -18,6 +40,44 @@
         {
           "id": "biotech:health_trait",
           "weight": 1
+        },
+        {
+          "id": "gene_hunter:one_hand_weapon_damage_trait",
+          "weight": 1
+        },
+        {
+          "id": "gene_hunter:two_hand_weapon_damage_trait",
+          "weight": 1
+        },
+        {
+          "id": "gene_hunter:polearm_weapon_damage_trait",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "name": "advanced_attribute",
+      "base_weight": 10,
+      "entries": [
+        {
+          "id": "biotech:speed_trait",
+          "weight": 1
+        },
+        {
+          "id": "biotech:attack_speed_trait",
+          "weight": 2
+        },
+        {
+          "id": "biotech:health_trait",
+          "weight": 2
+        },
+        {
+          "id": "gene_hunter:two_hand_weapon_damage_trait",
+          "weight": 2
+        },
+        {
+          "id": "gene_hunter:polearm_weapon_damage_trait",
+          "weight": 2
         }
       ]
     }

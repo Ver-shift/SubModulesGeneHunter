@@ -1,39 +1,32 @@
-package org.biotech.trait;
+package org.galaxy.gene_hunter.trait;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import org.biotech.Biotech;
 import org.biotech.api.system.trait.core.ITrait;
-import org.biotech.api.util.AutoInit;
 
 import java.util.List;
 
-/**
- * 增加玩家血量
- */
-@AutoInit(type = AutoInit.InitType.TRAIT)
-public class HealthTrait implements ITrait {
-    private static final float VALUE = 10.0F;
+public abstract class WeaponDamageTrait implements ITrait {
+
+    protected static final float VALUE = 0.15F;
+
+    protected abstract Holder<Attribute> attribute();
+
+    protected abstract String descriptionKey();
 
     @Override
-    public ResourceLocation getId() {
-        return Biotech.asResource("health_trait");
+    public Holder<Attribute> getAttribute() {
+        return attribute();
     }
 
     @Override
     public List<MutableComponent> getUniqueInfo() {
         return List.of(
-                Component.translatable("trait.biotech.health.description", (int) getValue())
+                Component.translatable(descriptionKey(), (int) (getValue() * 100))
         );
-    }
-
-    @Override
-    public Holder<Attribute> getAttribute() {
-        return Attributes.MAX_HEALTH;
     }
 
     @Override
@@ -47,5 +40,10 @@ public class HealthTrait implements ITrait {
 
     private double getValue(int traitCount) {
         return VALUE * traitCount;
+    }
+
+    @Override
+    public ResourceLocation getTexture() {
+        return ResourceLocation.withDefaultNamespace("textures/mob_effect/strength.png");
     }
 }

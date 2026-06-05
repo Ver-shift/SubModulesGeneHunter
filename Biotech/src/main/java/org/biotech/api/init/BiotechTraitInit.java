@@ -40,11 +40,6 @@ public class BiotechTraitInit {
         public List<MutableComponent> getUniqueInfo() {
             return List.of();
         }
-
-        @Override
-        public float getValue() {
-            return 0.0F;
-        }
     };
 
     public static ITrait getTraitById(ResourceLocation traitId) {

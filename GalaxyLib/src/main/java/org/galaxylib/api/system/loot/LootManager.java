@@ -55,9 +55,10 @@ public class LootManager {
         List<LootTableDefinition> candidates = findTables(request);
         List<Value<T>> values = new ArrayList<>();
         Set<ResourceLocation> used = new HashSet<>();
+        WeightModifier weightModifier = request.getWeightModifier() == null ? WeightModifier.IDENTITY : request.getWeightModifier();
 
         for (int i = 0; i < Math.max(1, request.getRolls()); i++) {
-            rollOne(type, candidates, context, request.isReplacement(), used).ifPresent(values::add);
+            rollOne(type, candidates, context, request.isReplacement(), weightModifier, used).ifPresent(values::add);
         }
 
         Bundle<T> bundle = new Bundle<>(type, values);
@@ -84,19 +85,20 @@ public class LootManager {
             List<LootTableDefinition> candidates,
             Context context,
             boolean replacement,
+            WeightModifier weightModifier,
             Set<ResourceLocation> used
     ) {
         for (int attempts = 0; attempts < 32; attempts++) {
             LootTableDefinition table = randomTable(candidates, context);
             if (table == null) return Optional.empty();
 
-            WeightedRandomList<WeightedEntry.Wrapper<LootPoolDefinition>> pools = table.poolsAsWeightedList();
+            WeightedRandomList<WeightedEntry.Wrapper<LootPoolDefinition>> pools = poolsAsWeightedList(table, context, weightModifier);
             LootPoolDefinition pool = pools.getRandom(context.random())
                     .map(WeightedEntry.Wrapper::data)
                     .orElse(null);
             if (pool == null) continue;
 
-            WeightedRandomList<WeightedEntry.Wrapper<LootEntryDefinition>> entries = pool.entriesAsWeightedList();
+            WeightedRandomList<WeightedEntry.Wrapper<LootEntryDefinition>> entries = entriesAsWeightedList(table, pool, context, weightModifier);
             LootEntryDefinition entry = entries.getRandom(context.random())
                     .map(WeightedEntry.Wrapper::data)
                     .orElse(null);
@@ -111,6 +113,37 @@ public class LootManager {
         }
 
         return Optional.empty();
+    }
+
+    private WeightedRandomList<WeightedEntry.Wrapper<LootPoolDefinition>> poolsAsWeightedList(
+            LootTableDefinition table,
+            Context context,
+            WeightModifier weightModifier
+    ) {
+        List<WeightedEntry.Wrapper<LootPoolDefinition>> pools = new ArrayList<>();
+        for (LootPoolDefinition pool : table.pools()) {
+            int weight = weightModifier.modifyPoolWeight(table, pool, context);
+            if (weight > 0) {
+                pools.add(WeightedEntry.wrap(pool, weight));
+            }
+        }
+        return WeightedRandomList.create(pools);
+    }
+
+    private WeightedRandomList<WeightedEntry.Wrapper<LootEntryDefinition>> entriesAsWeightedList(
+            LootTableDefinition table,
+            LootPoolDefinition pool,
+            Context context,
+            WeightModifier weightModifier
+    ) {
+        List<WeightedEntry.Wrapper<LootEntryDefinition>> entries = new ArrayList<>();
+        for (LootEntryDefinition entry : pool.entries()) {
+            int weight = weightModifier.modifyEntryWeight(table, pool, entry, context);
+            if (weight > 0) {
+                entries.add(WeightedEntry.wrap(entry, weight));
+            }
+        }
+        return WeightedRandomList.create(entries);
     }
 
     private LootTableDefinition randomTable(List<LootTableDefinition> candidates, Context context) {
@@ -134,6 +167,22 @@ public class LootManager {
         private final boolean replacement = true;
         @Builder.Default
         private final String randomId = RandomManager.PROGRESS_RANDOM_ID;
+        @Builder.Default
+        private final WeightModifier weightModifier = WeightModifier.IDENTITY;
+    }
+
+    public interface WeightModifier {
+
+        WeightModifier IDENTITY = new WeightModifier() {
+        };
+
+        default int modifyPoolWeight(LootTableDefinition table, LootPoolDefinition pool, Context context) {
+            return pool.baseWeight();
+        }
+
+        default int modifyEntryWeight(LootTableDefinition table, LootPoolDefinition pool, LootEntryDefinition entry, Context context) {
+            return entry.weight();
+        }
     }
 
     public record Context(ServerPlayer player, ServerLevel level, RandomSource random) {

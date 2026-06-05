@@ -2,6 +2,7 @@ package org.galaxy.gene_hunter.api.system.choice.core;
 
 
 import net.minecraft.world.item.ItemStack;
+import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxylib.api.system.loot.core.ILootType;
 
 public interface IChoiceManager {
@@ -22,6 +23,8 @@ public interface IChoiceManager {
      */
     void doRoll(ILootType<?> lootType);
 
+    void doRoll(ILootType<?> lootType, NodeColor nodeColor);
+
     /**
      * 在服务端进行roll操作
      * 目前支持
@@ -30,6 +33,8 @@ public interface IChoiceManager {
      * @param lootType
      */
     void startRoll(ILootType<?> lootType);
+
+    void startRoll(ILootType<?> lootType, NodeColor nodeColor);
 
     /**
      *

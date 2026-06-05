@@ -39,6 +39,11 @@ public abstract class GatewayEvent extends RogueEventType {
         return entities.isEmpty() ? Result.SUCCESS : Result.FAILURE;
     }
 
+    @Override
+    public int auto() {
+        return 20;
+    }
+
     private Gateway gateway() {
         var id = gatewayId();
         return GatewayRegistry.INSTANCE.holder(id).getOptional()

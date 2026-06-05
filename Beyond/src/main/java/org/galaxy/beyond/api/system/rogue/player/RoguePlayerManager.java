@@ -20,8 +20,19 @@ public final class RoguePlayerManager {
      * 发放带 ValueComp 的物品，背包满则丢脚下。
      */
     public static void giveItem(ServerPlayer player, Item item) {
-        ItemStack stack = new ItemStack(item);
-        stack.set(BeyondComponentInit.ITEM_VALUE, new ValueComp(1));
+        giveItem(player, new ItemStack(item));
+    }
+
+    public static void giveItem(ServerPlayer player, ItemStack stack) {
+        giveItem(player, stack, 1);
+    }
+
+    public static void giveItem(ServerPlayer player, ItemStack stack, int value) {
+        if (stack.isEmpty()) {
+            return;
+        }
+        stack = stack.copy();
+        stack.set(BeyondComponentInit.ITEM_VALUE, new ValueComp(value));
         if (!player.getInventory().add(stack)) {
             player.spawnAtLocation(stack);
         }

@@ -58,6 +58,13 @@ public abstract class RogueEventType implements IPersistedSerializable {
     public abstract Result next(Context context);
 
     /**
+     * 自动判定间隔。
+     * <p>
+     * 返回 0 表示关闭自动判定；大于 0 表示每 n tick 检查一次 {@link #next(Context)}。
+     */
+    public abstract int auto();
+
+    /**
      * Rogue 事件运行上下文。
      *
      * @param type         当前遭遇类型

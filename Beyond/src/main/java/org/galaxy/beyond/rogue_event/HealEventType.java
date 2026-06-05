@@ -13,7 +13,9 @@ public class HealEventType extends RogueEventType {
 
     public static final ResourceLocation ID = Beyond.asResource("heal");
 
-    public HealEventType() { super(ID); }
+    public HealEventType() {
+        super(ID);
+    }
 
     @Override
     public void cast(Context context) {
@@ -31,5 +33,10 @@ public class HealEventType extends RogueEventType {
     @Override
     public Result next(Context context) {
         return Result.SUCCESS;
+    }
+
+    @Override
+    public int auto() {
+        return 20;
     }
 }

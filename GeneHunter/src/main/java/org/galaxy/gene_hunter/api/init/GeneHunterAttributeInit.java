@@ -30,14 +30,7 @@ public class GeneHunterAttributeInit {
      * <p>
      * 基础值：0.0（无加成）
      * <p>
-     * 数值格式：整数部分为固定伤害加成，小数部分为百分比加成
-     * <p>
-     * 例如：
-     * <ul>
-     *   <li>5.0 = +5点固定伤害</li>
-     *   <li>0.25 = +25%伤害加成</li>
-     *   <li>5.25 = +5点固定伤害 + 25%伤害加成</li>
-     * </ul>
+     * 数值格式：0.15 = 对应武器伤害 +15%
      */
     public static final DeferredHolder<Attribute, Attribute> ONE_HAND_WEAPON_DAMAGE = ATTRIBUTES.register("one_hand_weapon_damage",
         () -> new RangedAttribute("attribute.gene_hunter.one_hand_weapon_damage", 0.0, 0.0, 10000.0)
@@ -46,7 +39,7 @@ public class GeneHunterAttributeInit {
     /**
      * 双手武器伤害加成属性
      * <p>
-     * 数值格式：整数部分为固定伤害加成，小数部分为百分比加成
+     * 数值格式：0.15 = 对应武器伤害 +15%
      */
     public static final DeferredHolder<Attribute, Attribute> TWO_HAND_WEAPON_DAMAGE = ATTRIBUTES.register("two_hand_weapon_damage",
         () -> new RangedAttribute("attribute.gene_hunter.two_hand_weapon_damage", 0.0, 0.0, 10000.0)
@@ -55,7 +48,7 @@ public class GeneHunterAttributeInit {
     /**
      * 长杆武器伤害加成属性
      * <p>
-     * 数值格式：整数部分为固定伤害加成，小数部分为百分比加成
+     * 数值格式：0.15 = 对应武器伤害 +15%
      */
     public static final DeferredHolder<Attribute, Attribute> POLEARM_WEAPON_DAMAGE = ATTRIBUTES.register("polearm_weapon_damage",
         () -> new RangedAttribute("attribute.gene_hunter.polearm_weapon_damage", 0.0, 0.0, 10000.0)

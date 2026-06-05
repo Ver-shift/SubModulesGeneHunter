@@ -87,6 +87,7 @@ public class NodeCap extends RogueCap {
         var runner = new RogueEncounterRunner(level, ctx, nodeData);
         if (runner.isPreNode()) runner.tryResolveAndAdvance();
         else if (runner.isPreEvent()) runner.tryReadyPreEvent();
+        else if (runner.isOnEvent()) runner.tryAutoAdvance();
     }
 
     // ---- ensureNodeData ----

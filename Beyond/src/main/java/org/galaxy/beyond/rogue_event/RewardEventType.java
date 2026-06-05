@@ -16,7 +16,9 @@ public class RewardEventType extends RogueEventType {
 
     public static final ResourceLocation ID = Beyond.asResource("reward");
 
-    public RewardEventType() { super(ID); }
+    public RewardEventType() {
+        super(ID);
+    }
 
     @Override
     public void cast(Context context) {
@@ -33,5 +35,10 @@ public class RewardEventType extends RogueEventType {
     @Override
     public Result next(Context context) {
         return Result.SUCCESS;
+    }
+
+    @Override
+    public int auto() {
+        return 20;
     }
 }

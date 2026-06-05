@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
 import org.galaxy.gene_hunter.container.ChoiceContainer;
 
@@ -23,9 +24,17 @@ public record ChoiceReward() implements Reward {
     public void generateLoot(ServerLevel level, GatewayEntity gate, Player summoner, Consumer<ItemStack> loot) {
         for (ServerPlayer sp : level.players()) {
             if (BeyondAPI.getBeyondPlayerData(sp).getPlayerRogueData().getPhase() == PlayerPhase.ON_EVENT) {
-                ChoiceContainer.rogueRewardEvent(sp);
+                ChoiceContainer.rogueRewardEvent(sp, currentNodeColor(level));
             }
         }
+    }
+
+    private NodeColor currentNodeColor(ServerLevel level) {
+        var nodeData = BeyondAPI.getRogueData(level).getRogueNodeData();
+        if (nodeData == null || nodeData.getNodeData() == null) {
+            return NodeColor.GREEN;
+        }
+        return nodeData.getNodeData().getColor();
     }
 
     @Override

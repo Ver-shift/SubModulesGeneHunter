@@ -1,14 +1,18 @@
 package org.biotech.api.system.trait.core;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
 import org.biotech.api.init.BiotechTraitInit;
 import org.biotech.api.util.IActive;
-import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 
 import java.util.List;
 
@@ -18,48 +22,86 @@ import java.util.List;
 public interface ITrait extends IActive {
 
 
-
     /**
      * 唯一id
+     *
      * @return
      */
     ResourceLocation getId();
 
     /**
      * 描述文本
+     *
      * @return
      */
     List<MutableComponent> getUniqueInfo();
 
 
-    /**
-     * 给一些方法和属性提供数据支持
-     * @return
-     */
-    float getValue();
-
-
-    default Component getDisplayName(){
+    default Component getDisplayName() {
         return Component.translatable("trait.biotech." + getId().getPath() + ".name");
     }
 
 
-    default ResourceLocation getTexture(){
+    default ResourceLocation getTexture() {
         return ResourceLocation.withDefaultNamespace("textures/mob_effect/health_boost.png");
     }
 
 
     /**
-     * 生成槽位级唯一 modifier id，避免不同词条/槽位相互覆盖。
+     * 生成 trait 级稳定 modifier id，同一个 trait 共用一条玩家属性通道。
      */
-    default ResourceLocation getModifierId(CurioAttributeModifierEvent event) {
+    default ResourceLocation getModifierId() {
         ResourceLocation traitId = getId();
-        ResourceLocation slotId = event.getId();
-        String slotPath = slotId.getNamespace() + "_" + slotId.getPath().replace('/', '_');
         return ResourceLocation.fromNamespaceAndPath(
                 traitId.getNamespace(),
-                "trait/" + traitId.getPath() + "/" + slotPath
+                "trait/" + traitId.getPath()
         );
+    }
+
+    default Holder<Attribute> getAttribute() {
+        return null;
+    }
+
+    default double getAttributeValue(int traitCount) {
+        return 0;
+    }
+
+    default AttributeModifier.Operation getAttributeOperation() {
+        return AttributeModifier.Operation.ADD_VALUE;
+    }
+
+    @Override
+    default void modifyAttributes(Player player, int traitCount) {
+        Holder<Attribute> attributeHolder = getAttribute();
+        if (attributeHolder == null) {
+            return;
+        }
+
+        AttributeInstance attribute = player.getAttribute(attributeHolder);
+        if (attribute == null) {
+            return;
+        }
+
+        attribute.addOrUpdateTransientModifier(
+                new AttributeModifier(
+                        getModifierId(),
+                        getAttributeValue(traitCount),
+                        getAttributeOperation()
+                )
+        );
+    }
+
+    @Override
+    default void removeAttributes(Player player) {
+        Holder<Attribute> attributeHolder = getAttribute();
+        if (attributeHolder == null) {
+            return;
+        }
+
+        AttributeInstance attribute = player.getAttribute(attributeHolder);
+        if (attribute != null) {
+            attribute.removeModifier(getModifierId());
+        }
     }
 
 
@@ -72,15 +114,14 @@ public interface ITrait extends IActive {
 
     // CODEC - 通过 ResourceLocation 序列化
     Codec<ITrait> CODEC = ResourceLocation.CODEC.xmap(
-        BiotechTraitInit::getTraitById,
-        trait -> {
-            if (trait == null || trait.getId() == null) {
-                return EMPTY_TRAIT_ID;
+            BiotechTraitInit::getTraitById,
+            trait -> {
+                if (trait == null || trait.getId() == null) {
+                    return EMPTY_TRAIT_ID;
+                }
+                return trait.getId();
             }
-            return trait.getId();
-        }
     );
-
 
 
     // STREAM_CODEC - 网络同步（使用 RegistryFriendlyByteBuf）

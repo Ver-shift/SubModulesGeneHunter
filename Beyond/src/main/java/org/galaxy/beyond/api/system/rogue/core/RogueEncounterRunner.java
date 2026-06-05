@@ -91,19 +91,31 @@ public class RogueEncounterRunner {
      */
     public boolean advanceEvent(ServerPlayer player) {
         if (!nodeData.hasEncounter()) return false;
-
-        // 检查当前事件是否完成
-        var encData = nodeData.getEncounterData();
-        var instances = encData.getEvents().getEventInstances();
-        int curIdx = nodeData.getCurrentEventIndex();
-        if (curIdx < instances.size()) {
-            var result = instances.get(curIdx).next(runnerContext(encData.getType()));
-            if (result != RogueEventType.Result.SUCCESS) {
-                player.sendSystemMessage(Component.translatable("beyond.event.not_cleared"));
-                return false;
-            }
+        if (!isCurrentEventCleared()) {
+            player.sendSystemMessage(Component.translatable("beyond.event.not_cleared"));
+            return false;
         }
+        return advanceClearedEvent(player);
+    }
 
+    public boolean tryAutoAdvance() {
+        if (nodeData.getNodePhase() != NodePhase.ON_EVENT) return false;
+        if (!nodeData.hasEncounter()) return false;
+
+        RogueEventType event = currentEvent();
+        if (event == null) return false;
+
+        int interval = event.auto();
+        if (interval <= 0 || level.getGameTime() % interval != 0) return false;
+        if (event.next(runnerContext(nodeData.getEncounterData().getType())) != RogueEventType.Result.SUCCESS)
+            return false;
+
+        return advanceClearedEvent(null);
+    }
+
+    private boolean advanceClearedEvent(ServerPlayer player) {
+        var encData = nodeData.getEncounterData();
+        int curIdx = nodeData.getCurrentEventIndex();
         // 最后一个事件 → 解锁
         if (curIdx >= nodeData.eventCount() - 1) {
             forceUnlockNode();
@@ -129,13 +141,32 @@ public class RogueEncounterRunner {
 
         if (isLast) {
             ctx.setAllPlayerPhase(level, PlayerPhase.ON_EVENT);
+            castCurrentEvent(encData.getType());
         } else {
-            ctx.setPlayerPhase(player, PlayerPhase.PRE_EVENT);
+            if (player != null) {
+                ctx.setPlayerPhase(player, PlayerPhase.PRE_EVENT);
+            } else {
+                ctx.setAllPlayerPhase(level, PlayerPhase.PRE_EVENT);
+            }
             level.getServer().getPlayerList().broadcastSystemMessage(
                     Component.translatable("beyond.node.next_event"), false);
             castCurrentEvent(encData.getType());
         }
         return false;
+    }
+
+    private boolean isCurrentEventCleared() {
+        RogueEventType event = currentEvent();
+        if (event == null) return true;
+        return event.next(runnerContext(nodeData.getEncounterData().getType())) == RogueEventType.Result.SUCCESS;
+    }
+
+    private RogueEventType currentEvent() {
+        var encData = nodeData.getEncounterData();
+        if (encData == null || encData.getEvents() == null) return null;
+        var instances = encData.getEvents().getEventInstances();
+        int idx = nodeData.getCurrentEventIndex();
+        return idx < instances.size() ? instances.get(idx) : null;
     }
 
     // ============================================================
@@ -232,6 +263,10 @@ public class RogueEncounterRunner {
 
     public boolean isPreEvent() {
         return nodeData.getNodePhase() == NodePhase.PRE_EVENT;
+    }
+
+    public boolean isOnEvent() {
+        return nodeData.getNodePhase() == NodePhase.ON_EVENT;
     }
 
     /**

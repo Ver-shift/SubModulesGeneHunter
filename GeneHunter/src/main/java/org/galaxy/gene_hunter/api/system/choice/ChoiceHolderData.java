@@ -12,6 +12,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.core.ILootType;
 
@@ -35,6 +36,8 @@ public class ChoiceHolderData implements IPersistedSerializable {
     private boolean canRefresh = false;
 
     private ResourceLocation currentLootTypeId;
+
+    private NodeColor currentNodeColor = NodeColor.GREEN;
 
     private transient ServerPlayer player;
 

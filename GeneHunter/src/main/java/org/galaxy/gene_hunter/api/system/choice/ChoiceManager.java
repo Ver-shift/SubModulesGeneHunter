@@ -9,6 +9,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.galaxy.beyond.component.ValueComp;
+import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.gene_hunter.api.GeneHunterAPI;
 import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
@@ -67,22 +69,28 @@ public class ChoiceManager implements IChoiceManager {
     }
 
 
+    public void doRoll(ILootType<?> lootType) {
+        doRoll(lootType, null);
+    }
 
-    public void doRoll(ILootType<?> lootType){
+    @Override
+    public void doRoll(ILootType<?> lootType, NodeColor nodeColor) {
         ItemStackHandler handler = choiceHolderData.getChoiceHolderHandler();
         choiceHolderData.clear();
         int maxSlots = Math.min(getChoiceCount(), handler.getSlots());
+        NodeColor color = nodeColor == null ? NodeColor.GREEN : nodeColor;
 
-        LootManager.Request request = createChoiceRequest(lootType);
+        LootManager.Request request = createChoiceRequest(lootType, color);
         var result = GalaxyLibAPI.getLootManager().rollChoices(request, LootManager.Context.of(player, request.getRandomId()), maxSlots);
         choiceHolderData.setCurrentLootType(lootType);
+        choiceHolderData.setCurrentNodeColor(color);
 
         for (int i = 0; i < result.options().size(); i++) {
             handler.setStackInSlot(i, result.options().get(i).stack());
         }
     }
 
-    private LootManager.Request createChoiceRequest(ILootType<?> lootType) {
+    private LootManager.Request createChoiceRequest(ILootType<?> lootType, NodeColor nodeColor) {
         LootManager.Request.RequestBuilder builder = LootManager.Request.builder()
                 .lootType(lootType)
                 .replacement(false);
@@ -103,6 +111,7 @@ public class ChoiceManager implements IChoiceManager {
         if (lootType == BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get()) {
             return builder
                     .tables(List.of(GeneHunter.asResource("xene_trait_base")))
+                    .weightModifier(new XeneChoiceWeightModifier(nodeColor))
                     .rolls(lootType.getPoolCount(player))
                     .build();
         }
@@ -112,7 +121,12 @@ public class ChoiceManager implements IChoiceManager {
 
     @Override
     public void startRoll(ILootType<?> lootType) {
-        doRoll(lootType);
+        startRoll(lootType, null);
+    }
+
+    @Override
+    public void startRoll(ILootType<?> lootType, NodeColor nodeColor) {
+        doRoll(lootType, nodeColor);
         openChoiceMenu();
         choiceHolderData.setCanRefresh(true);
     }
@@ -144,7 +158,7 @@ public class ChoiceManager implements IChoiceManager {
             return;
         }
         choiceHolderData.clear();
-        doRoll(lootType);
+        doRoll(lootType, choiceHolderData.getCurrentNodeColor());
     }
 
     /**
@@ -174,22 +188,29 @@ public class ChoiceManager implements IChoiceManager {
                     if (slotIndex >= 0 && slotIndex < handler.getSlots()) {
                         ItemStack stack = handler.getStackInSlot(slotIndex);
                         if (!stack.isEmpty()) {
+                            ItemStack claimedStack = createClaimStack(stack);
                             ILootType<?> lootType = choiceManager.choiceHolderData.getCurrentLootType();
                             if (lootType != null) {
-                                lootType.claim(serverPlayer, stack, LootManager.Context.of(serverPlayer));
+                                lootType.claim(serverPlayer, claimedStack, LootManager.Context.of(serverPlayer));
                             } else {
                                 // 如果没有战利品类型，直接给玩家
-                                if (!serverPlayer.getInventory().add(stack)) {
-                                    serverPlayer.spawnAtLocation(stack);
+                                if (!serverPlayer.getInventory().add(claimedStack)) {
+                                    serverPlayer.spawnAtLocation(claimedStack);
                                 }
                             }
-                            manager.endRoll(stack);
+                            manager.endRoll(claimedStack);
 
                         }
                     }
                 }
             }
         }
+    }
+
+    private static ItemStack createClaimStack(ItemStack stack) {
+        ItemStack claimedStack = stack.copy();
+        ValueComp.set(claimedStack, 1);
+        return claimedStack;
     }
 
 }

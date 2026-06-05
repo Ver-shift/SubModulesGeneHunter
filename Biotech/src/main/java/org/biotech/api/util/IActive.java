@@ -1,8 +1,8 @@
 package org.biotech.api.util;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import org.biotech.api.system.gene.GeneContext;
-import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 
 /**
  * 玩家的活动
@@ -10,13 +10,36 @@ import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 public interface IActive {
 
 
-    default void tick(GeneContext context){}
+    default void tick(GeneContext context) {
+    }
 
-    default void attack(GeneContext context, Entity target) {}
+    default void tick(GeneContext context, int traitCount) {
+        tick(context);
+    }
 
-    default void jump(GeneContext context) {}
+    default void attack(GeneContext context, Entity target) {
+    }
 
-    default void modifyAttributes(CurioAttributeModifierEvent event){
+    default void attack(GeneContext context, Entity target, int traitCount) {
+        attack(context, target);
+    }
+
+    default void jump(GeneContext context) {
+    }
+
+    default void jump(GeneContext context, int traitCount) {
+        jump(context);
+    }
+
+    default void modifyAttributes(Player player) {
+
+    }
+
+    default void modifyAttributes(Player player, int traitCount) {
+        modifyAttributes(player);
+    }
+
+    default void removeAttributes(Player player) {
 
     }
 }

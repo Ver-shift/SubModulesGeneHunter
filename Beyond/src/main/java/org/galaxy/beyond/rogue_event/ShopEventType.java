@@ -47,4 +47,9 @@ public class ShopEventType extends RogueEventType {
         return Result.SUCCESS;
     }
 
+    @Override
+    public int auto() {
+        return 0;
+    }
+
 }
