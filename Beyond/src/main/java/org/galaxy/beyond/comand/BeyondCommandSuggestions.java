@@ -18,6 +18,7 @@ final class BeyondCommandSuggestions {
     }
 
     static CompletableFuture<Suggestions> nodeTypes(SuggestionsBuilder builder) {
+        builder.suggest("any");
         builder.suggest("unlocked");
         builder.suggest("locked");
         builder.suggest("outside");

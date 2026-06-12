@@ -24,6 +24,13 @@ public class BeyondCreativeTabInit {
                         output.accept(BeyondItemInit.TEST_ITEM.get());
                         output.accept(BeyondItemInit.TEST_IRON_SWORD.get());
                         output.accept(BeyondItemInit.WORLD_SEED.get());
+                        output.accept(BeyondItemInit.HOME_TELEPORT_STONE.get());
+                        output.accept(BeyondItemInit.ACTIVE_BOUNDARY_TELEPORT_STONE.get());
+                        output.accept(BeyondItemInit.ANY_NODE_TELEPORT_STONE.get());
+                        output.accept(BeyondItemInit.UNLOCKED_NODE_TELEPORT_STONE.get());
+                        output.accept(BeyondItemInit.LOCKED_NODE_TELEPORT_STONE.get());
+                        output.accept(BeyondItemInit.INSIDE_NODE_TELEPORT_STONE.get());
+                        output.accept(BeyondItemInit.OUTSIDE_NODE_TELEPORT_STONE.get());
                     })
                     .build());
 
