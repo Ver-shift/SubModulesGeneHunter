@@ -20,7 +20,7 @@ public class TextItem extends Item implements HeldItemUIMenuType.HeldItemUI {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
-            HeldItemUIMenuType.openUI(serverPlayer, hand);
+//            HeldItemUIMenuType.openUI(serverPlayer, hand);
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;

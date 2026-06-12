@@ -21,7 +21,6 @@ public class BeyondCreativeTabInit {
                     .displayItems((params, output) -> {
                         output.accept(BeyondBlockInit.NODE_BLOCK_ITEM.get());
                         output.accept(BeyondItemInit.LOOT_BAG.get());
-                        output.accept(BeyondItemInit.TEST_ITEM.get());
                         output.accept(BeyondItemInit.WORLD_SEED.get());
                     })
                     .build());
