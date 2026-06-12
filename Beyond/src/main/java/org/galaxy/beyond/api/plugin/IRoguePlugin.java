@@ -2,6 +2,7 @@ package org.galaxy.beyond.api.plugin;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 
 /**
  * Beyond 肉鸽系统插件入口。
@@ -59,6 +60,15 @@ public interface IRoguePlugin {
      * 声明的 Cap 必须已经注册到 Beyond RogueCap 注册表，否则初始化会直接报错。
      */
     default void initRogueCaps(RogueCapInit registration) {
+    }
+
+    /**
+     * 初始化当前关卡专属的 RogueCap。
+     * <p>
+     * 这里声明的 Cap 只会在指定 {@code progressId} 对应的 RogueData 初始化时加入。
+     * 声明的 Cap 必须已经注册到 Beyond RogueCap 注册表。
+     */
+    default void initProgressCaps(ResourceLocation progressId, ProgressDefinition definition, RogueCapInit registration) {
     }
 
     /**

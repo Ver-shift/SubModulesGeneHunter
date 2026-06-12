@@ -1,0 +1,41 @@
+{
+    "baseValue": 10,
+    "character": "gene_hunter:zombie_gateway",
+    "gateway": "gene_hunter:zombie_example",
+    "greenValue": 100,
+    "id": "gene_hunter:zombie_example",
+    "maxSpawnCount": 8,
+    "maxWaveTime": 760,
+    "orangeValue": 130,
+    "packs": [
+        {
+            "entries": [
+                {
+                    "count": 3,
+                    "entity": "minecraft:zombie"
+                }
+            ],
+            "minValue": 0,
+            "value": 6,
+            "weight": 5
+        },
+        {
+            "entries": [
+                {
+                    "count": 2,
+                    "entity": "minecraft:zombie"
+                },
+                {
+                    "count": 1,
+                    "entity": "minecraft:skeleton"
+                }
+            ],
+            "minValue": 8,
+            "value": 9,
+            "weight": 3
+        }
+    ],
+    "redValue": 170,
+    "setupTime": 40,
+    "valueGrowth": 5
+}

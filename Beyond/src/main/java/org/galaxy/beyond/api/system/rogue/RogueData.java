@@ -17,6 +17,8 @@ import net.minecraft.world.level.Level;
 import org.galaxy.beyond.api.init.BeyondRogueCapInit;
 import org.galaxy.beyond.api.event.custom.RogueCapInitEvent;
 import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
+import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
 
 import java.util.List;
@@ -76,14 +78,31 @@ public class RogueData implements IPersistedSerializable {
 
     public void initDefaultCaps() {
         if (!rogueCapData.isEmpty()) return;
-        RogueCapInitEvent event = RogueCapInitEvent.post(
-                new RogueCapInitEvent(this, BeyondPluginRunner.collectDefaultRogueCaps())
+        RogueCapInitEvent.Default event = RogueCapInitEvent.post(
+                new RogueCapInitEvent.Default(this, BeyondPluginRunner.collectDefaultRogueCaps())
         );
-        for (ResourceLocation id : event.getCapIds()) {
+        addCaps(event.getCapIds());
+
+        ResourceLocation progressId = getProgressId();
+        ProgressDefinition definition = BeyondAPI.getRogueDefinition(BeyondAPI.getOverWorld()).getProgress(progressId);
+        if (definition == null) return;
+        RogueCapInitEvent.Progress progressEvent = RogueCapInitEvent.post(
+                new RogueCapInitEvent.Progress(
+                        this,
+                        progressId,
+                        definition,
+                        BeyondPluginRunner.collectProgressCaps(progressId, definition)
+                )
+        );
+        addCaps(progressEvent.getCapIds());
+    }
+
+    private void addCaps(List<ResourceLocation> capIds) {
+        for (ResourceLocation id : capIds) {
             BeyondRogueCapInit.getById(id)
                     .map(net.minecraft.core.Holder.Reference::value)
                     .ifPresentOrElse(cap -> rogueCapData.add(new RogueCapData(cap)), () -> {
-                        throw new IllegalStateException("Default RogueCap is not registered: " + id);
+                        throw new IllegalStateException("RogueCap is not registered: " + id);
                     });
         }
     }

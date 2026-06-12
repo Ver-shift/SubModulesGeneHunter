@@ -4,9 +4,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.rogue.EncounterType;
 import org.galaxy.beyond.api.system.rogue.EventTask;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition.*;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition.*;
 import org.galaxy.beyond.data.progress.BaseProgress;
 import org.galaxy.gene_hunter.GeneHunter;
+import org.galaxy.gene_hunter.data.spawn.ZombieExampleSpawnDefinition;
 
 import java.util.List;
 
@@ -14,10 +15,11 @@ import static org.galaxy.beyond.api.datagen.custom.RogueProgressProvider.enc;
 
 public class GeneHunterProgress extends BaseProgress {
 
-    private static final ResourceLocation SHOP    = Beyond.asResource("shop");
-    private static final ResourceLocation HEAL    = Beyond.asResource("heal");
+    private static final ResourceLocation SHOP = Beyond.asResource("shop");
+    private static final ResourceLocation HEAL = Beyond.asResource("heal");
     private static final ResourceLocation MONSTER = GeneHunter.asResource("monster");
-    private static final ResourceLocation BOSS    = GeneHunter.asResource("boss");
+    private static final ResourceLocation BOSS = GeneHunter.asResource("boss");
+    private static final ResourceLocation SPAWN = ZombieExampleSpawnDefinition.ID;
 
     private static EventTask task(ResourceLocation... ids) {
         return new EventTask(List.of(ids));
@@ -33,6 +35,11 @@ public class GeneHunterProgress extends BaseProgress {
                 harvest(11), harvest(12), harvest(13), harvest(14),
                 climax(15)
         );
+    }
+
+    @Override
+    protected ResourceLocation spawnDefinition() {
+        return SPAWN;
     }
 
     @Override

@@ -19,18 +19,22 @@ public class GeneHunterDataGenerators {
 
         // 注册方块标签提供者
         var blockTagProvider = generator.addProvider(
-            event.includeServer(),
-            new GeneHunterBlockTagProvider(pack, registries, helper)
+                event.includeServer(),
+                new GeneHunterBlockTagProvider(pack, registries, helper)
         );
 
         // 注册物品标签提供者（依赖方块标签）
         generator.addProvider(
-            event.includeServer(),
-            new GeneHunterTagProvider(pack, registries, blockTagProvider.contentsGetter(), helper)
+                event.includeServer(),
+                new GeneHunterTagProvider(pack, registries, blockTagProvider.contentsGetter(), helper)
         );
         generator.addProvider(
-            event.includeServer(),
-            new GeneHunterProgressGen(pack, registries)
+                event.includeServer(),
+                new GeneHunterProgressGen(pack, registries)
+        );
+        generator.addProvider(
+                event.includeServer(),
+                new GeneHunterSpawnDefinitionGen(pack)
         );
     }
 }

@@ -14,7 +14,7 @@ import org.galaxy.beyond.api.system.large.BeyondLargeLevelData;
 import org.galaxy.beyond.api.system.node.NodeData;
 import org.galaxy.beyond.api.system.rogue.RogueData;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
-import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
+import org.galaxy.beyond.api.system.definition.RogueDefinition;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 

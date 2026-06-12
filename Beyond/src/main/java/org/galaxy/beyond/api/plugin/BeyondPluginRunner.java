@@ -7,7 +7,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
 import org.galaxy.beyond.api.system.rogue.core.RogueCap;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 
@@ -24,14 +24,8 @@ import java.util.function.Supplier;
 /**
  * Beyond 插件运行器。
  * <p>
- * 支持四种注册方式：
- * <ul>
- *     <li>{@link AutoInit} 自动发现插件类</li>
- *     <li>{@link #addPlugin(IRoguePlugin)} 手动加入插件实例</li>
- *     <li>{@link #addPlugin(Supplier)} 手动加入插件工厂</li>
- *     <li>直接调用 {@link #registerCap(ResourceLocation, Supplier)} / {@link #registerEvent(ResourceLocation, Supplier)}
- *     / {@link #registerProgress(ResourceLocation, ProgressDefinition)} 注册单项内容</li>
- * </ul>
+ * 支持自动发现插件、手动加入插件实例、手动加入插件工厂，以及直接注册单项 Rogue 内容。
+ * 这里是插件系统的内部协调层；对外扩展更推荐实现 {@link IRoguePlugin}。
  */
 @SuppressWarnings("unused")
 public final class BeyondPluginRunner {
@@ -165,6 +159,18 @@ public final class BeyondPluginRunner {
         }
         for (IRoguePlugin plugin : PLUGINS) {
             plugin.initRogueCaps(registration);
+        }
+        return registration.getCapIds();
+    }
+
+    public static List<ResourceLocation> collectProgressCaps(ResourceLocation progressId, ProgressDefinition definition) {
+        loadPlugins();
+        RogueCapInit registration = new RogueCapInit();
+        if (definition != null) {
+            definition.getProgressCaps().forEach(registration::initCap);
+        }
+        for (IRoguePlugin plugin : PLUGINS) {
+            plugin.initProgressCaps(progressId, definition, registration);
         }
         return registration.getCapIds();
     }

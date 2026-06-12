@@ -172,6 +172,7 @@
             ]
         }
     ],
+    "progressCaps": [],
     "sceneRolls": [
         {
             "entries": [
@@ -308,5 +309,6 @@
             ],
             "order": 15
         }
-    ]
+    ],
+    "spawnDefinition": "gene_hunter:zombie_example"
 }

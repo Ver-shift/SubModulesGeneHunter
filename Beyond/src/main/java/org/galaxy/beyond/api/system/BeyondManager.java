@@ -14,7 +14,7 @@ import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueCapManager;
 import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueManager;
-import org.galaxy.beyond.api.system.rogue.definition.DefinitionManager;
+import org.galaxy.beyond.api.system.definition.DefinitionManager;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.StructureManager;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;

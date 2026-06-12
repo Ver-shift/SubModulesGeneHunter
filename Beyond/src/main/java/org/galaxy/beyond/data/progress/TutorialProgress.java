@@ -1,7 +1,7 @@
 package org.galaxy.beyond.data.progress;
 
 import org.galaxy.beyond.api.system.rogue.EncounterType;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition.*;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition.*;
 
 import java.util.List;
 

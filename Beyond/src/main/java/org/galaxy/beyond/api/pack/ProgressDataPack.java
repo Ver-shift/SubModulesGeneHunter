@@ -8,11 +8,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.Beyond;
+import org.galaxy.beyond.api.event.custom.ResolveEvent;
 import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.BeyondGlobalData;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 import org.slf4j.Logger;
 
 import java.io.Reader;
@@ -20,8 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 在 /reload 时扫描 data/beyond/rogue_progress/ 下的所有 JSON，
- * 反序列化为 {@link ProgressDefinition} 并注入到 {@link BeyondGlobalData}。
+ * 读取 {@code data/beyond/rogue_progress/*.json} 并注入到 {@link BeyondGlobalData}。
  */
 public class ProgressDataPack extends SimplePreparableReloadListener<Map<ResourceLocation, ProgressDefinition>> {
 
@@ -30,7 +31,9 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Resourc
             .registerTypeAdapter(ResourceLocation.class, new IdentifierTypeAdapter())
             .create();
 
-    /** 首次加载时服务器尚未就绪，暂存数据，等 ServerStartedEvent 时注入 */
+    /**
+     * 首次加载时服务器尚未就绪，暂存数据，等 ServerStartedEvent 时注入。
+     */
     private static Map<ResourceLocation, ProgressDefinition> pendingPreparations;
 
     @Override
@@ -44,15 +47,8 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Resourc
             ResourceLocation fullId = entry.getKey();
             try (Reader reader = entry.getValue().openAsReader()) {
                 ProgressDefinition def = GSON.fromJson(reader, ProgressDefinition.class);
-
-                String fileName = fullId.getPath();
-                fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
-                if (fileName.endsWith(".json")) {
-                    fileName = fileName.substring(0, fileName.length() - 5);
-                }
-                ResourceLocation key = Beyond.asResource(fileName);
+                ResourceLocation key = progressId(fullId);
                 map.put(key, def);
-
                 LOGGER.debug("Parsed progress definition: {}", key);
             } catch (Exception e) {
                 LOGGER.error("Failed to parse progress definition: {}", fullId, e);
@@ -65,16 +61,13 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Resourc
 
     @Override
     protected void apply(Map<ResourceLocation, ProgressDefinition> preparations, ResourceManager manager, ProfilerFiller profiler) {
-        // 直接尝试注入，失败则暂存等待 ServerStartedEvent
         if (tryApply(preparations)) return;
-
         pendingPreparations = preparations;
         LOGGER.info("Server not ready yet, stored {} progress definitions for deferred apply", preparations.size());
     }
 
     /**
-     * 服务端启动完成后由 BeyondManagerEventHandle 调用，
-     * 将暂存的关卡数据注入 GlobalData。
+     * 服务端启动完成后由 BeyondManagerEventHandle 调用，将暂存的关卡数据注入 GlobalData。
      */
     public static void applyPending(MinecraftServer server) {
         if (pendingPreparations == null || pendingPreparations.isEmpty()) return;
@@ -99,6 +92,14 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Resourc
         Map<ResourceLocation, ProgressDefinition> merged = new HashMap<>(BeyondPluginRunner.collectProgress());
         merged.putAll(preparations);
 
+        ResolveEvent.ResolveProgressDefinitionsEvent event = new ResolveEvent.ResolveProgressDefinitionsEvent(
+                server.overworld(),
+                Map.copyOf(merged),
+                new HashMap<>(merged)
+        );
+        NeoForge.EVENT_BUS.post(event);
+        merged = new HashMap<>(event.getTo());
+
         var oldKeys = globalData.getRogueDefinition().getRogueProgress().keySet();
         LOGGER.info("Replacing {} old progress definitions with {} new ones", oldKeys.size(), merged.size());
         LOGGER.debug("  Old keys: {}", oldKeys);
@@ -109,5 +110,14 @@ public class ProgressDataPack extends SimplePreparableReloadListener<Map<Resourc
 
         BeyondPluginRunner.onReload();
         LOGGER.info("Applied {} progress definitions to GlobalData", merged.size());
+    }
+
+    private static ResourceLocation progressId(ResourceLocation fullId) {
+        String fileName = fullId.getPath();
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+        if (fileName.endsWith(".json")) {
+            fileName = fileName.substring(0, fileName.length() - 5);
+        }
+        return Beyond.asResource(fileName);
     }
 }

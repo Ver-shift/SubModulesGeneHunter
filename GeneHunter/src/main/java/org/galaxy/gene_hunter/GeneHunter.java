@@ -10,6 +10,7 @@ import org.galaxy.gene_hunter.api.init.GeneHunterGatewayInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterRogueEventInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterSpawnInit;
 
 @Mod(GeneHunter.MODID)
 public class GeneHunter {
@@ -23,11 +24,12 @@ public class GeneHunter {
         GeneHunterAttributeInit.register(modEventBus);
         GeneHunterMenuInit.register();
         GeneHunterGatewayInit.register(modEventBus);
+        GeneHunterSpawnInit.register();
 
     }
 
     public static ResourceLocation asResource(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID,path.toLowerCase());
+        return ResourceLocation.fromNamespaceAndPath(MODID, path.toLowerCase());
     }
 
 }

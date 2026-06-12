@@ -10,11 +10,13 @@ import org.galaxy.beyond.api.system.rogue.RogueContext;
 import org.galaxy.beyond.api.system.rogue.core.Phase;
 
 /**
- * Phase 变更事件族 —— 全局/节点/玩家三种 phase 的 enter / exit / tick。
+ * Phase 变更事件族。
  * <p>
- * 通过 {@link #post} 静态方法发布到 {@link NeoForge#EVENT_BUS}。
+ * Beyond 有 Rogue、Node、Player 三类 phase。每类 phase 都会在进入、退出和 tick 时发布事件。
+ * 这些事件只负责通知，不会取消默认 phase 流程；需要阻止遭遇推进时应使用 {@link RogueEncounterEvent}。
  * <p>
- * {@link IRogueContext} 由事件内部延迟加载，优先从 {@link BeyondAPI} 获取共享实例。
+ * {@link #getContext()} 会延迟读取 Beyond 共享的 {@link IRogueContext}。如果管理器尚未可用，
+ * 会返回一个临时 {@link RogueContext}，因此监听者在早期生命周期里应先判断自己需要的数据是否存在。
  */
 public abstract class PhaseChangeEvent extends LevelEvent {
 
@@ -27,10 +29,18 @@ public abstract class PhaseChangeEvent extends LevelEvent {
         this.from = from;
         this.to = to;
     }
-    public Phase getFrom() { return from; }
-    public Phase getTo() { return to; }
 
-    /** 延迟加载：优先从 BeyondManager 获取共享实例，失败则创建新 Context */
+    /** 变更前 phase；Tick 事件中等于当前 phase。 */
+    public Phase getFrom() {
+        return from;
+    }
+
+    /** 变更后 phase；Tick 事件中等于当前 phase。 */
+    public Phase getTo() {
+        return to;
+    }
+
+    /** 当前 Rogue 上下文。 */
     public IRogueContext getContext() {
         if (context == null) {
             try {
@@ -46,71 +56,113 @@ public abstract class PhaseChangeEvent extends LevelEvent {
         NeoForge.EVENT_BUS.post(event);
     }
 
-    // ---- Enter / Exit / Tick ----
-
+    /** phase 进入事件基类。 */
     public static abstract class Enter extends PhaseChangeEvent {
-        public Enter(ServerLevel level, Phase from, Phase to) { super(level, from, to); }
+        public Enter(ServerLevel level, Phase from, Phase to) {
+            super(level, from, to);
+        }
     }
 
+    /** phase 退出事件基类。 */
     public static abstract class Exit extends PhaseChangeEvent {
-        public Exit(ServerLevel level, Phase from, Phase to) { super(level, from, to); }
+        public Exit(ServerLevel level, Phase from, Phase to) {
+            super(level, from, to);
+        }
     }
 
+    /** phase tick 事件基类。 */
     public static abstract class Tick extends PhaseChangeEvent {
-        public Tick(ServerLevel level, Phase current) { super(level, current, current); }
-        @Override public Phase getTo() { return getFrom(); }
+        public Tick(ServerLevel level, Phase current) {
+            super(level, current, current);
+        }
+
+        @Override
+        public Phase getTo() {
+            return getFrom();
+        }
     }
 
-    // ---- Rogue ----
-
+    /** Rogue 全局 phase 进入事件。 */
     public static class RogueEnter extends Enter {
-        public RogueEnter(ServerLevel level, Phase from, Phase to) { super(level, from, to); }
+        public RogueEnter(ServerLevel level, Phase from, Phase to) {
+            super(level, from, to);
+        }
     }
+
+    /** Rogue 全局 phase 退出事件。 */
     public static class RogueExit extends Exit {
-        public RogueExit(ServerLevel level, Phase from, Phase to) { super(level, from, to); }
+        public RogueExit(ServerLevel level, Phase from, Phase to) {
+            super(level, from, to);
+        }
     }
+
+    /** Rogue 全局 phase tick 事件。 */
     public static class RogueTick extends Tick {
-        public RogueTick(ServerLevel level, Phase current) { super(level, current); }
+        public RogueTick(ServerLevel level, Phase current) {
+            super(level, current);
+        }
     }
 
-    // ---- Node ----
-
+    /** 节点 phase 进入事件。 */
     public static class NodeEnter extends Enter {
-        public NodeEnter(ServerLevel level, Phase from, Phase to) { super(level, from, to); }
+        public NodeEnter(ServerLevel level, Phase from, Phase to) {
+            super(level, from, to);
+        }
     }
+
+    /** 节点 phase 退出事件。 */
     public static class NodeExit extends Exit {
-        public NodeExit(ServerLevel level, Phase from, Phase to) { super(level, from, to); }
+        public NodeExit(ServerLevel level, Phase from, Phase to) {
+            super(level, from, to);
+        }
     }
+
+    /** 节点 phase tick 事件。 */
     public static class NodeTick extends Tick {
-        public NodeTick(ServerLevel level, Phase current) { super(level, current); }
+        public NodeTick(ServerLevel level, Phase current) {
+            super(level, current);
+        }
     }
 
-    // ---- Player (level derived from player) ----
-
+    /** 玩家 phase 进入事件。 */
     public static class PlayerEnter extends Enter {
         private final ServerPlayer player;
+
         public PlayerEnter(Phase from, Phase to, ServerPlayer player) {
             super((ServerLevel) player.level(), from, to);
             this.player = player;
         }
-        public ServerPlayer getPlayer() { return player; }
+
+        public ServerPlayer getPlayer() {
+            return player;
+        }
     }
 
+    /** 玩家 phase 退出事件。 */
     public static class PlayerExit extends Exit {
         private final ServerPlayer player;
+
         public PlayerExit(Phase from, Phase to, ServerPlayer player) {
             super((ServerLevel) player.level(), from, to);
             this.player = player;
         }
-        public ServerPlayer getPlayer() { return player; }
+
+        public ServerPlayer getPlayer() {
+            return player;
+        }
     }
 
+    /** 玩家 phase tick 事件。 */
     public static class PlayerTick extends Tick {
         private final ServerPlayer player;
+
         public PlayerTick(Phase current, ServerPlayer player) {
             super((ServerLevel) player.level(), current);
             this.player = player;
         }
-        public ServerPlayer getPlayer() { return player; }
+
+        public ServerPlayer getPlayer() {
+            return player;
+        }
     }
 }

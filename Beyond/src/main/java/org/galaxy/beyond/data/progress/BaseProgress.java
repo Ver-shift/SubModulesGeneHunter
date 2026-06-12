@@ -1,8 +1,10 @@
 package org.galaxy.beyond.data.progress;
 
+import net.minecraft.resources.ResourceLocation;
 import org.galaxy.beyond.api.system.rogue.SceneType;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition.*;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition.*;
+import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,8 @@ public abstract class BaseProgress {
 
     public ProgressDefinition build() {
         return ProgressDefinition.builder()
+                .spawnDefinition(spawnDefinition())
+                .progressCaps(progressCaps())
                 .sceneRolls(scenes())
                 .encounters(encounters())
                 .build();
@@ -18,9 +22,25 @@ public abstract class BaseProgress {
 
     protected abstract List<SceneRoll> scenes();
 
-    protected List<Encounter> greenEncounters()  { return List.of(); }
-    protected List<Encounter> orangeEncounters() { return List.of(); }
-    protected List<Encounter> redEncounters()    { return List.of(); }
+    protected ResourceLocation spawnDefinition() {
+        return CassandraCharacter.ID;
+    }
+
+    protected List<ResourceLocation> progressCaps() {
+        return List.of();
+    }
+
+    protected List<Encounter> greenEncounters() {
+        return List.of();
+    }
+
+    protected List<Encounter> orangeEncounters() {
+        return List.of();
+    }
+
+    protected List<Encounter> redEncounters() {
+        return List.of();
+    }
 
     protected List<Encounter> encounters() {
         List<Encounter> all = new ArrayList<>();

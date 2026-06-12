@@ -18,7 +18,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import lombok.Data;
 import org.galaxy.beyond.api.system.random.RogueRandom;
-import org.galaxy.beyond.api.system.rogue.definition.RogueDefinition;
+import org.galaxy.beyond.api.system.definition.RogueDefinition;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +35,7 @@ public class BeyondGlobalData implements IPersistedSerializable {
     @Persisted
     private ResourceKey<Level> rougeLevel = Level.OVERWORLD;
 
-    // Map由PersistedParser直接序列化
+    // Map鐢盤ersistedParser鐩存帴搴忓垪鍖?
     @Persisted
     @ReadOnlyManaged(serializeMethod = "dimensionDataMapSerialize", deserializeMethod = "dimensionDataMapDeserialize")
     private Map<ResourceKey<Level>, BeyondDimensionData> dimensionDataMap = new ConcurrentHashMap<>();

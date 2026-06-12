@@ -1,7 +1,7 @@
 package org.galaxy.beyond.api.plugin;
 
 import net.minecraft.resources.ResourceLocation;
-import org.galaxy.beyond.api.system.rogue.definition.ProgressDefinition;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 import org.galaxy.beyond.data.progress.BaseProgress;
 
 import java.util.LinkedHashMap;

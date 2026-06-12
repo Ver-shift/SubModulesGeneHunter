@@ -1,4 +1,4 @@
-package org.galaxy.beyond.api.system.rogue.definition;
+package org.galaxy.beyond.api.system.definition;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
@@ -14,16 +14,17 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 全局 Rogue 定义容器。
+ * <p>
+ * 目前主要保存已加载的关卡定义索引。实际定义内容由数据包和插件系统合并后写入。
+ */
 @Data
 public class RogueDefinition implements IPersistedSerializable {
 
     @Persisted
     @ReadOnlyManaged(serializeMethod = "rogueProgressSerialize", deserializeMethod = "rogueProgressDeserialize")
     private final Map<ResourceLocation, ProgressDefinition> rogueProgress = new HashMap<>();
-
-    // ============================================================
-    // 校验 + 获取
-    // ============================================================
 
     public boolean hasProgress(ResourceLocation id) {
         return rogueProgress.containsKey(id);
@@ -33,7 +34,7 @@ public class RogueDefinition implements IPersistedSerializable {
         return rogueProgress.get(id);
     }
 
-    /** 校验 currentProgress 是否在 definition 中存在，不存在返回错误消息 */
+    /** 校验 currentProgress 是否存在，不存在时返回错误消息。 */
     public Component validateProgress(ResourceLocation id) {
         if (id == null) {
             return Component.translatable("beyond.definition.progress_not_set");
