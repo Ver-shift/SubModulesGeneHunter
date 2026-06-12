@@ -16,19 +16,19 @@
   },
   "waves": [
     {
-      "max_wave_time": 4800,
-      "setup_time": 80,
+      "max_wave_time": 760,
+      "setup_time": 40,
       "entities": [
         {
           "type": "gateways:standard",
           "entity": "minecraft:zombie",
-          "count": 6,
+          "count": 8,
           "modifiers": [
             {
               "type": "gateways:attribute",
-              "attribute": "minecraft:generic.movement_speed",
+              "attribute": "minecraft:generic.max_health",
               "operation": "add_multiplied_base",
-              "value": -0.5
+              "value": 0.75
             }
           ]
         }
@@ -42,19 +42,19 @@
       ]
     },
     {
-      "max_wave_time": 4800,
-      "setup_time": 100,
+      "max_wave_time": 760,
+      "setup_time": 40,
       "entities": [
         {
           "type": "gateways:standard",
           "entity": "minecraft:zombie",
-          "count": 10,
+          "count": 9,
           "modifiers": [
             {
               "type": "gateways:attribute",
-              "attribute": "minecraft:generic.movement_speed",
+              "attribute": "minecraft:generic.max_health",
               "operation": "add_multiplied_base",
-              "value": -0.5
+              "value": 0.75
             }
           ]
         }
@@ -68,19 +68,19 @@
       ]
     },
     {
-      "max_wave_time": 4800,
-      "setup_time": 120,
+      "max_wave_time": 760,
+      "setup_time": 40,
       "entities": [
         {
           "type": "gateways:standard",
           "entity": "minecraft:zombie",
-          "count": 14,
+          "count": 10,
           "modifiers": [
             {
               "type": "gateways:attribute",
-              "attribute": "minecraft:generic.movement_speed",
+              "attribute": "minecraft:generic.max_health",
               "operation": "add_multiplied_base",
-              "value": -0.5
+              "value": 0.75
             }
           ]
         }
