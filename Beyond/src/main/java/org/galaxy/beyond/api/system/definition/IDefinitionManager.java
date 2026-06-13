@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.api.system.rogue.EncounterType;
 import org.galaxy.beyond.api.system.rogue.EventTask;
 import org.galaxy.beyond.api.system.rogue.SceneType;
+import org.galaxy.beyond.api.system.spawn.character.Character;
 
 import java.util.List;
 
@@ -40,4 +41,9 @@ public interface IDefinitionManager {
      * 解析当前关卡专属 RogueCap id。
      */
     List<ResourceLocation> resolveProgressCaps(ServerLevel level);
+
+    /**
+     * 解析刷怪定义使用的 Character。
+     */
+    Character getSpawnCharacter(SpawnDefinition definition);
 }

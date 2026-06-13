@@ -23,7 +23,6 @@ import org.galaxy.beyond.api.system.rogue.RogueManager;
 import org.galaxy.beyond.api.system.definition.IDefinitionManager;
 import org.galaxy.beyond.api.system.definition.RogueDefinition;
 import org.galaxy.beyond.api.system.definition.SpawnDefinition;
-import org.galaxy.beyond.api.system.definition.SpawnCharacterResolver;
 import org.galaxy.beyond.api.system.spawn.character.Character;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
@@ -75,7 +74,7 @@ public class BeyondAPI {
     }
 
     public static Character getSpawnCharacter(SpawnDefinition definition) {
-        return SpawnCharacterResolver.resolve(definition);
+        return definitionManager().getSpawnCharacter(definition);
     }
 
     public static ServerLevel getOverWorld() {

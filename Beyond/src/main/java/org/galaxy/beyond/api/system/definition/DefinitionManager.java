@@ -8,7 +8,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandomList;
 import net.neoforged.neoforge.common.NeoForge;
+import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.event.custom.ResolveEvent;
+import org.galaxy.beyond.api.init.BeyondRegistries;
 import org.galaxy.beyond.api.pack.ProgressDataPack;
 import org.galaxy.beyond.api.pack.SpawnDataPack;
 import org.galaxy.beyond.api.system.BeyondAPI;
@@ -17,6 +19,8 @@ import org.galaxy.beyond.api.system.rogue.EncounterType;
 import org.galaxy.beyond.api.system.rogue.EventTask;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
 import org.galaxy.beyond.api.system.rogue.SceneType;
+import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
+import org.galaxy.beyond.api.system.spawn.character.Character;
 import org.galaxy.beyond.api.system.definition.ProgressDefinition.Encounter;
 import org.galaxy.beyond.api.system.definition.ProgressDefinition.SceneRoll;
 
@@ -123,6 +127,19 @@ public class DefinitionManager implements IDefinitionManager {
         NeoForge.EVENT_BUS.post(event);
         List<ResourceLocation> resolved = event.getTo();
         return resolved != null ? resolved : List.of();
+    }
+
+    @Override
+    public Character getSpawnCharacter(SpawnDefinition definition) {
+        ResourceLocation id = definition.getCharacter();
+        if (id == null) {
+            id = CassandraCharacter.ID;
+        }
+        Character character = BeyondRegistries.SPAWN_CHARACTER.get(id);
+        if (character != null) {
+            return character;
+        }
+        return BeyondRegistries.SPAWN_CHARACTER.get(Beyond.asResource("cassandra"));
     }
 
     private ProgressDefinition currentProgress(ServerLevel level) {

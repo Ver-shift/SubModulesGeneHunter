@@ -32,7 +32,7 @@ public class SpawnDefinition implements IPersistedSerializable {
     private ResourceLocation id;
 
     /**
-     * 使用的刷怪角色 id。为空时由 SpawnCharacterResolver 回落到 Cassandra。
+     * 使用的刷怪角色 id。为空时由 DefinitionManager 回落到 Cassandra。
      */
     @Persisted
     private ResourceLocation character;
