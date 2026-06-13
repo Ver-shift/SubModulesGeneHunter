@@ -5,7 +5,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
-import org.galaxy.beyond.api.system.definition.SpawnDefinitionManager;
 
 public abstract class SpawnEvent extends RogueEventType {
 
@@ -19,8 +18,8 @@ public abstract class SpawnEvent extends RogueEventType {
         var players = context.rogueContext().playersInRogue(level);
         if (players.isEmpty()) return;
 
-        var definition = SpawnDefinitionManager.getDefinitionOrThrow(spawnDefinitionId(context));
-        var character = SpawnDefinitionManager.getCharacter(definition);
+        var definition = BeyondAPI.getSpawnDefinitionOrThrow(spawnDefinitionId(context));
+        var character = BeyondAPI.getSpawnCharacter(definition);
         var spawnData = context.spawnData();
         sendRaidValueMessage(context);
         Object spawned = character.placeSpawn(definition, spawnData.plan(), level, context.nodePos(), players);
@@ -37,9 +36,9 @@ public abstract class SpawnEvent extends RogueEventType {
     @Override
     @NonNull
     public Result next(Context context) {
-        var definition = SpawnDefinitionManager.getDefinition(spawnDefinitionId(context));
+        var definition = BeyondAPI.getSpawnDefinition(spawnDefinitionId(context));
         if (definition.isEmpty()) return Result.FAILURE;
-        var character = SpawnDefinitionManager.getCharacter(definition.get());
+        var character = BeyondAPI.getSpawnCharacter(definition.get());
         return character.hasActiveSpawn(definition.get(), context.level(), context.nodePos())
                 ? Result.FAILURE
                 : Result.SUCCESS;
@@ -51,7 +50,7 @@ public abstract class SpawnEvent extends RogueEventType {
     }
 
     protected ResourceLocation spawnDefinitionId(Context context) {
-        ResourceLocation id = BeyondAPI.getBeyondManager().getDefinitionManager().resolveSpawnDefinition(context.level());
+        ResourceLocation id = BeyondAPI.resolveSpawnDefinition(context.level());
         if (id == null) {
             throw new IllegalStateException("Missing spawn definition for progress: "
                     + context.rogueContext().getRogueData(context.level()).getProgressId());

@@ -10,6 +10,7 @@ import net.minecraft.util.random.WeightedRandomList;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.event.custom.ResolveEvent;
 import org.galaxy.beyond.api.pack.ProgressDataPack;
+import org.galaxy.beyond.api.pack.SpawnDataPack;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.BeyondGlobalData;
 import org.galaxy.beyond.api.system.rogue.EncounterType;
@@ -30,6 +31,7 @@ public class DefinitionManager implements IDefinitionManager {
     @Override
     public void onServerStarted(MinecraftServer server) {
         ProgressDataPack.applyPending(server);
+        SpawnDataPack.applyPending(server);
     }
 
     @Override

@@ -114,7 +114,7 @@ public abstract class ResolveEvent<T, V> extends LevelEvent {
      * 刷怪定义集合应用事件。
      * <p>
      * 触发时机：SpawnDataPack 读取所有 data/&lt;namespace&gt;/spawn_definitions/*.json 后、
-     * 写入 SpawnDefinitionManager 前。
+     * 写入 RogueDefinition 前。
      * <p>
      * 监听者可以替换 to，用来注入代码生成的刷怪定义，或者按服务器规则禁用某些刷怪表。
      */

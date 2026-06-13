@@ -26,6 +26,10 @@ public class RogueDefinition implements IPersistedSerializable {
     @ReadOnlyManaged(serializeMethod = "rogueProgressSerialize", deserializeMethod = "rogueProgressDeserialize")
     private final Map<ResourceLocation, ProgressDefinition> rogueProgress = new HashMap<>();
 
+    @Persisted
+    @ReadOnlyManaged(serializeMethod = "spawnDefinitionsSerialize", deserializeMethod = "spawnDefinitionsDeserialize")
+    private final Map<ResourceLocation, SpawnDefinition> spawnDefinitions = new HashMap<>();
+
     public boolean hasProgress(ResourceLocation id) {
         return rogueProgress.containsKey(id);
     }
@@ -34,7 +38,17 @@ public class RogueDefinition implements IPersistedSerializable {
         return rogueProgress.get(id);
     }
 
-    /** 校验 currentProgress 是否存在，不存在时返回错误消息。 */
+    public boolean hasSpawnDefinition(ResourceLocation id) {
+        return spawnDefinitions.containsKey(id);
+    }
+
+    public SpawnDefinition getSpawnDefinition(ResourceLocation id) {
+        return spawnDefinitions.get(id);
+    }
+
+    /**
+     * 校验 currentProgress 是否存在，不存在时返回错误消息。
+     */
     public Component validateProgress(ResourceLocation id) {
         if (id == null) {
             return Component.translatable("beyond.definition.progress_not_set");
@@ -58,6 +72,23 @@ public class RogueDefinition implements IPersistedSerializable {
         var keys = c.getList("keys", net.minecraft.nbt.Tag.TAG_STRING);
         for (Tag e : keys) {
             m.put(ResourceLocation.parse(e.getAsString()), new ProgressDefinition());
+        }
+        return m;
+    }
+
+    public CompoundTag spawnDefinitionsSerialize(Map<ResourceLocation, SpawnDefinition> m) {
+        var keys = new ListTag();
+        m.keySet().forEach(k -> keys.add(StringTag.valueOf(k.toString())));
+        var c = new CompoundTag();
+        c.put("keys", keys);
+        return c;
+    }
+
+    public Map<ResourceLocation, SpawnDefinition> spawnDefinitionsDeserialize(CompoundTag c) {
+        var m = new HashMap<ResourceLocation, SpawnDefinition>();
+        var keys = c.getList("keys", net.minecraft.nbt.Tag.TAG_STRING);
+        for (Tag e : keys) {
+            m.put(ResourceLocation.parse(e.getAsString()), new SpawnDefinition());
         }
         return m;
     }

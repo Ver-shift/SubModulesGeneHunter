@@ -4,13 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.neoforge.common.NeoForge;
 import org.galaxy.beyond.api.event.custom.ResolveEvent;
+import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.definition.SpawnDefinition;
-import org.galaxy.beyond.api.system.definition.SpawnDefinitionManager;
 import org.slf4j.Logger;
 
 import java.io.Reader;
@@ -26,6 +27,8 @@ public class SpawnDataPack extends SimplePreparableReloadListener<Map<ResourceLo
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(ResourceLocation.class, new IdentifierTypeAdapter())
             .create();
+
+    private static Map<ResourceLocation, SpawnDefinition> pendingPreparations;
 
     @Override
     protected Map<ResourceLocation, SpawnDefinition> prepare(ResourceManager manager, ProfilerFiller profiler) {
@@ -55,18 +58,38 @@ public class SpawnDataPack extends SimplePreparableReloadListener<Map<ResourceLo
 
     @Override
     protected void apply(Map<ResourceLocation, SpawnDefinition> preparations, ResourceManager manager, ProfilerFiller profiler) {
+        if (tryApply(preparations)) return;
+        pendingPreparations = preparations;
+        LOGGER.info("Server not ready yet, stored {} spawn definitions for deferred apply", preparations.size());
+    }
+
+    public static void applyPending(MinecraftServer server) {
+        if (pendingPreparations == null || pendingPreparations.isEmpty()) return;
+        apply(server, pendingPreparations);
+        pendingPreparations = null;
+    }
+
+    private static boolean tryApply(Map<ResourceLocation, SpawnDefinition> preparations) {
+        MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return false;
+        apply(server, preparations);
+        return true;
+    }
+
+    private static void apply(MinecraftServer server, Map<ResourceLocation, SpawnDefinition> preparations) {
         Map<ResourceLocation, SpawnDefinition> definitions = new HashMap<>(preparations);
-        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-        if (server != null) {
-            ResolveEvent.ResolveSpawnDefinitionsEvent event = new ResolveEvent.ResolveSpawnDefinitionsEvent(
-                    server.overworld(),
-                    Map.copyOf(definitions),
-                    new HashMap<>(definitions)
-            );
-            NeoForge.EVENT_BUS.post(event);
-            definitions = new HashMap<>(event.getTo());
-        }
-        SpawnDefinitionManager.setDefinitions(definitions);
+        ResolveEvent.ResolveSpawnDefinitionsEvent event = new ResolveEvent.ResolveSpawnDefinitionsEvent(
+                server.overworld(),
+                Map.copyOf(definitions),
+                new HashMap<>(definitions)
+        );
+        NeoForge.EVENT_BUS.post(event);
+        definitions = new HashMap<>(event.getTo());
+
+        var spawnDefinitions = BeyondAPI.getRogueDefinition(server.overworld()).getSpawnDefinitions();
+        LOGGER.info("Replacing {} old spawn definitions with {} new ones", spawnDefinitions.size(), definitions.size());
+        spawnDefinitions.clear();
+        spawnDefinitions.putAll(definitions);
         LOGGER.info("Applied {} spawn definitions", definitions.size());
     }
 
