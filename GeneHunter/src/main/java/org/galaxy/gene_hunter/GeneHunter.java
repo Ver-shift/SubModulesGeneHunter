@@ -7,7 +7,9 @@ import net.neoforged.fml.common.Mod;
 import org.galaxy.gene_hunter.api.init.GeneHunterAttachInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterAttributeInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterComponentInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterCreativeTabInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterGatewayInit;
+import org.galaxy.gene_hunter.api.init.GeneHunterItemInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterRogueEventInit;
@@ -22,6 +24,8 @@ public class GeneHunter {
 
         GeneHunterAttachInit.register(modEventBus);
         GeneHunterComponentInit.register(modEventBus);
+        GeneHunterItemInit.register(modEventBus);
+        GeneHunterCreativeTabInit.register(modEventBus);
         GeneHunterLootInit.register(modEventBus);
         GeneHunterRogueEventInit.register(modEventBus);
         GeneHunterAttributeInit.register(modEventBus);

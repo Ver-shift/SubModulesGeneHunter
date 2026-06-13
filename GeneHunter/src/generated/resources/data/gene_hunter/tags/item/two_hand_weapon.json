@@ -19,11 +19,6 @@
         "simplyswords:gold_greataxe",
         "simplyswords:diamond_greataxe",
         "simplyswords:netherite_greataxe",
-        "simplyswords:runic_greataxe",
-        "simplyswords:iron_twinblade",
-        "simplyswords:gold_twinblade",
-        "simplyswords:diamond_twinblade",
-        "simplyswords:netherite_twinblade",
-        "simplyswords:runic_twinblade"
+        "simplyswords:runic_greataxe"
     ]
 }

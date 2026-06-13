@@ -7,15 +7,15 @@ import org.galaxy.gene_hunter.api.system.weapon.WeaponDamageType;
 import org.galaxy.gene_hunter.api.system.weapon.WeaponDamageTypes;
 
 @AutoInit(type = AutoInit.InitType.TRAIT)
-public class OneHandWeaponDamageTrait extends WeaponDamageTrait {
+public class HammerWeaponDamageTrait extends WeaponDamageTrait {
 
     @Override
     public ResourceLocation getId() {
-        return GeneHunter.asResource("one_hand_weapon_damage_trait");
+        return GeneHunter.asResource("hammer_weapon_damage_trait");
     }
 
     @Override
     protected WeaponDamageType type() {
-        return WeaponDamageTypes.ONE_HAND;
+        return WeaponDamageTypes.HAMMER;
     }
 }

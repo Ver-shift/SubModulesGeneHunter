@@ -1,4 +1,4 @@
-package org.galaxy.gene_hunter.gateway;
+package org.galaxy.gene_hunter.api.system.gateway;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;

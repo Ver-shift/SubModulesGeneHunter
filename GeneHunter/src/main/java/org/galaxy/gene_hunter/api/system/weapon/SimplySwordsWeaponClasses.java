@@ -25,7 +25,7 @@ public final class SimplySwordsWeaponClasses {
         RAPIER(WeaponGrip.ONE_HAND, WeaponShape.SWORD, List.of(
                 ItemsRegistry.IRON_RAPIER, ItemsRegistry.GOLD_RAPIER, ItemsRegistry.DIAMOND_RAPIER,
                 ItemsRegistry.NETHERITE_RAPIER, ItemsRegistry.RUNIC_RAPIER)),
-        CHAKRAM(WeaponGrip.ONE_HAND, WeaponShape.HAMMER, List.of(
+        CHAKRAM(WeaponGrip.ONE_HAND, WeaponShape.BLADE, List.of(
                 ItemsRegistry.IRON_CHAKRAM, ItemsRegistry.GOLD_CHAKRAM, ItemsRegistry.DIAMOND_CHAKRAM,
                 ItemsRegistry.NETHERITE_CHAKRAM, ItemsRegistry.RUNIC_CHAKRAM)),
         SAI(WeaponGrip.ONE_HAND, WeaponShape.BLADE, List.of(
@@ -50,7 +50,7 @@ public final class SimplySwordsWeaponClasses {
         GREATAXE(WeaponGrip.TWO_HAND, WeaponShape.AXE, List.of(
                 ItemsRegistry.IRON_GREATAXE, ItemsRegistry.GOLD_GREATAXE, ItemsRegistry.DIAMOND_GREATAXE,
                 ItemsRegistry.NETHERITE_GREATAXE, ItemsRegistry.RUNIC_GREATAXE)),
-        TWINBLADE(WeaponGrip.TWO_HAND, WeaponShape.HAMMER, List.of(
+        TWINBLADE(WeaponGrip.POLEARM, WeaponShape.SWORD, List.of(
                 ItemsRegistry.IRON_TWINBLADE, ItemsRegistry.GOLD_TWINBLADE, ItemsRegistry.DIAMOND_TWINBLADE,
                 ItemsRegistry.NETHERITE_TWINBLADE, ItemsRegistry.RUNIC_TWINBLADE)),
 
@@ -66,7 +66,7 @@ public final class SimplySwordsWeaponClasses {
         GLAIVE(WeaponGrip.POLEARM, WeaponShape.HALBERD, List.of(
                 ItemsRegistry.IRON_GLAIVE, ItemsRegistry.GOLD_GLAIVE, ItemsRegistry.DIAMOND_GLAIVE,
                 ItemsRegistry.NETHERITE_GLAIVE, ItemsRegistry.RUNIC_GLAIVE)),
-        WARGLAIVE(WeaponGrip.POLEARM, WeaponShape.AXE, List.of(
+        WARGLAIVE(WeaponGrip.ONE_HAND, WeaponShape.AXE, List.of(
                 ItemsRegistry.IRON_WARGLAIVE, ItemsRegistry.GOLD_WARGLAIVE, ItemsRegistry.DIAMOND_WARGLAIVE,
                 ItemsRegistry.NETHERITE_WARGLAIVE, ItemsRegistry.RUNIC_WARGLAIVE));
 

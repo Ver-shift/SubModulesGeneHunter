@@ -1,5 +1,10 @@
 {
     "values": [
+        "simplyswords:iron_twinblade",
+        "simplyswords:gold_twinblade",
+        "simplyswords:diamond_twinblade",
+        "simplyswords:netherite_twinblade",
+        "simplyswords:runic_twinblade",
         "simplyswords:iron_spear",
         "simplyswords:gold_spear",
         "simplyswords:diamond_spear",
@@ -19,11 +24,6 @@
         "simplyswords:gold_glaive",
         "simplyswords:diamond_glaive",
         "simplyswords:netherite_glaive",
-        "simplyswords:runic_glaive",
-        "simplyswords:iron_warglaive",
-        "simplyswords:gold_warglaive",
-        "simplyswords:diamond_warglaive",
-        "simplyswords:netherite_warglaive",
-        "simplyswords:runic_warglaive"
+        "simplyswords:runic_glaive"
     ]
 }

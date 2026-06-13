@@ -14,6 +14,11 @@
         "simplyswords:gold_glaive",
         "simplyswords:diamond_glaive",
         "simplyswords:netherite_glaive",
-        "simplyswords:runic_glaive"
+        "simplyswords:runic_glaive",
+        "simplyswords:iron_scythe",
+        "simplyswords:gold_scythe",
+        "simplyswords:diamond_scythe",
+        "simplyswords:netherite_scythe",
+        "simplyswords:runic_scythe"
     ]
 }

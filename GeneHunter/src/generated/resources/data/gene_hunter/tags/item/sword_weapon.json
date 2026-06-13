@@ -14,6 +14,19 @@
         "simplyswords:gold_claymore",
         "simplyswords:diamond_claymore",
         "simplyswords:netherite_claymore",
-        "simplyswords:runic_claymore"
+        "simplyswords:runic_claymore",
+        "simplyswords:iron_twinblade",
+        "simplyswords:gold_twinblade",
+        "simplyswords:diamond_twinblade",
+        "simplyswords:netherite_twinblade",
+        "simplyswords:runic_twinblade",
+        "gene_hunter:test_single_hand_sword",
+        "gene_hunter:test_one_hand_damage_sword",
+        "minecraft:wooden_sword",
+        "minecraft:stone_sword",
+        "minecraft:iron_sword",
+        "minecraft:golden_sword",
+        "minecraft:diamond_sword",
+        "minecraft:netherite_sword"
     ]
 }

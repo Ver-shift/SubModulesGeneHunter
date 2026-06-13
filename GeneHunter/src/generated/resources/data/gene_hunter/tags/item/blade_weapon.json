@@ -14,6 +14,11 @@
         "simplyswords:gold_katana",
         "simplyswords:diamond_katana",
         "simplyswords:netherite_katana",
-        "simplyswords:runic_katana"
+        "simplyswords:runic_katana",
+        "simplyswords:iron_chakram",
+        "simplyswords:gold_chakram",
+        "simplyswords:diamond_chakram",
+        "simplyswords:netherite_chakram",
+        "simplyswords:runic_chakram"
     ]
 }

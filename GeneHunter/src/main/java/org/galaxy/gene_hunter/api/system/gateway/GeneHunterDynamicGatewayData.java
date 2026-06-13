@@ -1,4 +1,4 @@
-package org.galaxy.gene_hunter.gateway;
+package org.galaxy.gene_hunter.api.system.gateway;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;

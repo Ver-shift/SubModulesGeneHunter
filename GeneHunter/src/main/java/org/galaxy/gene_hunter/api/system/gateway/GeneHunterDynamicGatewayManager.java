@@ -1,4 +1,4 @@
-package org.galaxy.gene_hunter.gateway;
+package org.galaxy.gene_hunter.api.system.gateway;
 
 import com.mojang.datafixers.util.Either;
 import dev.shadowsoffire.gateways.gate.Gateway;

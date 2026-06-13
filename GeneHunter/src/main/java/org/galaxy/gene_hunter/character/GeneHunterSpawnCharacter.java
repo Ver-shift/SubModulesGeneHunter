@@ -10,8 +10,8 @@ import org.galaxy.beyond.api.system.spawn.SpawnPlan;
 import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
 import org.galaxy.beyond.api.system.definition.SpawnDefinition;
 import org.galaxy.gene_hunter.GeneHunter;
-import org.galaxy.gene_hunter.gateway.GatewaySpawnPlacer;
-import org.galaxy.gene_hunter.gateway.GatewaySpawnTokenFactory;
+import org.galaxy.gene_hunter.api.system.gateway.GatewaySpawnPlacer;
+import org.galaxy.gene_hunter.api.system.gateway.GatewaySpawnTokenFactory;
 
 import java.util.List;
 

@@ -6,26 +6,43 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import org.biotech.api.system.trait.core.ITrait;
+import org.galaxy.gene_hunter.api.system.weapon.WeaponDamageType;
 
 import java.util.List;
 
 public abstract class WeaponDamageTrait implements ITrait {
 
-    protected static final float VALUE = 0.15F;
+    protected static final float VALUE = 1.0F;
 
-    protected abstract Holder<Attribute> attribute();
+    protected WeaponDamageType type() {
+        return null;
+    }
 
-    protected abstract String descriptionKey();
+    protected Holder<Attribute> attribute() {
+        return null;
+    }
+
+    protected String descriptionKey() {
+        WeaponDamageType type = type();
+        if (type == null) {
+            return "";
+        }
+        return type.descriptionKey();
+    }
 
     @Override
     public Holder<Attribute> getAttribute() {
+        WeaponDamageType type = type();
+        if (type != null) {
+            return type.attribute();
+        }
         return attribute();
     }
 
     @Override
     public List<MutableComponent> getUniqueInfo() {
         return List.of(
-                Component.translatable(descriptionKey(), (int) (getValue() * 100))
+                Component.translatable(descriptionKey(), getValue())
         );
     }
 

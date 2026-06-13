@@ -8,8 +8,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.galaxy.gene_hunter.GeneHunter;
-import org.galaxy.gene_hunter.gateway.ChoiceReward;
-import org.galaxy.gene_hunter.gateway.GeneHunterDynamicGatewayManager;
+import org.galaxy.gene_hunter.api.system.gateway.ChoiceReward;
+import org.galaxy.gene_hunter.api.system.gateway.GeneHunterDynamicGatewayManager;
 
 @EventBusSubscriber
 public class GeneHunterGatewayInit {

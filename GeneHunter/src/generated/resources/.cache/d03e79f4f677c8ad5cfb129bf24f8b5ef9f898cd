@@ -1,9 +1,9 @@
-// 1.21.1	2026-06-13T13:45:33.3465182	Tags for minecraft:item mod id gene_hunter
-c77edaff889bdc01f65bab7f8da492a344b2e990 data/gene_hunter/tags/item/axe_weapon.json
-b9df0291a9db7388c16e97ca615ef2c1f7f2fff4 data/gene_hunter/tags/item/blade_weapon.json
-8c25e0f9d9c8a5929548deed97a7c99a970ef6f8 data/gene_hunter/tags/item/halberd_weapon.json
-48861adf6dd1e486b7bca3bf88729bfa334e8980 data/gene_hunter/tags/item/hammer_weapon.json
-f4fc193273a156e89a41dd7f804d50abae75d519 data/gene_hunter/tags/item/one_hand_weapon.json
-fd679530904e3ce0e8291ab41efc56aee3e17c82 data/gene_hunter/tags/item/polearm_weapon.json
-1539e843fabbaf92f3f500b70248483dbb4fc27a data/gene_hunter/tags/item/sword_weapon.json
-0cb6db49216c221248133bf49f44d9b190455a32 data/gene_hunter/tags/item/two_hand_weapon.json
+// 1.21.1	2026-06-13T16:31:22.4326719	Tags for minecraft:item mod id gene_hunter
+7f28f8dcfa4fb982ca0791da2445ce58e6226936 data/gene_hunter/tags/item/axe_weapon.json
+bcf4b9f25a7082147a25379b337ccbd06fdbbb45 data/gene_hunter/tags/item/blade_weapon.json
+3a54bb02ba5b64da255a65498298bb73cf0fc6c4 data/gene_hunter/tags/item/halberd_weapon.json
+2559976bd1cf71569c1c2ebc02daf2ac3086f9a9 data/gene_hunter/tags/item/hammer_weapon.json
+7516411a69e15d3c30a793dd2d2763123abbd0a8 data/gene_hunter/tags/item/one_hand_weapon.json
+f9438f1a2ff5d13861446d949383b40ebcc9b3a3 data/gene_hunter/tags/item/polearm_weapon.json
+3aa4a4d340a7f5bc57452af359ced6ab4d4a67c6 data/gene_hunter/tags/item/sword_weapon.json
+9528bc786bc49adcc7799c3780c0ad44f3e254ec data/gene_hunter/tags/item/two_hand_weapon.json

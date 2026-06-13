@@ -1,4 +1,4 @@
-package org.galaxy.gene_hunter.gateway;
+package org.galaxy.gene_hunter.api.system.gateway;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

@@ -5,15 +5,16 @@
         "simplyswords:diamond_greataxe",
         "simplyswords:netherite_greataxe",
         "simplyswords:runic_greataxe",
-        "simplyswords:iron_scythe",
-        "simplyswords:gold_scythe",
-        "simplyswords:diamond_scythe",
-        "simplyswords:netherite_scythe",
-        "simplyswords:runic_scythe",
         "simplyswords:iron_warglaive",
         "simplyswords:gold_warglaive",
         "simplyswords:diamond_warglaive",
         "simplyswords:netherite_warglaive",
-        "simplyswords:runic_warglaive"
+        "simplyswords:runic_warglaive",
+        "minecraft:wooden_axe",
+        "minecraft:stone_axe",
+        "minecraft:iron_axe",
+        "minecraft:golden_axe",
+        "minecraft:diamond_axe",
+        "minecraft:netherite_axe"
     ]
 }

@@ -11,7 +11,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.system.GeneHunterData;
-import org.galaxy.gene_hunter.gateway.GeneHunterDynamicGatewayData;
+import org.galaxy.gene_hunter.api.system.gateway.GeneHunterDynamicGatewayData;
 
 @EventBusSubscriber
 public class GeneHunterAttachInit {

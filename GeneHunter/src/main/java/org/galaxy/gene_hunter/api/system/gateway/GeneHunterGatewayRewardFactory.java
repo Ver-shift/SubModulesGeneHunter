@@ -1,4 +1,4 @@
-package org.galaxy.gene_hunter.gateway;
+package org.galaxy.gene_hunter.api.system.gateway;
 
 import dev.shadowsoffire.gateways.gate.Reward;
 import org.galaxy.beyond.api.system.spawn.SpawnPlan;
