@@ -2,14 +2,10 @@ package org.galaxy.beyond.api.system.rogue;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.ReadOnlyManaged;
 import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
@@ -50,7 +46,6 @@ public class RogueData implements IPersistedSerializable {
     private SpawnSessionData currentSpawn;
 
     @Persisted
-    @ReadOnlyManaged(serializeMethod = "rogueCapDataSerialize", deserializeMethod = "rogueCapDataDeserialize")
     private final List<RogueCapData> rogueCapData = new CopyOnWriteArrayList<>();
 
     public ProgressType getProgressType() {
@@ -127,29 +122,6 @@ public class RogueData implements IPersistedSerializable {
         setRogueNodeData(null);
         setCurrentSpawn(null);
         getProgressType().resetSceneIndex();
-    }
-
-    @SuppressWarnings("unused")
-    private CompoundTag rogueCapDataSerialize(List<RogueCapData> list) {
-        CompoundTag tag = new CompoundTag();
-        ListTag items = new ListTag();
-        for (RogueCapData capData : list) {
-            RogueCapData.CODEC.codec().encodeStart(NbtOps.INSTANCE, capData)
-                    .result().ifPresent(items::add);
-        }
-        tag.put("items", items);
-        return tag;
-    }
-
-    @SuppressWarnings("unused")
-    private List<RogueCapData> rogueCapDataDeserialize(CompoundTag tag) {
-        List<RogueCapData> list = new CopyOnWriteArrayList<>();
-        ListTag items = tag.getList("items", net.minecraft.nbt.Tag.TAG_COMPOUND);
-        for (int i = 0; i < items.size(); i++) {
-            RogueCapData.CODEC.codec().parse(NbtOps.INSTANCE, items.get(i))
-                    .result().ifPresent(list::add);
-        }
-        return list;
     }
 
 }

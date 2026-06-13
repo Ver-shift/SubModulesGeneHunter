@@ -2,15 +2,11 @@ package org.galaxy.beyond.api.system.large;
 
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.ReadOnlyManaged;
 import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +34,6 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
 
     @Getter
     @Persisted
-    @ReadOnlyManaged(serializeMethod = "nodeDatasSerialize", deserializeMethod = "nodeDatasDeserialize")
     private final List<NodeData> nodeDatas = new CopyOnWriteArrayList<>();
 
     private transient final List<LargeDataDelta> pendingDeltas = new ArrayList<>();
@@ -274,29 +269,4 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
         return ((long) pos.x & 0xFFFFFFFFL) | (((long) pos.z & 0xFFFFFFFFL) << 32);
     }
 
-    @SuppressWarnings("unused")
-    private CompoundTag nodeDatasSerialize(List<NodeData> list) {
-        CompoundTag tag = new CompoundTag();
-        ListTag items = new ListTag();
-        for (NodeData nodeData : list) {
-            NodeData.CODEC.codec().encodeStart(NbtOps.INSTANCE, nodeData)
-                    .result().ifPresent(items::add);
-        }
-        tag.put("items", items);
-        return tag;
-    }
-
-    @SuppressWarnings("unused")
-    private List<NodeData> nodeDatasDeserialize(CompoundTag tag) {
-        List<NodeData> list = new CopyOnWriteArrayList<>();
-        ListTag items = tag.getList("items", net.minecraft.nbt.Tag.TAG_COMPOUND);
-        for (int i = 0; i < items.size(); i++) {
-            NodeData.CODEC.codec().parse(NbtOps.INSTANCE, items.get(i))
-                    .result().ifPresent(nodeData -> {
-                        nodeData.ensureNodeKey();
-                        list.add(nodeData);
-                    });
-        }
-        return list;
-    }
 }
