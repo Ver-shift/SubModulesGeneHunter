@@ -1,5 +1,10 @@
 {
     "values": [
+        "simplyswords:iron_longsword",
+        "simplyswords:gold_longsword",
+        "simplyswords:diamond_longsword",
+        "simplyswords:netherite_longsword",
+        "simplyswords:runic_longsword",
         "simplyswords:iron_claymore",
         "simplyswords:gold_claymore",
         "simplyswords:diamond_claymore",
@@ -14,6 +19,11 @@
         "simplyswords:gold_greataxe",
         "simplyswords:diamond_greataxe",
         "simplyswords:netherite_greataxe",
-        "simplyswords:runic_greataxe"
+        "simplyswords:runic_greataxe",
+        "simplyswords:iron_twinblade",
+        "simplyswords:gold_twinblade",
+        "simplyswords:diamond_twinblade",
+        "simplyswords:netherite_twinblade",
+        "simplyswords:runic_twinblade"
     ]
 }

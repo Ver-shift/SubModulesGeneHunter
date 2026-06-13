@@ -14,14 +14,15 @@ import org.galaxy.gene_hunter.GeneHunter;
 public class GeneHunterTags {
 
 
-
     public static final TagKey<Item> ONE_HAND_WEAPON = createItemTag("one_hand_weapon");
     public static final TagKey<Item> TWO_HAND_WEAPON = createItemTag("two_hand_weapon");
     public static final TagKey<Item> POLEARM_WEAPON = createItemTag("polearm_weapon");
 
-
-
-
+    public static final TagKey<Item> BLADE_WEAPON = createItemTag("blade_weapon");
+    public static final TagKey<Item> SWORD_WEAPON = createItemTag("sword_weapon");
+    public static final TagKey<Item> HALBERD_WEAPON = createItemTag("halberd_weapon");
+    public static final TagKey<Item> AXE_WEAPON = createItemTag("axe_weapon");
+    public static final TagKey<Item> HAMMER_WEAPON = createItemTag("hammer_weapon");
 
 
     private static TagKey<Item> createItemTag(String name) {

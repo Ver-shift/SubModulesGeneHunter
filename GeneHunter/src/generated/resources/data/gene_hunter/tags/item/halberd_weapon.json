@@ -5,11 +5,6 @@
         "simplyswords:diamond_spear",
         "simplyswords:netherite_spear",
         "simplyswords:runic_spear",
-        "simplyswords:iron_scythe",
-        "simplyswords:gold_scythe",
-        "simplyswords:diamond_scythe",
-        "simplyswords:netherite_scythe",
-        "simplyswords:runic_scythe",
         "simplyswords:iron_halberd",
         "simplyswords:gold_halberd",
         "simplyswords:diamond_halberd",
@@ -19,11 +14,6 @@
         "simplyswords:gold_glaive",
         "simplyswords:diamond_glaive",
         "simplyswords:netherite_glaive",
-        "simplyswords:runic_glaive",
-        "simplyswords:iron_warglaive",
-        "simplyswords:gold_warglaive",
-        "simplyswords:diamond_warglaive",
-        "simplyswords:netherite_warglaive",
-        "simplyswords:runic_warglaive"
+        "simplyswords:runic_glaive"
     ]
 }
