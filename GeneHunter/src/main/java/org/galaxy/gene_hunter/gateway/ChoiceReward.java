@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.beyond.api.system.rogue.core.PlayerPhase;
-import org.galaxy.gene_hunter.container.ChoiceContainer;
+import org.galaxy.gene_hunter.api.system.choice.GeneHunterChoiceRewards;
 
 import java.util.function.Consumer;
 
@@ -41,10 +41,10 @@ public record ChoiceReward(int raidValue, boolean boss) implements Reward {
 
     private void reward(ServerPlayer player, NodeColor nodeColor) {
         if (boss) {
-            ChoiceContainer.bossRewardEvent(player, nodeColor);
+            GeneHunterChoiceRewards.boss(player, nodeColor);
             return;
         }
-        ChoiceContainer.rogueRewardEvent(player, nodeColor);
+        GeneHunterChoiceRewards.normal(player, nodeColor);
     }
 
     private NodeColor currentNodeColor(ServerLevel level) {

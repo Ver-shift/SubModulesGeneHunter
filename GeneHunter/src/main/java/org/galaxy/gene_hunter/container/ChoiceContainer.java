@@ -11,18 +11,10 @@ import dev.vfyjxf.taffy.style.AlignItems;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import org.biotech.api.init.BiotechLootTypeInit;
 import org.biotech.ui.BiotechTexture;
-import org.galaxy.beyond.api.system.node.NodeColor;
-import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
-import org.galaxy.gene_hunter.api.system.choice.ChoiceStage;
 import org.galaxy.gene_hunter.ui.element.Choice;
 
-import java.util.List;
-
-import static org.galaxy.gene_hunter.api.GeneHunterAPI.getChoiceManager;
 import static org.galaxy.gene_hunter.api.GeneHunterAPI.getGeneHunterData;
 
 public class ChoiceContainer {
@@ -30,17 +22,6 @@ public class ChoiceContainer {
 
     public static ModularUI init(Player player) {
         return createGeneInventoryUI(player);
-    }
-
-    public static void rogueRewardEvent(ServerPlayer player, NodeColor nodeColor) {
-        getChoiceManager(player).startRoll(BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get(), nodeColor);
-    }
-
-    public static void bossRewardEvent(ServerPlayer player, NodeColor nodeColor) {
-        getChoiceManager(player).startStages(List.of(
-                ChoiceStage.fixed(BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get(), nodeColor, 3),
-                ChoiceStage.of(GeneHunterLootInit.WEAPON_LOOT_TYPE.get(), nodeColor)
-        ));
     }
 
     public static ModularUI createGeneInventoryUI(Player player) {

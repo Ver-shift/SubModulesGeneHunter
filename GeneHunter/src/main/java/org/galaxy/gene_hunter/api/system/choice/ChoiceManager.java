@@ -12,13 +12,10 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.galaxy.beyond.component.ValueComp;
 import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.gene_hunter.api.GeneHunterAPI;
-import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
-import org.galaxy.gene_hunter.api.init.GeneHunterLootInit;
 import org.galaxy.gene_hunter.api.system.GeneHunterData;
 import org.galaxy.gene_hunter.api.system.choice.core.IChoiceManager;
 import org.galaxylib.api.GalaxyLibAPI;
-import org.biotech.api.init.BiotechLootTypeInit;
 import org.galaxylib.api.system.loot.LootManager;
 import org.galaxylib.api.system.loot.core.ILootType;
 
@@ -26,12 +23,12 @@ import java.util.List;
 
 public class ChoiceManager implements IChoiceManager {
 
-    private GeneHunterData data;
-    private ChoiceHolderData choiceHolderData;
-    private ServerPlayer player;
+    private final ChoiceHolderData choiceHolderData;
+    private final ServerPlayer player;
+    private final ChoiceRollFactory rollFactory = new ChoiceRollFactory();
+    private final ChoiceExperienceCost experienceCost = new ChoiceExperienceCost();
 
     public ChoiceManager(GeneHunterData data) {
-        this.data = data;
         this.choiceHolderData = data.getChoiceHolderData();
         this.player = data.getPlayer();
     }
@@ -39,10 +36,7 @@ public class ChoiceManager implements IChoiceManager {
 
     @Override
     public boolean openChoiceMenu() {
-        if (player instanceof ServerPlayer player) {
-            return PlayerUIMenuType.openUI(player, GeneHunterMenuInit.CHOICE_MENU);
-        }
-        return false;
+        return PlayerUIMenuType.openUI(player, GeneHunterMenuInit.CHOICE_MENU);
     }
 
     /**
@@ -83,46 +77,18 @@ public class ChoiceManager implements IChoiceManager {
         choiceHolderData.clear();
         int maxSlots = Math.min(getChoiceCount(), handler.getSlots());
         NodeColor color = nodeColor == null ? NodeColor.GREEN : nodeColor;
+        ChoiceStage stage = new ChoiceStage(lootType, color, fixedRolls);
 
-        LootManager.Request request = createChoiceRequest(lootType, color, fixedRolls);
+        LootManager.Request request = rollFactory.create(player, stage);
         var result = GalaxyLibAPI.getLootManager().rollChoices(request, LootManager.Context.of(player, request.getRandomId()), maxSlots);
         choiceHolderData.setCurrentLootType(lootType);
         choiceHolderData.setCurrentNodeColor(color);
         choiceHolderData.setCurrentFixedRolls(fixedRolls);
-        choiceHolderData.setRefreshCost(ChoiceRefreshCost.nextCost(request.getTables(), choiceHolderData.getRefreshTimes()));
+        choiceHolderData.setRefreshCost(experienceCost.nextCost(request, choiceHolderData.getRefreshTimes()));
 
         for (int i = 0; i < result.options().size(); i++) {
             handler.setStackInSlot(i, result.options().get(i).stack());
         }
-    }
-
-    private LootManager.Request createChoiceRequest(ILootType<?> lootType, NodeColor nodeColor, int fixedRolls) {
-        LootManager.Request.RequestBuilder builder = LootManager.Request.builder()
-                .lootType(lootType)
-                .replacement(false);
-
-        if (lootType == GeneHunterLootInit.WEAPON_LOOT_TYPE.get()) {
-            return builder
-                    .tables(
-                            List.of(
-                                    GeneHunter.asResource("one_hand_weapon_base"),
-                                    GeneHunter.asResource("two_hand_weapon_base"),
-                                    GeneHunter.asResource("polearm_weapon_base")
-                            )
-                    )
-                    .rolls(Math.max(1, fixedRolls))
-                    .build();
-        }
-
-        if (lootType == BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get()) {
-            return builder
-                    .tables(List.of(GeneHunter.asResource("xene_trait_base")))
-                    .weightModifier(new XeneChoiceWeightModifier(nodeColor))
-                    .rolls(fixedRolls > 0 ? fixedRolls : lootType.getPoolCount(player))
-                    .build();
-        }
-
-        return builder.rolls(Math.max(1, fixedRolls)).build();
     }
 
     @Override
@@ -190,23 +156,12 @@ public class ChoiceManager implements IChoiceManager {
             return;
         }
         int cost = choiceHolderData.getRefreshCost();
-        if (!consumeExperience(cost)) {
+        if (!experienceCost.consume(player, cost)) {
             player.displayClientMessage(Component.translatable("message.gene_hunter.refresh.not_enough_xp", cost), true);
             return;
         }
         choiceHolderData.setRefreshTimes(choiceHolderData.getRefreshTimes() + 1);
         doRoll(lootType, choiceHolderData.getCurrentNodeColor(), choiceHolderData.getCurrentFixedRolls());
-    }
-
-    private boolean consumeExperience(int points) {
-        if (points <= 0) {
-            return true;
-        }
-        if (player.totalExperience < points) {
-            return false;
-        }
-        player.giveExperiencePoints(-points);
-        return true;
     }
 
     /**
