@@ -9,6 +9,7 @@ import org.galaxy.beyond.api.system.node.core.INodeManager;
 import org.galaxy.beyond.api.system.definition.IDefinitionManager;
 import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.RogueCapManager;
+import org.galaxy.beyond.api.system.rogue.RogueManager;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
@@ -17,11 +18,19 @@ public interface IBeyondManager {
 
     //system manager
     IZoneManager getZoneManager();
+
     INodeManager getNodeManager();
+
     IStructureManager getStructureManager();
+
     ISafeZoneStructureManager getSafeZoneStructureManager();
+
+    RogueManager getRogueManager();
+
     RogueCapManager getRogueCapManager();
+
     IRogueContext getRogueContext();
+
     IDefinitionManager getDefinitionManager();
 
     //event handle

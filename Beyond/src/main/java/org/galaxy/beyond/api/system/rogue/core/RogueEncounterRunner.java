@@ -4,14 +4,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.event.custom.RogueEncounterEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
-import org.galaxy.beyond.api.system.definition.SpawnDefinitionManager;
 import org.galaxy.beyond.api.system.rogue.*;
-import org.galaxy.beyond.api.system.spawn.EncounterSpawnPlanner;
-import org.galaxy.beyond.api.system.spawn.SpawnContext;
-import org.galaxy.beyond.api.system.spawn.SpawnSessionData;
 
 /**
  * 节点遭遇运行器 —— 管理单个节点的遭遇解析 → 事件步进 → 解锁全流程。
@@ -21,6 +16,8 @@ public class RogueEncounterRunner {
     private final ServerLevel level;
     private final IRogueContext ctx;
     private final RogueNodeData nodeData;
+    private final EncounterBroadcaster broadcaster = new EncounterBroadcaster();
+    private final SpawnSessionResolver spawnSessionResolver = new SpawnSessionResolver();
 
     public RogueEncounterRunner(ServerLevel level, IRogueContext ctx, RogueNodeData nodeData) {
         this.level = level;
@@ -52,7 +49,7 @@ public class RogueEncounterRunner {
         EncounterType encType = resolveEncounter();
         if (encType == null) return false;
 
-        EventTask task = Beyond.MANAGER.getDefinitionManager().resolveEvent(level, encType);
+        EventTask task = BeyondAPI.resolveEvent(level, encType);
         EncounterData encData = new EncounterData();
         encData.setType(encType);
         encData.setEvents(task);
@@ -61,9 +58,7 @@ public class RogueEncounterRunner {
         BeyondAPI.syncGlobalData(level);
         ctx.setAllPlayerPhase(level, PlayerPhase.ON_EVENT);
 
-        level.getServer().getPlayerList().broadcastSystemMessage(
-                Component.translatable("beyond.node.encounter_start",
-                        Component.translatable(encType.getTranslationKey())), false);
+        broadcaster.encounterStart(level, encType);
         broadcastCurrentEvent();
 
         if (RogueEncounterEvent.post(new RogueEncounterEvent.Start(
@@ -132,13 +127,7 @@ public class RogueEncounterRunner {
         BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
 
-        var ids = encData.getEvents().getEvents();
-        String eventPath = nodeData.getCurrentEventIndex() < ids.size()
-                ? ids.get(nodeData.getCurrentEventIndex()).getPath() : "unknown";
-        level.getServer().getPlayerList().broadcastSystemMessage(
-                Component.translatable("beyond.node.event_trigger",
-                        Component.translatable("beyond.event." + eventPath),
-                        nodeData.getCurrentEventIndex() + 1, eventCount), false);
+        broadcaster.currentEvent(level, encData.getEvents().getEvents(), nodeData.getCurrentEventIndex(), eventCount);
 
         if (RogueEncounterEvent.post(new RogueEncounterEvent.EventComplete(
                 level, encData.getType(), encData.getEvents(), ctx,
@@ -153,8 +142,7 @@ public class RogueEncounterRunner {
             } else {
                 ctx.setAllPlayerPhase(level, PlayerPhase.PRE_EVENT);
             }
-            level.getServer().getPlayerList().broadcastSystemMessage(
-                    Component.translatable("beyond.node.next_event"), false);
+            broadcaster.nextEvent(level);
             castCurrentEvent(encData.getType());
         }
         return false;
@@ -190,12 +178,9 @@ public class RogueEncounterRunner {
         var progressType = rogueData.getProgressType();
         int current = progressType != null ? progressType.getScenesIndex() : 0;
         int totalScenes = progressType != null ? progressType.getScenes().size() : 0;
-        level.getServer().getPlayerList().broadcastSystemMessage(
-                Component.translatable("beyond.node.unlocked"), false);
-        level.getServer().getPlayerList().broadcastSystemMessage(
-                Component.translatable("beyond.node.progress_advance", current, totalScenes), false);
+        broadcaster.nodeUnlocked(level, current, totalScenes);
 
-        BeyondAPI.getBeyondManager().getZoneManager().addActiveZone(level, nodeData);
+        BeyondAPI.zoneManager().addActiveZone(level, nodeData);
         BeyondAPI.syncGlobalData(level);
 
         if (encData != null && encData.getEvents() != null && encData.getEvents().hasEvents()) {
@@ -241,10 +226,7 @@ public class RogueEncounterRunner {
         int total = nodeData.eventCount();
         int idx = nodeData.getCurrentEventIndex();
         if (idx < ids.size()) {
-            level.getServer().getPlayerList().broadcastSystemMessage(
-                    Component.translatable("beyond.node.event_trigger",
-                            Component.translatable("beyond.event." + ids.get(idx).getPath()),
-                            idx + 1, total), false);
+            broadcaster.currentEvent(level, ids, idx, total);
         }
     }
 
@@ -286,43 +268,8 @@ public class RogueEncounterRunner {
     }
 
     private RogueEventType.Context runnerContext(EncounterType encType) {
-        return new RogueEventType.Context(encType, level, nodePos(), ctx, spawnData(encType));
-    }
-
-    private SpawnSessionData spawnData(EncounterType encType) {
-        var rogueData = ctx.getRogueData(level);
-        boolean boss = isBossEvent(encType);
-        if (rogueData.getCurrentSpawn() != null && rogueData.getCurrentSpawn().isBoss() == boss) {
-            return rogueData.getCurrentSpawn();
-        }
-
-        var definitionId = BeyondAPI.getBeyondManager().getDefinitionManager().resolveSpawnDefinition(level);
-        if (definitionId == null) {
-            return SpawnSessionData.empty();
-        }
-
-        var definition = SpawnDefinitionManager.getDefinition(definitionId).orElse(null);
-        if (definition == null) {
-            return SpawnSessionData.empty();
-        }
-
-        var progressType = rogueData.getProgressType();
-        SpawnContext spawnContext = new SpawnContext(
-                progressType.getClampedScenesIndex(),
-                encType.getColor(),
-                level.random,
-                progressType.getScenes()
-        );
-        var character = SpawnDefinitionManager.getCharacter(definition);
-        var plan = new EncounterSpawnPlanner(character).createPlan(definition, spawnContext, boss);
-        SpawnSessionData spawnData = character.createSpawnData(definition, spawnContext, plan);
-        rogueData.setCurrentSpawn(spawnData);
-        return spawnData;
-    }
-
-    private boolean isBossEvent(EncounterType encType) {
-        RogueEventType event = currentEvent();
-        return encType.getSceneType() == SceneType.CLIMAX && event != null && "boss".equals(event.getId().getPath());
+        return new RogueEventType.Context(encType, level, nodePos(), ctx,
+                spawnSessionResolver.resolve(level, ctx, nodeData, encType, currentEvent()));
     }
 
     private BlockPos nodePos() {

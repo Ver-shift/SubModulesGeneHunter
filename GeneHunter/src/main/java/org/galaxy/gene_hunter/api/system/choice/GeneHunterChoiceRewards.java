@@ -25,7 +25,7 @@ public final class GeneHunterChoiceRewards {
         if (scheme.isEmpty()) {
             return;
         }
-        GeneHunterAPI.getChoiceManager(player).startStages(scheme.stages());
+        GeneHunterAPI.choiceManager().startStages(player, scheme.stages());
     }
 
     private static ChoiceRewardScheme normalScheme(NodeColor nodeColor) {

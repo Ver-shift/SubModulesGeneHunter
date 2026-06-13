@@ -13,29 +13,32 @@ import org.galaxy.beyond.component.ValueComp;
 import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxy.gene_hunter.api.GeneHunterAPI;
 import org.galaxy.gene_hunter.api.init.GeneHunterMenuInit;
-import org.galaxy.gene_hunter.api.system.GeneHunterData;
-import org.galaxy.gene_hunter.api.system.choice.core.IChoiceManager;
 import org.galaxylib.api.GalaxyLibAPI;
 import org.galaxylib.api.system.loot.LootManager;
 import org.galaxylib.api.system.loot.core.ILootType;
 
 import java.util.List;
 
-public class ChoiceManager implements IChoiceManager {
+public final class ChoiceManager {
 
-    private final ChoiceHolderData choiceHolderData;
-    private final ServerPlayer player;
+    private static final ChoiceManager INSTANCE = new ChoiceManager();
+
     private final ChoiceRollFactory rollFactory = new ChoiceRollFactory();
     private final ChoiceExperienceCost experienceCost = new ChoiceExperienceCost();
 
-    public ChoiceManager(GeneHunterData data) {
-        this.choiceHolderData = data.getChoiceHolderData();
-        this.player = data.getPlayer();
+    private ChoiceManager() {
+    }
+
+    public static ChoiceManager get() {
+        return INSTANCE;
+    }
+
+    private ChoiceHolderData data(ServerPlayer player) {
+        return GeneHunterAPI.getGeneHunterData(player).getChoiceHolderData();
     }
 
 
-    @Override
-    public boolean openChoiceMenu() {
+    public boolean openChoiceMenu(ServerPlayer player) {
         return PlayerUIMenuType.openUI(player, GeneHunterMenuInit.CHOICE_MENU);
     }
 
@@ -52,30 +55,28 @@ public class ChoiceManager implements IChoiceManager {
         }
     }
 
-    @Override
-    public int getChoiceCount() {
-        return choiceHolderData.getChoiceCount();
+    public int getChoiceCount(ServerPlayer player) {
+        return data(player).getChoiceCount();
     }
 
-    @Override
-    public void setChoiceCount(int choice) {
-        choiceHolderData.setChoiceCount(choice);
+    public void setChoiceCount(ServerPlayer player, int choice) {
+        data(player).setChoiceCount(choice);
     }
 
 
-    public void doRoll(ILootType<?> lootType) {
-        doRoll(lootType, null);
+    public void doRoll(ServerPlayer player, ILootType<?> lootType) {
+        doRoll(player, lootType, null);
     }
 
-    @Override
-    public void doRoll(ILootType<?> lootType, NodeColor nodeColor) {
-        doRoll(lootType, nodeColor, 0);
+    public void doRoll(ServerPlayer player, ILootType<?> lootType, NodeColor nodeColor) {
+        doRoll(player, lootType, nodeColor, 0);
     }
 
-    private void doRoll(ILootType<?> lootType, NodeColor nodeColor, int fixedRolls) {
+    private void doRoll(ServerPlayer player, ILootType<?> lootType, NodeColor nodeColor, int fixedRolls) {
+        ChoiceHolderData choiceHolderData = data(player);
         ItemStackHandler handler = choiceHolderData.getChoiceHolderHandler();
         choiceHolderData.clear();
-        int maxSlots = Math.min(getChoiceCount(), handler.getSlots());
+        int maxSlots = Math.min(getChoiceCount(player), handler.getSlots());
         NodeColor color = nodeColor == null ? NodeColor.GREEN : nodeColor;
         ChoiceStage stage = new ChoiceStage(lootType, color, fixedRolls);
 
@@ -91,38 +92,37 @@ public class ChoiceManager implements IChoiceManager {
         }
     }
 
-    @Override
-    public void startRoll(ILootType<?> lootType) {
-        startRoll(lootType, null);
+    public void startRoll(ServerPlayer player, ILootType<?> lootType) {
+        startRoll(player, lootType, null);
     }
 
-    @Override
-    public void startRoll(ILootType<?> lootType, NodeColor nodeColor) {
-        startStages(List.of(ChoiceStage.of(lootType, nodeColor)));
+    public void startRoll(ServerPlayer player, ILootType<?> lootType, NodeColor nodeColor) {
+        startStages(player, List.of(ChoiceStage.of(lootType, nodeColor)));
     }
 
-    @Override
-    public void startStages(List<ChoiceStage> stages) {
+    public void startStages(ServerPlayer player, List<ChoiceStage> stages) {
         if (stages == null || stages.isEmpty()) {
             return;
         }
+        ChoiceHolderData choiceHolderData = data(player);
         choiceHolderData.startStages(stages);
-        startStage(choiceHolderData.currentStage());
-        openChoiceMenu();
+        startStage(player, choiceHolderData.currentStage());
+        openChoiceMenu(player);
     }
 
-    private void startStage(ChoiceStage stage) {
+    private void startStage(ServerPlayer player, ChoiceStage stage) {
         if (stage == null) {
-            endAllStages();
+            endAllStages(player);
             return;
         }
+        ChoiceHolderData choiceHolderData = data(player);
         choiceHolderData.setRefreshTimes(0);
         choiceHolderData.setCanRefresh(true);
-        doRoll(stage.lootType(), stage.nodeColor(), stage.fixedRolls());
+        doRoll(player, stage.lootType(), stage.nodeColor(), stage.fixedRolls());
     }
 
-    @Override
-    public void endRoll(ItemStack claimedStack) {
+    public void endRoll(ServerPlayer player, ItemStack claimedStack) {
+        ChoiceHolderData choiceHolderData = data(player);
         // 清空所有槽位，表示选择完成
         choiceHolderData.clear();
         // 播放音效
@@ -133,20 +133,21 @@ public class ChoiceManager implements IChoiceManager {
             player.sendSystemMessage(Component.translatable("message.gene_hunter.item_claimed", itemName));
         }
         if (choiceHolderData.nextStage()) {
-            startStage(choiceHolderData.currentStage());
+            startStage(player, choiceHolderData.currentStage());
             return;
         }
-        endAllStages();
+        endAllStages(player);
     }
 
-    private void endAllStages() {
+    private void endAllStages(ServerPlayer player) {
         player.closeContainer();
+        ChoiceHolderData choiceHolderData = data(player);
         choiceHolderData.setCanRefresh(false);
         choiceHolderData.clearStages();
     }
 
-    @Override
-    public void refresh() {
+    public void refresh(ServerPlayer player) {
+        ChoiceHolderData choiceHolderData = data(player);
         if (!choiceHolderData.isCanRefresh()) {
             return;
         }
@@ -161,7 +162,7 @@ public class ChoiceManager implements IChoiceManager {
             return;
         }
         choiceHolderData.setRefreshTimes(choiceHolderData.getRefreshTimes() + 1);
-        doRoll(lootType, choiceHolderData.getCurrentNodeColor(), choiceHolderData.getCurrentFixedRolls());
+        doRoll(player, lootType, choiceHolderData.getCurrentNodeColor(), choiceHolderData.getCurrentFixedRolls());
     }
 
     /**
@@ -172,10 +173,7 @@ public class ChoiceManager implements IChoiceManager {
         if (sender.isRemote()) {
             var player = sender.asPlayer();
             if (player instanceof ServerPlayer serverPlayer) {
-                var manager = GeneHunterAPI.getChoiceManager(serverPlayer);
-                if (manager instanceof ChoiceManager choiceManager) {
-                    choiceManager.refresh();
-                }
+                GeneHunterAPI.choiceManager().refresh(serverPlayer);
             }
         }
     }
@@ -185,25 +183,24 @@ public class ChoiceManager implements IChoiceManager {
         if (sender.isRemote()) {
             var player = sender.asPlayer();
             if (player instanceof ServerPlayer serverPlayer) {
-                var manager = GeneHunterAPI.getChoiceManager(serverPlayer);
-                if (manager instanceof ChoiceManager choiceManager) {
-                    var handler = choiceManager.choiceHolderData.getChoiceHolderHandler();
-                    if (slotIndex >= 0 && slotIndex < handler.getSlots()) {
-                        ItemStack stack = handler.getStackInSlot(slotIndex);
-                        if (!stack.isEmpty()) {
-                            ItemStack claimedStack = createClaimStack(stack);
-                            ILootType<?> lootType = choiceManager.choiceHolderData.getCurrentLootType();
-                            if (lootType != null) {
-                                lootType.claim(serverPlayer, claimedStack, LootManager.Context.of(serverPlayer));
-                            } else {
-                                // 如果没有战利品类型，直接给玩家
-                                if (!serverPlayer.getInventory().add(claimedStack)) {
-                                    serverPlayer.spawnAtLocation(claimedStack);
-                                }
+                var choiceManager = GeneHunterAPI.choiceManager();
+                var choiceHolderData = choiceManager.data(serverPlayer);
+                var handler = choiceHolderData.getChoiceHolderHandler();
+                if (slotIndex >= 0 && slotIndex < handler.getSlots()) {
+                    ItemStack stack = handler.getStackInSlot(slotIndex);
+                    if (!stack.isEmpty()) {
+                        ItemStack claimedStack = createClaimStack(stack);
+                        ILootType<?> lootType = choiceHolderData.getCurrentLootType();
+                        if (lootType != null) {
+                            lootType.claim(serverPlayer, claimedStack, LootManager.Context.of(serverPlayer));
+                        } else {
+                            // 如果没有战利品类型，直接给玩家
+                            if (!serverPlayer.getInventory().add(claimedStack)) {
+                                serverPlayer.spawnAtLocation(claimedStack);
                             }
-                            manager.endRoll(claimedStack);
-
                         }
+                        choiceManager.endRoll(serverPlayer, claimedStack);
+
                     }
                 }
             }

@@ -19,33 +19,31 @@ import java.util.Optional;
  * 武器战利品类型 - 只处理有攻击伤害属性的物品
  */
 public class WeaponLootType implements ILootType<ItemStack> {
-    
+
     @Override
     public int getPoolCount(ServerPlayer player) {
-        return GeneHunterAPI.getChoiceManager(player).getChoiceCount();
+        return GeneHunterAPI.choiceManager().getChoiceCount(player);
     }
 
     @Override
     public Optional<ItemStack> resolve(LootEntryDefinition entry, LootManager.Context context) {
         var item = BuiltInRegistries.ITEM.get(entry.id());
-        
+
         // 检查物品是否存在
         if (item == Items.AIR) {
             return Optional.empty();
         }
-        
+
         // 创建物品栈
         ItemStack stack = new ItemStack(item, entry.count());
-        
+
         // 检测是否是武器（有攻击伤害属性）
         if (ItemType.isWeapon(stack)) {
             return Optional.of(stack);
         }
-        
+
         return Optional.empty();
     }
-
-
 
 
 }

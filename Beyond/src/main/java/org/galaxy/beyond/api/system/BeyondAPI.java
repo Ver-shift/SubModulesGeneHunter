@@ -1,6 +1,7 @@
 package org.galaxy.beyond.api.system;
 
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,18 +13,65 @@ import org.galaxy.beyond.api.config.CommonConfig;
 import org.galaxy.beyond.api.init.BeyondAttachmentInit;
 import org.galaxy.beyond.api.system.large.BeyondLargeLevelData;
 import org.galaxy.beyond.api.system.node.NodeData;
-import org.galaxy.beyond.api.system.rogue.RogueData;
+import org.galaxy.beyond.api.system.rogue.EncounterType;
+import org.galaxy.beyond.api.system.rogue.EventTask;
+import org.galaxy.beyond.api.system.rogue.IRogueContext;
 import org.galaxy.beyond.api.system.rogue.ProgressType;
+import org.galaxy.beyond.api.system.rogue.RogueCapManager;
+import org.galaxy.beyond.api.system.rogue.RogueData;
+import org.galaxy.beyond.api.system.rogue.RogueManager;
+import org.galaxy.beyond.api.system.definition.IDefinitionManager;
 import org.galaxy.beyond.api.system.definition.RogueDefinition;
+import org.galaxy.beyond.api.system.definition.SpawnDefinition;
+import org.galaxy.beyond.api.system.definition.SpawnDefinitionManager;
+import org.galaxy.beyond.api.system.spawn.character.Character;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
+import org.galaxy.beyond.api.system.zone.core.IZoneManager;
 import org.galaxy.beyond.api.system.zone.LevelZoneData;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BeyondAPI {
 
     public static IBeyondManager getBeyondManager() {
         return Beyond.MANAGER;
+    }
+
+    public static IRogueContext rogueContext() {
+        return getBeyondManager().getRogueContext();
+    }
+
+    public static RogueManager rogueManager() {
+        return getBeyondManager().getRogueManager();
+    }
+
+    public static RogueCapManager rogueCapManager() {
+        return getBeyondManager().getRogueCapManager();
+    }
+
+    public static IDefinitionManager definitionManager() {
+        return getBeyondManager().getDefinitionManager();
+    }
+
+    public static IZoneManager zoneManager() {
+        return getBeyondManager().getZoneManager();
+    }
+
+    public static EventTask resolveEvent(ServerLevel level, EncounterType encounterType) {
+        return definitionManager().resolveEvent(level, encounterType);
+    }
+
+    public static ResourceLocation resolveSpawnDefinition(ServerLevel level) {
+        return definitionManager().resolveSpawnDefinition(level);
+    }
+
+    public static Optional<SpawnDefinition> getSpawnDefinition(ResourceLocation id) {
+        return SpawnDefinitionManager.getDefinition(id);
+    }
+
+    public static Character getSpawnCharacter(SpawnDefinition definition) {
+        return SpawnDefinitionManager.getCharacter(definition);
     }
 
     public static ServerLevel getOverWorld() {
