@@ -75,22 +75,28 @@ public class ChoiceManager implements IChoiceManager {
 
     @Override
     public void doRoll(ILootType<?> lootType, NodeColor nodeColor) {
+        doRoll(lootType, nodeColor, 0);
+    }
+
+    private void doRoll(ILootType<?> lootType, NodeColor nodeColor, int fixedRolls) {
         ItemStackHandler handler = choiceHolderData.getChoiceHolderHandler();
         choiceHolderData.clear();
         int maxSlots = Math.min(getChoiceCount(), handler.getSlots());
         NodeColor color = nodeColor == null ? NodeColor.GREEN : nodeColor;
 
-        LootManager.Request request = createChoiceRequest(lootType, color);
+        LootManager.Request request = createChoiceRequest(lootType, color, fixedRolls);
         var result = GalaxyLibAPI.getLootManager().rollChoices(request, LootManager.Context.of(player, request.getRandomId()), maxSlots);
         choiceHolderData.setCurrentLootType(lootType);
         choiceHolderData.setCurrentNodeColor(color);
+        choiceHolderData.setCurrentFixedRolls(fixedRolls);
+        choiceHolderData.setRefreshCost(ChoiceRefreshCost.nextCost(request.getTables(), choiceHolderData.getRefreshTimes()));
 
         for (int i = 0; i < result.options().size(); i++) {
             handler.setStackInSlot(i, result.options().get(i).stack());
         }
     }
 
-    private LootManager.Request createChoiceRequest(ILootType<?> lootType, NodeColor nodeColor) {
+    private LootManager.Request createChoiceRequest(ILootType<?> lootType, NodeColor nodeColor, int fixedRolls) {
         LootManager.Request.RequestBuilder builder = LootManager.Request.builder()
                 .lootType(lootType)
                 .replacement(false);
@@ -104,7 +110,7 @@ public class ChoiceManager implements IChoiceManager {
                                     GeneHunter.asResource("polearm_weapon_base")
                             )
                     )
-                    .rolls(1)
+                    .rolls(Math.max(1, fixedRolls))
                     .build();
         }
 
@@ -112,11 +118,11 @@ public class ChoiceManager implements IChoiceManager {
             return builder
                     .tables(List.of(GeneHunter.asResource("xene_trait_base")))
                     .weightModifier(new XeneChoiceWeightModifier(nodeColor))
-                    .rolls(lootType.getPoolCount(player))
+                    .rolls(fixedRolls > 0 ? fixedRolls : lootType.getPoolCount(player))
                     .build();
         }
 
-        return builder.rolls(1).build();
+        return builder.rolls(Math.max(1, fixedRolls)).build();
     }
 
     @Override
@@ -126,9 +132,27 @@ public class ChoiceManager implements IChoiceManager {
 
     @Override
     public void startRoll(ILootType<?> lootType, NodeColor nodeColor) {
-        doRoll(lootType, nodeColor);
+        startStages(List.of(ChoiceStage.of(lootType, nodeColor)));
+    }
+
+    @Override
+    public void startStages(List<ChoiceStage> stages) {
+        if (stages == null || stages.isEmpty()) {
+            return;
+        }
+        choiceHolderData.startStages(stages);
+        startStage(choiceHolderData.currentStage());
         openChoiceMenu();
+    }
+
+    private void startStage(ChoiceStage stage) {
+        if (stage == null) {
+            endAllStages();
+            return;
+        }
+        choiceHolderData.setRefreshTimes(0);
         choiceHolderData.setCanRefresh(true);
+        doRoll(stage.lootType(), stage.nodeColor(), stage.fixedRolls());
     }
 
     @Override
@@ -142,9 +166,17 @@ public class ChoiceManager implements IChoiceManager {
             Component itemName = claimedStack.getHoverName();
             player.sendSystemMessage(Component.translatable("message.gene_hunter.item_claimed", itemName));
         }
-        // 关闭屏幕
+        if (choiceHolderData.nextStage()) {
+            startStage(choiceHolderData.currentStage());
+            return;
+        }
+        endAllStages();
+    }
+
+    private void endAllStages() {
         player.closeContainer();
         choiceHolderData.setCanRefresh(false);
+        choiceHolderData.clearStages();
     }
 
     @Override
@@ -157,8 +189,24 @@ public class ChoiceManager implements IChoiceManager {
         if (lootType == null) {
             return;
         }
-        choiceHolderData.clear();
-        doRoll(lootType, choiceHolderData.getCurrentNodeColor());
+        int cost = choiceHolderData.getRefreshCost();
+        if (!consumeExperience(cost)) {
+            player.displayClientMessage(Component.translatable("message.gene_hunter.refresh.not_enough_xp", cost), true);
+            return;
+        }
+        choiceHolderData.setRefreshTimes(choiceHolderData.getRefreshTimes() + 1);
+        doRoll(lootType, choiceHolderData.getCurrentNodeColor(), choiceHolderData.getCurrentFixedRolls());
+    }
+
+    private boolean consumeExperience(int points) {
+        if (points <= 0) {
+            return true;
+        }
+        if (player.totalExperience < points) {
+            return false;
+        }
+        player.giveExperiencePoints(-points);
+        return true;
     }
 
     /**

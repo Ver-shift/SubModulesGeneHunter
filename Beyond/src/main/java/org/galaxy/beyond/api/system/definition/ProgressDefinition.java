@@ -14,6 +14,7 @@ import org.galaxy.beyond.api.system.rogue.EventTask;
 import org.galaxy.beyond.api.system.rogue.SceneType;
 import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -44,21 +45,21 @@ public class ProgressDefinition implements IPersistedSerializable {
      */
     @Persisted
     @Builder.Default
-    private List<ResourceLocation> progressCaps = List.of();
+    private List<ResourceLocation> progressCaps = new ArrayList<>();
 
     /**
      * 按 order 排序后逐个抽取的场景 roll。
      */
     @Persisted(subPersisted = true)
     @Builder.Default
-    private List<SceneRoll> sceneRolls = List.of();
+    private List<SceneRoll> sceneRolls = new ArrayList<>();
 
     /**
      * 按 {@link EncounterType} 分类的遭遇表。
      */
     @Persisted(subPersisted = true)
     @Builder.Default
-    private List<Encounter> encounters = List.of();
+    private List<Encounter> encounters = new ArrayList<>();
 
     public ResourceLocation getSpawnDefinition() {
         return spawnDefinition != null ? spawnDefinition : CassandraCharacter.ID;
@@ -99,7 +100,7 @@ public class ProgressDefinition implements IPersistedSerializable {
          */
         @Persisted(subPersisted = true)
         @Builder.Default
-        private List<SceneEntry> entries = List.of();
+        private List<SceneEntry> entries = new ArrayList<>();
 
         public static SceneRoll of(int order, SceneEntry... entries) {
             return SceneRoll.builder().order(order).entries(List.of(entries)).build();
@@ -177,7 +178,7 @@ public class ProgressDefinition implements IPersistedSerializable {
 
         @Persisted(subPersisted = true)
         @Builder.Default
-        private List<EventRoll> events = List.of();
+        private List<EventRoll> events = new ArrayList<>();
 
         public WeightedRandomList<WeightedEntry.Wrapper<EventTask>> eventsAsWeightedList() {
             return WeightedRandomList.create(events.stream().map(EventRoll::toWeighted).toList());

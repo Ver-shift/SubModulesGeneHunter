@@ -29,11 +29,11 @@ public class GeneHunterProgress extends BaseProgress {
     protected List<SceneRoll> scenes() {
         return List.of(
                 harvest(1), harvest(2), harvest(3), harvest(4),
-                repose(5),
-                harvest(6), harvest(7), harvest(8), harvest(9),
-                repose(10),
-                harvest(11), harvest(12), harvest(13), harvest(14),
-                climax(15)
+                harvest(5), harvest(6), harvest(7), climax(8),
+                harvest(9), harvest(10), harvest(11), harvest(12),
+                harvest(13), harvest(14), climax(15),
+                harvest(16), harvest(17), harvest(18), harvest(19),
+                climax(20)
         );
     }
 
@@ -59,8 +59,7 @@ public class GeneHunterProgress extends BaseProgress {
         return List.of(
                 enc(EncounterType.Orange_NormalMonster,
                         task(MONSTER), 5,
-                        task(MONSTER, MONSTER), 3,
-                        task(BOSS), 2),
+                        task(MONSTER, MONSTER), 5),
                 enc(EncounterType.Orange_NormalShop, task(SHOP)),
                 enc(EncounterType.Orange_BossShop, task(SHOP, BOSS))
         );
@@ -70,8 +69,7 @@ public class GeneHunterProgress extends BaseProgress {
     protected List<Encounter> redEncounters() {
         return List.of(
                 enc(EncounterType.Red_EliteMonster,
-                        task(MONSTER, MONSTER), 4,
-                        task(BOSS), 1),
+                        task(MONSTER, MONSTER), 5),
                 enc(EncounterType.Red_CursedShop,
                         task(SHOP, MONSTER), 3,
                         task(SHOP), 1),

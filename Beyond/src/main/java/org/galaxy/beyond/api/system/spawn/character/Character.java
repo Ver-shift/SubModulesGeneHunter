@@ -7,7 +7,9 @@ import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.api.system.spawn.SpawnBudget;
 import org.galaxy.beyond.api.system.spawn.SpawnContext;
 import org.galaxy.beyond.api.system.spawn.SpawnPlan;
+import org.galaxy.beyond.api.system.spawn.SpawnSessionData;
 import org.galaxy.beyond.api.system.definition.SpawnDefinition;
+import org.galaxy.beyond.api.system.rogue.SceneType;
 
 import java.util.List;
 
@@ -27,6 +29,38 @@ public abstract class Character {
     }
 
     public abstract SpawnBudget createBudget(SpawnDefinition definition, SpawnContext context);
+
+    public int currentStageOrder(SpawnContext context) {
+        return Math.max(1, context.stageIndex() + 1);
+    }
+
+    public int currentLayer(SpawnContext context) {
+        int layer = 1;
+        int stageIndex = Math.clamp(context.stageIndex(), 0, context.scenes().size());
+        for (int i = 0; i < stageIndex; i++) {
+            if (context.scenes().get(i) == SceneType.CLIMAX) {
+                layer++;
+            }
+        }
+        return layer;
+    }
+
+    public float colorMultiplier(SpawnContext context) {
+        return switch (context.nodeColor()) {
+            case GREEN -> 0.5F;
+            case ORANGE -> 1.0F;
+            case RED -> 1.5F;
+            default -> 1.0F;
+        };
+    }
+
+    public int waveCount(SpawnDefinition definition, SpawnContext context) {
+        return 3;
+    }
+
+    public SpawnSessionData createSpawnData(SpawnDefinition definition, SpawnContext context, SpawnPlan plan) {
+        return SpawnSessionData.of(definition.getId(), getId(), context, plan);
+    }
 
     public Object createSpawnToken(SpawnDefinition definition, SpawnPlan plan) {
         return null;

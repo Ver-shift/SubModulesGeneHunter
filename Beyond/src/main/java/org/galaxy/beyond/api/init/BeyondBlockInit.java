@@ -1,8 +1,6 @@
 package org.galaxy.beyond.api.init;
 
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
@@ -22,7 +20,11 @@ public class BeyondBlockInit {
 
     public static final DeferredBlock<NodeBlock> NODE_BLOCK =
             BLOCKS.registerBlock("node_block", NodeBlock::new,
-                    BlockBehaviour.Properties.of().strength(2.0f, 3.0f).sound(SoundType.METAL).noOcclusion());
+                    BlockBehaviour.Properties.of()
+                            .destroyTime(-1.0F)
+                            .explosionResistance(3600000.0F)
+                            .sound(SoundType.METAL)
+                            .noOcclusion());
 
     public static final DeferredItem<BlockItem> NODE_BLOCK_ITEM =
             ITEMS.registerSimpleBlockItem(NODE_BLOCK);

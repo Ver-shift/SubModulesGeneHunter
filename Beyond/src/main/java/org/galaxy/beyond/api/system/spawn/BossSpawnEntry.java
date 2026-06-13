@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * 生成包里的单个实体条目。
+ * Boss 怪物团里的固定实体条目。
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SpawnEntry implements IPersistedSerializable {
+public class BossSpawnEntry implements IPersistedSerializable {
 
     @Persisted
     private ResourceLocation entity;
@@ -25,14 +25,12 @@ public class SpawnEntry implements IPersistedSerializable {
     private int count = 1;
 
     @Persisted
-    private float health;
+    @Builder.Default
+    private float health = 20.0F;
 
     @Persisted
     private double attackDamage;
 
     @Persisted
     private double armor;
-
-    @Persisted
-    private boolean fixedAttributes;
 }

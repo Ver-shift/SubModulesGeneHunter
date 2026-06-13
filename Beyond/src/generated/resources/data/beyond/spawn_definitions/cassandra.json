@@ -1,13 +1,10 @@
 {
-  "baseValue": 10,
+  "baseValue": 100,
+  "bossPacks": [],
   "character": "beyond:cassandra",
-  "greenValue": 100,
   "id": "beyond:cassandra",
   "maxSpawnCount": 8,
   "maxWaveTime": 760,
-  "orangeValue": 130,
   "packs": [],
-  "redValue": 170,
-  "setupTime": 40,
-  "valueGrowth": 5
+  "setupTime": 40
 }

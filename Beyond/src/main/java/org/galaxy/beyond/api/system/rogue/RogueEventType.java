@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import org.galaxy.beyond.api.init.BeyondEventInit;
+import org.galaxy.beyond.api.system.spawn.SpawnSessionData;
 
 /**
  * 肉鸽事件类型 —— <b>核心事件执行逻辑的抽象基类</b>。
@@ -71,8 +72,20 @@ public abstract class RogueEventType implements IPersistedSerializable {
      * @param level        事件所在服务端世界
      * @param nodePos      玩家点击的节点方块位置；双高节点统一传入下半部分位置
      * @param rogueContext 当前 Rogue 上下文，供事件读取玩家、阶段和全局数据
+     * @param spawnData    当前节点启动时计算出的刷怪数据，非刷怪事件也可读取袭击点数
      */
-    public record Context(EncounterType type, ServerLevel level, BlockPos nodePos, IRogueContext rogueContext) {
+    public record Context(EncounterType type, ServerLevel level, BlockPos nodePos, IRogueContext rogueContext, SpawnSessionData spawnData) {
+        public Context {
+            spawnData = spawnData != null ? spawnData : SpawnSessionData.empty();
+        }
+
+        public Context(EncounterType type, ServerLevel level, BlockPos nodePos, IRogueContext rogueContext) {
+            this(type, level, nodePos, rogueContext, null);
+        }
+
+        public int totalValue() {
+            return spawnData.getTotalValue();
+        }
     }
 
     public enum Result {

@@ -24,7 +24,7 @@ public class TextItem extends Item implements HeldItemUIMenuType.HeldItemUI {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (player instanceof ServerPlayer serverPlayer) {
-            HeldItemUIMenuType.openUI(serverPlayer, hand);
+//            HeldItemUIMenuType.openUI(serverPlayer, hand);
             return new InteractionResultHolder<>(InteractionResult.CONSUME, stack);
         }
 //        PieceBeardifierModifier

@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.galaxy.gene_hunter.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "GatewayEntityPersistenceMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

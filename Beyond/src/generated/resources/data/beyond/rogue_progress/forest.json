@@ -70,16 +70,7 @@
               "beyond:reward"
             ]
           },
-          "weight": 3
-        },
-        {
-          "task": {
-            "eventIds": [
-              "beyond:boss",
-              "beyond:reward"
-            ]
-          },
-          "weight": 2
+          "weight": 5
         }
       ]
     },
@@ -122,16 +113,7 @@
               "beyond:reward"
             ]
           },
-          "weight": 4
-        },
-        {
-          "task": {
-            "eventIds": [
-              "beyond:boss",
-              "beyond:reward"
-            ]
-          },
-          "weight": 1
+          "weight": 5
         }
       ]
     },

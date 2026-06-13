@@ -20,6 +20,7 @@ import org.galaxy.beyond.api.plugin.BeyondPluginRunner;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 import org.galaxy.beyond.api.system.rogue.core.RoguePhase;
+import org.galaxy.beyond.api.system.spawn.SpawnSessionData;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -44,6 +45,9 @@ public class RogueData implements IPersistedSerializable {
 
     @Persisted
     private long gameSeed;
+
+    @Persisted(subPersisted = true)
+    private SpawnSessionData currentSpawn;
 
     @Persisted
     @ReadOnlyManaged(serializeMethod = "rogueCapDataSerialize", deserializeMethod = "rogueCapDataDeserialize")
@@ -76,7 +80,7 @@ public class RogueData implements IPersistedSerializable {
         getProgressType().setActive(active);
     }
 
-    public void initDefaultCaps() {
+    public void initDefaultCaps(Level level) {
         if (!rogueCapData.isEmpty()) return;
         RogueCapInitEvent.Default event = RogueCapInitEvent.post(
                 new RogueCapInitEvent.Default(this, BeyondPluginRunner.collectDefaultRogueCaps())
@@ -84,7 +88,7 @@ public class RogueData implements IPersistedSerializable {
         addCaps(event.getCapIds());
 
         ResourceLocation progressId = getProgressId();
-        ProgressDefinition definition = BeyondAPI.getRogueDefinition(BeyondAPI.getOverWorld()).getProgress(progressId);
+        ProgressDefinition definition = BeyondAPI.getRogueDefinition(level).getProgress(progressId);
         if (definition == null) return;
         RogueCapInitEvent.Progress progressEvent = RogueCapInitEvent.post(
                 new RogueCapInitEvent.Progress(
@@ -121,6 +125,7 @@ public class RogueData implements IPersistedSerializable {
 
     public void resetProgressState() {
         setRogueNodeData(null);
+        setCurrentSpawn(null);
         getProgressType().resetSceneIndex();
     }
 

@@ -2,10 +2,9 @@ package org.galaxy.beyond.api.system.definition;
 
 import net.minecraft.resources.ResourceLocation;
 import org.galaxy.beyond.Beyond;
-import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
+import org.galaxy.beyond.api.init.BeyondRegistries;
 import org.galaxy.beyond.api.system.spawn.character.Character;
-import org.galaxy.beyond.api.system.spawn.character.PhoebeCharacter;
-import org.galaxy.beyond.api.system.spawn.character.RandyCharacter;
+import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,12 +13,8 @@ import java.util.Optional;
 public final class SpawnDefinitionManager {
 
     private static final Map<ResourceLocation, SpawnDefinition> DEFINITIONS = new HashMap<>();
-    private static final Map<ResourceLocation, Character> CHARACTERS = new HashMap<>();
 
     static {
-        registerCharacter(new CassandraCharacter());
-        registerCharacter(new RandyCharacter());
-        registerCharacter(new PhoebeCharacter());
         registerDefinition(SpawnDefinition.builder()
                 .id(CassandraCharacter.ID)
                 .character(CassandraCharacter.ID)
@@ -56,19 +51,15 @@ public final class SpawnDefinitionManager {
         DEFINITIONS.put(definition.getId(), definition);
     }
 
-    public static void registerCharacter(Character character) {
-        CHARACTERS.put(character.getId(), character);
-    }
-
     public static Character getCharacter(SpawnDefinition definition) {
         ResourceLocation id = definition.getCharacter();
         if (id == null) {
             id = CassandraCharacter.ID;
         }
-        Character character = CHARACTERS.get(id);
+        Character character = BeyondRegistries.SPAWN_CHARACTER.get(id);
         if (character != null) {
             return character;
         }
-        return CHARACTERS.get(Beyond.asResource("cassandra"));
+        return BeyondRegistries.SPAWN_CHARACTER.get(Beyond.asResource("cassandra"));
     }
 }

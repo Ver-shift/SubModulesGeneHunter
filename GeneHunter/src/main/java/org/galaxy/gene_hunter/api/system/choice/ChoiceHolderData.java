@@ -16,6 +16,8 @@ import org.galaxy.beyond.api.system.node.NodeColor;
 import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.core.ILootType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Data
@@ -35,9 +37,29 @@ public class ChoiceHolderData implements IPersistedSerializable {
     @DescSynced
     private boolean canRefresh = false;
 
+    @Persisted
+    @DescSynced
+    private int refreshTimes = 0;
+
+    @Persisted
+    @DescSynced
+    private int refreshCost = 0;
+
+    @Persisted
+    @DescSynced
+    private int stageIndex = 0;
+
+    @Persisted
+    @DescSynced
+    private int stageCount = 0;
+
     private ResourceLocation currentLootTypeId;
 
     private NodeColor currentNodeColor = NodeColor.GREEN;
+
+    private int currentFixedRolls = 0;
+
+    private final List<ChoiceStage> stages = new ArrayList<>();
 
     private transient ServerPlayer player;
 
@@ -71,6 +93,43 @@ public class ChoiceHolderData implements IPersistedSerializable {
 
     public ILootType<?> getCurrentLootType() {
         return currentLootTypeId == null ? null : GalaxyLibLootTypeInit.getLootTypeById(currentLootTypeId);
+    }
+
+    public void startStages(List<ChoiceStage> stages) {
+        this.stages.clear();
+        this.stages.addAll(stages);
+        this.stageIndex = 0;
+        this.stageCount = stages.size();
+    }
+
+    public ChoiceStage currentStage() {
+        return hasStage() ? stages.get(stageIndex) : null;
+    }
+
+    public boolean hasNextStage() {
+        return stageIndex + 1 < stages.size();
+    }
+
+    public boolean nextStage() {
+        if (!hasNextStage()) {
+            return false;
+        }
+        stageIndex++;
+        return true;
+    }
+
+    public void clearStages() {
+        stages.clear();
+        stageIndex = 0;
+        stageCount = 0;
+        currentLootTypeId = null;
+        currentFixedRolls = 0;
+        refreshTimes = 0;
+        refreshCost = 0;
+    }
+
+    private boolean hasStage() {
+        return stageIndex >= 0 && stageIndex < stages.size();
     }
 
     public void clear() {

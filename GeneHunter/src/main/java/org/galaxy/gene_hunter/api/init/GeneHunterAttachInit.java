@@ -11,6 +11,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.system.GeneHunterData;
+import org.galaxy.gene_hunter.gateway.GeneHunterDynamicGatewayData;
 
 @EventBusSubscriber
 public class GeneHunterAttachInit {
@@ -32,6 +33,13 @@ public class GeneHunterAttachInit {
                     .serialize(GeneHunterData.CODEC)
                     .sync(GeneHunterData.STREAM_CODEC)
                     .copyOnDeath()
+                    .build()
+    );
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<GeneHunterDynamicGatewayData>> DYNAMIC_GATEWAY_DATA = ATTACHMENT_TYPES.register(
+            "dynamic_gateway_data",
+            () -> AttachmentType.builder(GeneHunterDynamicGatewayData::new)
+                    .serialize(GeneHunterDynamicGatewayData.CODEC.codec())
                     .build()
     );
 

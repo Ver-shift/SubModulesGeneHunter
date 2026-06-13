@@ -74,15 +74,7 @@
                             "gene_hunter:monster"
                         ]
                     },
-                    "weight": 3
-                },
-                {
-                    "task": {
-                        "eventIds": [
-                            "gene_hunter:boss"
-                        ]
-                    },
-                    "weight": 2
+                    "weight": 5
                 }
             ]
         },
@@ -123,15 +115,7 @@
                             "gene_hunter:monster"
                         ]
                     },
-                    "weight": 4
-                },
-                {
-                    "task": {
-                        "eventIds": [
-                            "gene_hunter:boss"
-                        ]
-                    },
-                    "weight": 1
+                    "weight": 5
                 }
             ]
         },
@@ -213,7 +197,7 @@
         {
             "entries": [
                 {
-                    "scene": "REPOSE",
+                    "scene": "HARVEST",
                     "weight": 1
                 }
             ],
@@ -240,7 +224,7 @@
         {
             "entries": [
                 {
-                    "scene": "HARVEST",
+                    "scene": "CLIMAX",
                     "weight": 1
                 }
             ],
@@ -258,7 +242,7 @@
         {
             "entries": [
                 {
-                    "scene": "REPOSE",
+                    "scene": "HARVEST",
                     "weight": 1
                 }
             ],
@@ -308,6 +292,51 @@
                 }
             ],
             "order": 15
+        },
+        {
+            "entries": [
+                {
+                    "scene": "HARVEST",
+                    "weight": 1
+                }
+            ],
+            "order": 16
+        },
+        {
+            "entries": [
+                {
+                    "scene": "HARVEST",
+                    "weight": 1
+                }
+            ],
+            "order": 17
+        },
+        {
+            "entries": [
+                {
+                    "scene": "HARVEST",
+                    "weight": 1
+                }
+            ],
+            "order": 18
+        },
+        {
+            "entries": [
+                {
+                    "scene": "HARVEST",
+                    "weight": 1
+                }
+            ],
+            "order": 19
+        },
+        {
+            "entries": [
+                {
+                    "scene": "CLIMAX",
+                    "weight": 1
+                }
+            ],
+            "order": 20
         }
     ],
     "spawnDefinition": "gene_hunter:zombie_example"

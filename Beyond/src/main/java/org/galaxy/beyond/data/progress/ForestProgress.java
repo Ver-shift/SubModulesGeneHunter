@@ -35,8 +35,7 @@ public class ForestProgress extends BaseProgress {
         return List.of(
                 enc(EncounterType.Orange_NormalMonster,
                         evt("monster", "reward"), 5,
-                        evt("monster", "monster", "reward"), 3,
-                        evt("boss", "reward"), 2),
+                        evt("monster", "monster", "reward"), 5),
                 enc(EncounterType.Orange_NormalShop, evt("shop")),
                 enc(EncounterType.Orange_BossShop,   evt("shop", "boss", "reward"))
         );
@@ -46,8 +45,7 @@ public class ForestProgress extends BaseProgress {
     protected List<Encounter> redEncounters() {
         return List.of(
                 enc(EncounterType.Red_EliteMonster,
-                        evt("monster", "monster", "reward"), 4,
-                        evt("boss", "reward"), 1),
+                        evt("monster", "monster", "reward"), 5),
                 enc(EncounterType.Red_CursedShop,
                         evt("shop", "monster", "reward"), 3,
                         evt("shop"), 1),

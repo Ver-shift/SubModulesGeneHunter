@@ -24,7 +24,7 @@ public class GeneHunter {
         GeneHunterAttributeInit.register(modEventBus);
         GeneHunterMenuInit.register();
         GeneHunterGatewayInit.register(modEventBus);
-        GeneHunterSpawnInit.register();
+        GeneHunterSpawnInit.register(modEventBus);
 
     }
 

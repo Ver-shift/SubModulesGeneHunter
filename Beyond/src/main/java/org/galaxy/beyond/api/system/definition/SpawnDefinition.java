@@ -7,8 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
+import org.galaxy.beyond.api.system.spawn.BossSpawnPack;
 import org.galaxy.beyond.api.system.spawn.SpawnPack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,21 +48,21 @@ public class SpawnDefinition implements IPersistedSerializable {
      */
     @Persisted(subPersisted = true)
     @Builder.Default
-    private List<SpawnPack> packs = List.of();
+    private List<SpawnPack> packs = new ArrayList<>();
 
     /**
-     * 初始预算值。
+     * Boss 怪物团。它独立于普通刷怪包，不参与普通预算、随机抽包和颜色倍率。
+     */
+    @Persisted(subPersisted = true)
+    @Builder.Default
+    private List<BossSpawnPack> bossPacks = new ArrayList<>();
+
+    /**
+     * 最基准的刷怪点数，Character 会在此基础上做动态倍率计算。
      */
     @Persisted
     @Builder.Default
-    private int baseValue = 10;
-
-    /**
-     * 每个关卡 index 增加的预算值。
-     */
-    @Persisted
-    @Builder.Default
-    private int valueGrowth = 5;
+    private int baseValue = 100;
 
     /**
      * 单次计划最多刷出的怪物数量。
@@ -83,24 +85,4 @@ public class SpawnDefinition implements IPersistedSerializable {
     @Builder.Default
     private int setupTime = 40;
 
-    /**
-     * 绿色节点预算倍率，100 表示 1 倍。
-     */
-    @Persisted
-    @Builder.Default
-    private int greenValue = 100;
-
-    /**
-     * 橙色节点预算倍率，100 表示 1 倍。
-     */
-    @Persisted
-    @Builder.Default
-    private int orangeValue = 130;
-
-    /**
-     * 红色节点预算倍率，100 表示 1 倍。
-     */
-    @Persisted
-    @Builder.Default
-    private int redValue = 170;
 }

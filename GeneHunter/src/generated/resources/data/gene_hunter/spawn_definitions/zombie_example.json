@@ -1,20 +1,62 @@
 {
-    "baseValue": 10,
-    "character": "gene_hunter:zombie_gateway",
-    "gateway": "gene_hunter:zombie_example",
-    "greenValue": 100,
+    "baseValue": 100,
+    "bossPacks": [
+        {
+            "entries": [
+                {
+                    "armor": 6.0,
+                    "attackDamage": 16.0,
+                    "count": 1,
+                    "entity": "minecraft:iron_golem",
+                    "health": 220.0
+                }
+            ],
+            "order": 1
+        },
+        {
+            "entries": [
+                {
+                    "armor": 10.0,
+                    "attackDamage": 22.0,
+                    "count": 1,
+                    "entity": "minecraft:iron_golem",
+                    "health": 320.0
+                }
+            ],
+            "order": 2
+        },
+        {
+            "entries": [
+                {
+                    "armor": 14.0,
+                    "attackDamage": 30.0,
+                    "count": 1,
+                    "entity": "minecraft:iron_golem",
+                    "health": 460.0
+                }
+            ],
+            "order": 3
+        }
+    ],
+    "character": "gene_hunter:gene_hunter_spawn",
     "id": "gene_hunter:zombie_example",
-    "maxSpawnCount": 8,
-    "maxWaveTime": 760,
-    "orangeValue": 130,
+    "maxSpawnCount": 12,
+    "maxWaveTime": 6000,
     "packs": [
         {
             "entries": [
                 {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
                     "count": 3,
-                    "entity": "minecraft:zombie"
+                    "entity": "minecraft:zombie",
+                    "fixedAttributes": false,
+                    "health": 24.0
                 }
             ],
+            "maxStageIndex": 7,
+            "maxValue": 2147483647,
+            "minStageIndex": 0,
             "minValue": 0,
             "value": 6,
             "weight": 5
@@ -22,20 +64,427 @@
         {
             "entries": [
                 {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
                     "count": 2,
-                    "entity": "minecraft:zombie"
+                    "entity": "minecraft:skeleton",
+                    "fixedAttributes": false,
+                    "health": 22.0
                 },
                 {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
                     "count": 1,
-                    "entity": "minecraft:skeleton"
+                    "entity": "minecraft:spider",
+                    "fixedAttributes": false,
+                    "health": 20.0
                 }
             ],
-            "minValue": 8,
-            "value": 9,
+            "maxStageIndex": 7,
+            "maxValue": 2147483647,
+            "minStageIndex": 0,
+            "minValue": 0,
+            "value": 8,
+            "weight": 5
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:husk",
+                    "fixedAttributes": false,
+                    "health": 28.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:stray",
+                    "fixedAttributes": false,
+                    "health": 22.0
+                }
+            ],
+            "maxStageIndex": 7,
+            "maxValue": 2147483647,
+            "minStageIndex": 0,
+            "minValue": 80,
+            "value": 10,
+            "weight": 4
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:creeper",
+                    "fixedAttributes": false,
+                    "health": 24.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 3,
+                    "entity": "minecraft:zombie",
+                    "fixedAttributes": false,
+                    "health": 24.0
+                }
+            ],
+            "maxStageIndex": 7,
+            "maxValue": 2147483647,
+            "minStageIndex": 0,
+            "minValue": 90,
+            "value": 10,
             "weight": 3
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:zombie_villager",
+                    "fixedAttributes": false,
+                    "health": 26.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 3,
+                    "entity": "minecraft:endermite",
+                    "fixedAttributes": false,
+                    "health": 12.0
+                }
+            ],
+            "maxStageIndex": 7,
+            "maxValue": 2147483647,
+            "minStageIndex": 0,
+            "minValue": 100,
+            "value": 10,
+            "weight": 2
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:zombie_villager",
+                    "fixedAttributes": false,
+                    "health": 26.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:bogged",
+                    "fixedAttributes": false,
+                    "health": 24.0
+                }
+            ],
+            "maxStageIndex": 7,
+            "maxValue": 2147483647,
+            "minStageIndex": 0,
+            "minValue": 100,
+            "value": 12,
+            "weight": 3
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:cave_spider",
+                    "fixedAttributes": false,
+                    "health": 24.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:drowned",
+                    "fixedAttributes": false,
+                    "health": 34.0
+                }
+            ],
+            "maxStageIndex": 14,
+            "maxValue": 2147483647,
+            "minStageIndex": 8,
+            "minValue": 120,
+            "value": 12,
+            "weight": 5
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:witch",
+                    "fixedAttributes": false,
+                    "health": 40.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:blaze",
+                    "fixedAttributes": false,
+                    "health": 36.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:slime",
+                    "fixedAttributes": false,
+                    "health": 30.0
+                }
+            ],
+            "maxStageIndex": 14,
+            "maxValue": 2147483647,
+            "minStageIndex": 8,
+            "minValue": 130,
+            "value": 14,
+            "weight": 4
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:guardian",
+                    "fixedAttributes": false,
+                    "health": 42.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:drowned",
+                    "fixedAttributes": false,
+                    "health": 34.0
+                }
+            ],
+            "maxStageIndex": 14,
+            "maxValue": 2147483647,
+            "minStageIndex": 8,
+            "minValue": 150,
+            "value": 16,
+            "weight": 4
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:breeze",
+                    "fixedAttributes": false,
+                    "health": 34.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:magma_cube",
+                    "fixedAttributes": false,
+                    "health": 30.0
+                }
+            ],
+            "maxStageIndex": 14,
+            "maxValue": 2147483647,
+            "minStageIndex": 8,
+            "minValue": 170,
+            "value": 18,
+            "weight": 3
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:pillager",
+                    "fixedAttributes": false,
+                    "health": 48.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:vindicator",
+                    "fixedAttributes": false,
+                    "health": 58.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 180,
+            "value": 18,
+            "weight": 5
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:enderman",
+                    "fixedAttributes": false,
+                    "health": 70.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:wither_skeleton",
+                    "fixedAttributes": false,
+                    "health": 64.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 200,
+            "value": 20,
+            "weight": 4
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:evoker",
+                    "fixedAttributes": false,
+                    "health": 68.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:piglin_brute",
+                    "fixedAttributes": false,
+                    "health": 72.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 220,
+            "value": 22,
+            "weight": 4
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:piglin",
+                    "fixedAttributes": false,
+                    "health": 54.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:hoglin",
+                    "fixedAttributes": false,
+                    "health": 82.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 230,
+            "value": 22,
+            "weight": 3
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:ravager",
+                    "fixedAttributes": false,
+                    "health": 110.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:zoglin",
+                    "fixedAttributes": false,
+                    "health": 88.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 240,
+            "value": 24,
+            "weight": 3
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:ghast",
+                    "fixedAttributes": false,
+                    "health": 70.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:shulker",
+                    "fixedAttributes": false,
+                    "health": 64.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 260,
+            "value": 24,
+            "weight": 3
+        },
+        {
+            "entries": [
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 2,
+                    "entity": "minecraft:vex",
+                    "fixedAttributes": false,
+                    "health": 34.0
+                },
+                {
+                    "armor": 0.0,
+                    "attackDamage": 0.0,
+                    "count": 1,
+                    "entity": "minecraft:evoker",
+                    "fixedAttributes": false,
+                    "health": 68.0
+                }
+            ],
+            "maxStageIndex": 2147483647,
+            "maxValue": 2147483647,
+            "minStageIndex": 15,
+            "minValue": 280,
+            "value": 26,
+            "weight": 2
         }
     ],
-    "redValue": 170,
-    "setupTime": 40,
-    "valueGrowth": 5
+    "setupTime": 40
 }

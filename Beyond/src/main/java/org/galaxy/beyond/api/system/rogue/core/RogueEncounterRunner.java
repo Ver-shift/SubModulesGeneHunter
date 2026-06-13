@@ -7,7 +7,11 @@ import net.minecraft.server.level.ServerPlayer;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.event.custom.RogueEncounterEvent;
 import org.galaxy.beyond.api.system.BeyondAPI;
+import org.galaxy.beyond.api.system.definition.SpawnDefinitionManager;
 import org.galaxy.beyond.api.system.rogue.*;
+import org.galaxy.beyond.api.system.spawn.EncounterSpawnPlanner;
+import org.galaxy.beyond.api.system.spawn.SpawnContext;
+import org.galaxy.beyond.api.system.spawn.SpawnSessionData;
 
 /**
  * 节点遭遇运行器 —— 管理单个节点的遭遇解析 → 事件步进 → 解锁全流程。
@@ -30,6 +34,7 @@ public class RogueEncounterRunner {
 
     public void handleLocked(ServerPlayer player) {
         nodeData.prepareForEncounter(level);
+        ctx.getRogueData(level).setCurrentSpawn(null);
         BeyondAPI.syncLargeLevelData(level);
         BeyondAPI.syncGlobalData(level);
         ctx.setPlayerPhase(player, PlayerPhase.PRE_NODE);
@@ -281,7 +286,43 @@ public class RogueEncounterRunner {
     }
 
     private RogueEventType.Context runnerContext(EncounterType encType) {
-        return new RogueEventType.Context(encType, level, nodePos(), ctx);
+        return new RogueEventType.Context(encType, level, nodePos(), ctx, spawnData(encType));
+    }
+
+    private SpawnSessionData spawnData(EncounterType encType) {
+        var rogueData = ctx.getRogueData(level);
+        boolean boss = isBossEvent(encType);
+        if (rogueData.getCurrentSpawn() != null && rogueData.getCurrentSpawn().isBoss() == boss) {
+            return rogueData.getCurrentSpawn();
+        }
+
+        var definitionId = BeyondAPI.getBeyondManager().getDefinitionManager().resolveSpawnDefinition(level);
+        if (definitionId == null) {
+            return SpawnSessionData.empty();
+        }
+
+        var definition = SpawnDefinitionManager.getDefinition(definitionId).orElse(null);
+        if (definition == null) {
+            return SpawnSessionData.empty();
+        }
+
+        var progressType = rogueData.getProgressType();
+        SpawnContext spawnContext = new SpawnContext(
+                progressType.getClampedScenesIndex(),
+                encType.getColor(),
+                level.random,
+                progressType.getScenes()
+        );
+        var character = SpawnDefinitionManager.getCharacter(definition);
+        var plan = new EncounterSpawnPlanner(character).createPlan(definition, spawnContext, boss);
+        SpawnSessionData spawnData = character.createSpawnData(definition, spawnContext, plan);
+        rogueData.setCurrentSpawn(spawnData);
+        return spawnData;
+    }
+
+    private boolean isBossEvent(EncounterType encType) {
+        RogueEventType event = currentEvent();
+        return encType.getSceneType() == SceneType.CLIMAX && event != null && "boss".equals(event.getId().getPath());
     }
 
     private BlockPos nodePos() {

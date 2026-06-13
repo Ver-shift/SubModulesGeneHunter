@@ -1,10 +1,12 @@
 package org.galaxy.gene_hunter.rogue_event;
 
 import net.minecraft.resources.ResourceLocation;
+import lombok.NonNull;
+import org.galaxy.beyond.api.system.rogue.RogueEventType;
+import org.galaxy.beyond.api.system.rogue.SceneType;
 import org.galaxy.gene_hunter.GeneHunter;
-import org.galaxy.gene_hunter.data.spawn.ZombieBossSpawnDefinition;
 
-public class BossEvent extends GatewayEvent {
+public class BossEvent extends SpawnEvent {
 
     public static final ResourceLocation ID = GeneHunter.asResource("boss");
 
@@ -13,7 +15,19 @@ public class BossEvent extends GatewayEvent {
     }
 
     @Override
-    protected ResourceLocation spawnDefinitionId(Context context) {
-        return ZombieBossSpawnDefinition.ID;
+    public void cast(Context context) {
+        if (context.type().getSceneType() != SceneType.CLIMAX) {
+            return;
+        }
+        super.cast(context);
+    }
+
+    @Override
+    @NonNull
+    public RogueEventType.Result next(Context context) {
+        if (context.type().getSceneType() != SceneType.CLIMAX) {
+            return Result.SUCCESS;
+        }
+        return super.next(context);
     }
 }

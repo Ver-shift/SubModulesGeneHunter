@@ -1,17 +1,15 @@
 package org.galaxy.gene_hunter.rogue_event;
 
 import lombok.NonNull;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.galaxy.beyond.api.system.BeyondAPI;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
-import org.galaxy.beyond.api.system.spawn.EncounterSpawnPlanner;
-import org.galaxy.beyond.api.system.spawn.SpawnContext;
-import org.galaxy.beyond.api.system.definition.SpawnDefinition;
 import org.galaxy.beyond.api.system.definition.SpawnDefinitionManager;
 
-public abstract class GatewayEvent extends RogueEventType {
+public abstract class SpawnEvent extends RogueEventType {
 
-    public GatewayEvent(ResourceLocation id) {
+    public SpawnEvent(ResourceLocation id) {
         super(id);
     }
 
@@ -21,12 +19,19 @@ public abstract class GatewayEvent extends RogueEventType {
         var players = context.rogueContext().playersInRogue(level);
         if (players.isEmpty()) return;
 
-        SpawnDefinition definition = SpawnDefinitionManager.getDefinitionOrThrow(spawnDefinitionId(context));
+        var definition = SpawnDefinitionManager.getDefinitionOrThrow(spawnDefinitionId(context));
         var character = SpawnDefinitionManager.getCharacter(definition);
-        int stageIndex = context.rogueContext().getRogueData(level).getProgressType().getClampedScenesIndex();
-        SpawnContext spawnContext = new SpawnContext(stageIndex, context.type().getColor(), level.random);
-        var plan = new EncounterSpawnPlanner(character).createPlan(definition, spawnContext);
-        character.placeSpawn(definition, plan, level, context.nodePos(), players);
+        var spawnData = context.spawnData();
+        sendRaidValueMessage(context);
+        Object spawned = character.placeSpawn(definition, spawnData.plan(), level, context.nodePos(), players);
+        if (spawnData.plan().spawnCount() > 0 && spawned instanceof java.util.Collection<?> collection && collection.isEmpty()) {
+            throw new IllegalStateException("Failed to place spawn for definition: " + definition.getId());
+        }
+    }
+
+    private void sendRaidValueMessage(Context context) {
+        context.rogueContext().playersInRogue(context.level()).forEach(player ->
+                player.sendSystemMessage(Component.translatable("gene_hunter.event.raid_value", context.totalValue())));
     }
 
     @Override

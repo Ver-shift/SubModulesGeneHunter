@@ -47,7 +47,7 @@ public class BeyondManager implements IBeyondManager {
         if (!CommonConfig.isRogueDimension(level)) return;
 
         safeZoneStructureManager.initialize(level);
-        BeyondAPI.getRogueData(level).initDefaultCaps();
+        BeyondAPI.getRogueData(level).initDefaultCaps(level);
     }
 
     @Override

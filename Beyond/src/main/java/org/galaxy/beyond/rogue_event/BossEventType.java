@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.api.system.rogue.RogueEventType;
 import org.galaxy.beyond.api.system.rogue.RogueSpawnHelper;
+import org.galaxy.beyond.api.system.rogue.SceneType;
 
 import java.util.UUID;
 
@@ -27,6 +28,9 @@ public class BossEventType extends RogueEventType {
 
     @Override
     public void cast(Context context) {
+        if (context.type().getSceneType() != SceneType.CLIMAX) {
+            return;
+        }
         ServerLevel level = context.level();
         BlockPos nodePos = RogueSpawnHelper.nodeBase(level, context.nodePos());
 
@@ -49,6 +53,9 @@ public class BossEventType extends RogueEventType {
     @Override
     @NonNull
     public Result next(Context context) {
+        if (context.type().getSceneType() != SceneType.CLIMAX) {
+            return Result.SUCCESS;
+        }
         if (bossId == null) return Result.FAILURE;
         var entity = context.level().getEntity(bossId);
         if (entity == null || !entity.isAlive()) {

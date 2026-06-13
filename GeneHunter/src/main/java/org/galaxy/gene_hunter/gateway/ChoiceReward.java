@@ -1,6 +1,7 @@
 package org.galaxy.gene_hunter.gateway;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.shadowsoffire.gateways.entity.GatewayEntity;
 import dev.shadowsoffire.gateways.gate.Reward;
 import net.minecraft.network.chat.MutableComponent;
@@ -16,17 +17,34 @@ import org.galaxy.gene_hunter.container.ChoiceContainer;
 
 import java.util.function.Consumer;
 
-public record ChoiceReward() implements Reward {
+public record ChoiceReward(int raidValue, boolean boss) implements Reward {
 
-    public static final Codec<ChoiceReward> CODEC = Codec.unit(ChoiceReward::new);
+    public static final Codec<ChoiceReward> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.optionalFieldOf("raid_value", 0).forGetter(ChoiceReward::raidValue),
+            Codec.BOOL.optionalFieldOf("boss", false).forGetter(ChoiceReward::boss)
+    ).apply(instance, ChoiceReward::new));
 
     @Override
     public void generateLoot(ServerLevel level, GatewayEntity gate, Player summoner, Consumer<ItemStack> loot) {
+        boolean rewarded = false;
+        NodeColor nodeColor = currentNodeColor(level);
         for (ServerPlayer sp : level.players()) {
             if (BeyondAPI.getBeyondPlayerData(sp).getPlayerRogueData().getPhase() == PlayerPhase.ON_EVENT) {
-                ChoiceContainer.rogueRewardEvent(sp, currentNodeColor(level));
+                reward(sp, nodeColor);
+                rewarded = true;
             }
         }
+        if (!rewarded && summoner instanceof ServerPlayer sp) {
+            reward(sp, nodeColor);
+        }
+    }
+
+    private void reward(ServerPlayer player, NodeColor nodeColor) {
+        if (boss) {
+            ChoiceContainer.bossRewardEvent(player, nodeColor);
+            return;
+        }
+        ChoiceContainer.rogueRewardEvent(player, nodeColor);
     }
 
     private NodeColor currentNodeColor(ServerLevel level) {
