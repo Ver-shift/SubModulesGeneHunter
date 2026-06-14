@@ -57,7 +57,7 @@ public class ChoiceHolderData implements IPersistedSerializable {
 
     private NodeColor currentNodeColor = NodeColor.GREEN;
 
-    private int currentFixedRolls = 0;
+    private float currentFixedRolls = 0.0F;
 
     private final List<ChoiceStage> stages = new ArrayList<>();
 
@@ -123,7 +123,7 @@ public class ChoiceHolderData implements IPersistedSerializable {
         stageIndex = 0;
         stageCount = 0;
         currentLootTypeId = null;
-        currentFixedRolls = 0;
+        currentFixedRolls = 0.0F;
         refreshTimes = 0;
         refreshCost = 0;
     }

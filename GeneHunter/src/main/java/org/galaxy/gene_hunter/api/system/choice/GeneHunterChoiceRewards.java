@@ -36,7 +36,7 @@ public final class GeneHunterChoiceRewards {
 
     private static ChoiceRewardScheme bossScheme(NodeColor nodeColor) {
         return new ChoiceRewardScheme(List.of(
-                ChoiceStage.fixed(BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get(), nodeColor, 3),
+                ChoiceStage.fixed(BiotechLootTypeInit.XENE_TRAIT_LOOT_TYPE.get(), nodeColor, 2.1F),
                 ChoiceStage.of(GeneHunterLootInit.WEAPON_LOOT_TYPE.get(), nodeColor)
         ));
     }

@@ -21,7 +21,7 @@
   "trait.biotech.health_trait.name": "Vital Resonance",
   "trait.biotech.speed_trait.name": "Swift Pulse",
   "trait.biotech.attack_speed_trait.name": "Assault Rhythm",
-  "trait.biotech.health.description": "Max Health +%s",
+  "trait.biotech.health.description": "Increase max health by %s%%",
   "trait.biotech.attack_speed.description": "Attack Speed +%s%%",
   "trait.biotech.speed.description": "Movement Speed +%s%%",
   "itemGroup.biotech_new_age": "Biotech New Age",

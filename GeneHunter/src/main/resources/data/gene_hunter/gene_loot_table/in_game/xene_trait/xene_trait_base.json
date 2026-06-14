@@ -1,75 +1,87 @@
 {
   "identify": "gene_hunter:xene_trait_base",
-  "note": "一些基础属性的表，血量，攻速，攻击力什么的",
+  "note": "Xene词条池：基础属性、武器分类伤害、高级战斗属性",
   "loot_type": "biotech:xene_trait",
   "pools": [
     {
       "name": "basic_attribute",
-      "base_weight": 10,
+      "base_weight": 14,
       "entries": [
+        {
+          "id": "gene_hunter:attack_damage_trait",
+          "weight": 5
+        },
         {
           "id": "biotech:speed_trait",
           "weight": 3
         },
         {
-          "id": "biotech:attack_speed_trait",
-          "weight": 1
-        },
-        {
           "id": "biotech:health_trait",
-          "weight": 1
+          "weight": 3
         },
         {
           "id": "gene_hunter:one_hand_weapon_damage_trait",
           "weight": 2
+        },
+        {
+          "id": "gene_hunter:two_hand_weapon_damage_trait",
+          "weight": 1
+        },
+        {
+          "id": "gene_hunter:polearm_weapon_damage_trait",
+          "weight": 1
         }
       ]
     },
     {
       "name": "normal_attribute",
-      "base_weight": 10,
+      "base_weight": 9,
       "entries": [
         {
-          "id": "biotech:speed_trait",
-          "weight": 1
+          "id": "gene_hunter:blade_weapon_damage_trait",
+          "weight": 2
         },
         {
-          "id": "biotech:attack_speed_trait",
-          "weight": 1
+          "id": "gene_hunter:sword_weapon_damage_trait",
+          "weight": 2
         },
         {
-          "id": "biotech:health_trait",
-          "weight": 1
+          "id": "gene_hunter:halberd_weapon_damage_trait",
+          "weight": 2
+        },
+        {
+          "id": "gene_hunter:axe_weapon_damage_trait",
+          "weight": 2
+        },
+        {
+          "id": "gene_hunter:hammer_weapon_damage_trait",
+          "weight": 2
         },
         {
           "id": "gene_hunter:one_hand_weapon_damage_trait",
-          "weight": 1
+          "weight": 2
         },
         {
           "id": "gene_hunter:two_hand_weapon_damage_trait",
-          "weight": 1
+          "weight": 2
         },
         {
           "id": "gene_hunter:polearm_weapon_damage_trait",
-          "weight": 1
+          "weight": 2
         }
       ]
     },
     {
       "name": "advanced_attribute",
-      "base_weight": 10,
+      "base_weight": 4,
       "entries": [
         {
-          "id": "biotech:speed_trait",
-          "weight": 1
-        },
-        {
           "id": "biotech:attack_speed_trait",
-          "weight": 2
+          "weight": 3
         },
         {
-          "id": "biotech:health_trait",
-          "weight": 2
+          "id": "gene_hunter:weapon_damage_conversion_rate_trait",
+          "weight": 1
         },
         {
           "id": "gene_hunter:two_hand_weapon_damage_trait",
@@ -78,9 +90,12 @@
         {
           "id": "gene_hunter:polearm_weapon_damage_trait",
           "weight": 2
+        },
+        {
+          "id": "biotech:health_trait",
+          "weight": 1
         }
       ]
     }
-
   ]
 }

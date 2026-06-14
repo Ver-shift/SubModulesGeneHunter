@@ -36,6 +36,8 @@
   "trait.biotech.axe_weapon_damage_trait.name": "斧类武器伤害",
   "trait.biotech.hammer_weapon_damage_trait.name": "锤类武器伤害",
   "trait.biotech.weapon_damage_conversion_rate_trait.name": "武器伤害属性转化率",
+  "trait.biotech.attack_damage_trait.name": "攻击伤害",
+  "trait.gene_hunter.attack_damage.description": "攻击伤害提高 %s%%",
   "trait.gene_hunter.one_hand_weapon_damage.description": "手持单手武器时伤害提高 %s 点",
   "trait.gene_hunter.two_hand_weapon_damage.description": "手持双手武器时伤害提高 %s 点",
   "trait.gene_hunter.polearm_weapon_damage.description": "手持长杆武器时伤害提高 %s 点",

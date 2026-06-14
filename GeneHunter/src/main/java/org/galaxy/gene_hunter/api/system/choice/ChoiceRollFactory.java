@@ -24,7 +24,7 @@ public class ChoiceRollFactory {
                             GeneHunter.asResource("two_hand_weapon_base"),
                             GeneHunter.asResource("polearm_weapon_base")
                     ))
-                    .rolls(stage.rollsOrDefault(1))
+                    .rolls(rolls(player, stage, 1))
                     .build();
         }
 
@@ -32,10 +32,14 @@ public class ChoiceRollFactory {
             return builder
                     .tables(List.of(GeneHunter.asResource("xene_trait_base")))
                     .weightModifier(new XeneChoiceWeightModifier(stage.nodeColor()))
-                    .rolls(stage.rollsOrDefault(lootType.getPoolCount(player)))
+                    .rolls(rolls(player, stage, lootType.getPoolCount(player)))
                     .build();
         }
 
-        return builder.rolls(stage.rollsOrDefault(1)).build();
+        return builder.rolls(rolls(player, stage, 1)).build();
+    }
+
+    private int rolls(ServerPlayer player, ChoiceStage stage, int defaultRolls) {
+        return stage.rollsOrDefault(defaultRolls, LootManager.Context.of(player).random());
     }
 }

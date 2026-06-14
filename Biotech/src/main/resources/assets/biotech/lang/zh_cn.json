@@ -21,7 +21,7 @@
   "trait.biotech.health_trait.name": "生命共鸣",
   "trait.biotech.speed_trait.name": "迅捷脉冲",
   "trait.biotech.attack_speed_trait.name": "狂袭节律",
-  "trait.biotech.health.description": "最大生命 +%s",
+  "trait.biotech.health.description": "最大生命提高 %s%%",
   "trait.biotech.attack_speed.description": "攻击速度 +%s%%",
   "trait.biotech.speed.description": "移动速度 +%s%%",
   "biotech.ui.gene_inventory.gene_mode": "存储",

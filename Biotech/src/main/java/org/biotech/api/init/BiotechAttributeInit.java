@@ -11,7 +11,6 @@ import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.biotech.Biotech;
-import org.checkerframework.checker.units.qual.A;
 
 /**
  * 属性初始化类
@@ -57,6 +56,6 @@ public class BiotechAttributeInit {
             .setSyncable(true));
 
     public static final DeferredHolder<Attribute,Attribute> XENE_TRAIT_ROLL_COUNT = ATTRIBUTES.register("xene_trait_roll_count",
-        () -> new RangedAttribute("attribute.biotech.xene_trait_roll_count", 3.0, 1.0, 100.0)
+        () -> new RangedAttribute("attribute.biotech.xene_trait_roll_count", 1.1, 1.0, 100.0)
             .setSyncable(true));
 }

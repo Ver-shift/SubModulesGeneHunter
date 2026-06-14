@@ -30,6 +30,7 @@ public class BiotechTraitInit {
     public static void register(IEventBus eventBus) {
         TRAIT.register(eventBus);
     }
+
     public static final ITrait EMPTY = new ITrait() {
         @Override
         public ResourceLocation getId() {
@@ -45,15 +46,26 @@ public class BiotechTraitInit {
     public static ITrait getTraitById(ResourceLocation traitId) {
         var trait = TRAIT_REGISTRY.get(traitId);
         if (trait == null) {
+            trait = getTraitByPath(traitId.getPath());
+        }
+        if (trait == null) {
             Biotech.LOGGER.warn("BiotechTraitInit.getTraitById: Trait not found for id: {}, registry size: {}",
-                traitId, TRAIT_REGISTRY.keySet().size());
+                    traitId, TRAIT_REGISTRY.keySet().size());
             return EMPTY;
         }
         return trait;
     }
-    
 
-    
+    private static ITrait getTraitByPath(String path) {
+        for (ITrait trait : TRAIT_REGISTRY) {
+            if (trait != null && trait.getId() != null && trait.getId().getPath().equals(path)) {
+                return trait;
+            }
+        }
+        return null;
+    }
+
+
     /**
      * 获取词条的 ResourceLocation ID
      * 用于组件序列化
@@ -88,8 +100,7 @@ public class BiotechTraitInit {
     }
 
 
-
-    static{
+    static {
 
     }
 

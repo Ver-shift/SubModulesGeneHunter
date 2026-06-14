@@ -42,8 +42,7 @@ public class ChoiceContainer {
         for (int i = 0; i < slotCount; i++) {
             var choice = new Choice();
             root.addChild(choice);
-            choice.getSlot().bind(handler, i);
-            choice.getSlot().setSlotIndex(i);
+            choice.bind(handler, i);
         }
 
         var button = new Button();

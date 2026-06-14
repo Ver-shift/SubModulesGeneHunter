@@ -1,18 +1,29 @@
 package org.galaxy.gene_hunter.ui.element;
 
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
-import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal;
+import com.lowdragmc.lowdraglib2.gui.ui.data.TextWrap;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Vertical;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.AlignItems;
-import dev.vfyjxf.taffy.style.JustifyContent;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import org.biotech.api.system.trait.core.IStackTraitAccess;
+import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.ui.BiotechTexture;
 import org.biotech.ui.gene_inventroy.element.BaseRoot;
 
+import java.util.List;
+
 public class Choice extends UIElement {
+
+    private static final int TEXT_COLOR = 0xFFFFFF;
 
     private UIElement item_root;
         private BaseRoot base_root;
@@ -20,6 +31,9 @@ public class Choice extends UIElement {
             private DisplaySlot slot;
     private UIElement description_root;
         private Label label;
+
+    private IItemHandlerModifiable itemHandler;
+    private int itemIndex = -1;
 
 
     public Choice(){
@@ -69,6 +83,55 @@ public class Choice extends UIElement {
         });
         this.addChild(description_root);
             this.label = new Label();
+            label.setText(Component.empty());
+            label.textStyle(style -> {
+                style.textWrap(TextWrap.HIDE);
+                style.textColor(TEXT_COLOR);
+                style.textShadow(true);
+                style.textAlignHorizontal(Horizontal.CENTER);
+                style.textAlignVertical(Vertical.CENTER);
+            });
+            label.layout(layoutStyle -> {
+                layoutStyle.heightPercent(100);
+                layoutStyle.widthPercent(100);
+            });
             description_root.addChild(label);
+    }
+
+    public void bind(IItemHandlerModifiable itemHandler, int itemIndex) {
+        this.itemHandler = itemHandler;
+        this.itemIndex = itemIndex;
+        this.slot.bind(itemHandler, itemIndex);
+        this.slot.setSlotIndex(itemIndex);
+        updateLabel();
+        this.addEventListener(UIEvents.TICK, event -> updateLabel());
+    }
+
+    private void updateLabel() {
+        if (itemHandler == null || itemIndex < 0 || itemIndex >= itemHandler.getSlots()) {
+            label.setText(Component.empty());
+            return;
+        }
+
+        ItemStack stack = itemHandler.getStackInSlot(itemIndex);
+        if (stack.isEmpty()) {
+            label.setText(Component.empty());
+            return;
+        }
+
+        List<ITrait> traits = IStackTraitAccess.getTraits(stack);
+        if (traits.isEmpty()) {
+            label.setText(stack.getHoverName());
+            return;
+        }
+
+        MutableComponent text = Component.empty();
+        for (int i = 0; i < traits.size(); i++) {
+            if (i > 0) {
+                text.append(Component.literal(" / "));
+            }
+            text.append(traits.get(i).getDisplayName());
+        }
+        label.setText(text);
     }
 }

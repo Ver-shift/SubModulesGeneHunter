@@ -1,45 +1,43 @@
-package org.biotech.trait;
+package org.galaxy.gene_hunter.trait;
 
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import org.biotech.Biotech;
 import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.api.util.AutoInit;
+import org.galaxy.gene_hunter.GeneHunter;
 
 import java.util.List;
 
-/**
- * 增加玩家血量
- */
 @AutoInit(type = AutoInit.InitType.TRAIT)
-public class HealthTrait implements ITrait {
+public class AttackDamageTrait implements ITrait {
     private static final float VALUE = 0.10F;
 
     @Override
     public ResourceLocation getId() {
-        return Biotech.asResource("health_trait");
+        return GeneHunter.asResource("attack_damage_trait");
     }
 
     @Override
     public List<MutableComponent> getUniqueInfo() {
-        return List.of(
-                Component.translatable("trait.biotech.health.description", (int) (getValue() * 100))
-        );
+        return List.of(Component.translatable(
+                "trait.gene_hunter.attack_damage.description",
+                (int) (VALUE * 100)
+        ));
     }
 
     @Override
     public Holder<Attribute> getAttribute() {
-        return Attributes.MAX_HEALTH;
+        return Attributes.ATTACK_DAMAGE;
     }
 
     @Override
     public double getAttributeValue(int traitCount) {
-        return getValue(traitCount);
+        return VALUE * traitCount;
     }
 
     @Override
@@ -47,11 +45,8 @@ public class HealthTrait implements ITrait {
         return AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
     }
 
-    private double getValue() {
-        return VALUE;
-    }
-
-    private double getValue(int traitCount) {
-        return VALUE * traitCount;
+    @Override
+    public ResourceLocation getTexture() {
+        return ResourceLocation.withDefaultNamespace("textures/mob_effect/strength.png");
     }
 }

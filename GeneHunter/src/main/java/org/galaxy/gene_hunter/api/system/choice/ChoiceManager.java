@@ -22,6 +22,7 @@ import java.util.List;
 public final class ChoiceManager {
 
     private static final ChoiceManager INSTANCE = new ChoiceManager();
+    private static final int MIN_CHOICE_COUNT = 3;
 
     private final ChoiceRollFactory rollFactory = new ChoiceRollFactory();
     private final ChoiceExperienceCost experienceCost = new ChoiceExperienceCost();
@@ -56,7 +57,7 @@ public final class ChoiceManager {
     }
 
     public int getChoiceCount(ServerPlayer player) {
-        return data(player).getChoiceCount();
+        return Math.max(MIN_CHOICE_COUNT, data(player).getChoiceCount());
     }
 
     public void setChoiceCount(ServerPlayer player, int choice) {
@@ -69,10 +70,10 @@ public final class ChoiceManager {
     }
 
     public void doRoll(ServerPlayer player, ILootType<?> lootType, NodeColor nodeColor) {
-        doRoll(player, lootType, nodeColor, 0);
+        doRoll(player, lootType, nodeColor, 0.0F);
     }
 
-    private void doRoll(ServerPlayer player, ILootType<?> lootType, NodeColor nodeColor, int fixedRolls) {
+    private void doRoll(ServerPlayer player, ILootType<?> lootType, NodeColor nodeColor, float fixedRolls) {
         ChoiceHolderData choiceHolderData = data(player);
         ItemStackHandler handler = choiceHolderData.getChoiceHolderHandler();
         choiceHolderData.clear();

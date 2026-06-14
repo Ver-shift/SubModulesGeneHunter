@@ -36,6 +36,8 @@
   "trait.biotech.axe_weapon_damage_trait.name": "Axe Weapon Damage",
   "trait.biotech.hammer_weapon_damage_trait.name": "Hammer Weapon Damage",
   "trait.biotech.weapon_damage_conversion_rate_trait.name": "Weapon Damage Conversion Rate",
+  "trait.biotech.attack_damage_trait.name": "Attack Damage",
+  "trait.gene_hunter.attack_damage.description": "Increase attack damage by %s%%",
   "trait.gene_hunter.one_hand_weapon_damage.description": "Increase damage by %s while holding a one-hand weapon",
   "trait.gene_hunter.two_hand_weapon_damage.description": "Increase damage by %s while holding a two-hand weapon",
   "trait.gene_hunter.polearm_weapon_damage.description": "Increase damage by %s while holding a polearm weapon",
