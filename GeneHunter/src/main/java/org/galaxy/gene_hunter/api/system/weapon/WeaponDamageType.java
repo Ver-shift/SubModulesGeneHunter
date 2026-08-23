@@ -1,14 +1,13 @@
 package org.galaxy.gene_hunter.api.system.weapon;
 
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import org.galaxy.gene_hunter.api.init.GeneHunterAttributeInit.PlayerAttribute;
 
 public record WeaponDamageType(
         String id,
         TagKey<Item> tag,
-        DeferredHolder<Attribute, Attribute> attribute,
+        PlayerAttribute attribute,
         String descriptionKey,
         Channel channel
 ) {

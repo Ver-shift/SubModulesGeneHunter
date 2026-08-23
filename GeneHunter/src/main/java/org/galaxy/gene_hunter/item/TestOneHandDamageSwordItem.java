@@ -39,7 +39,7 @@ public class TestOneHandDamageSwordItem extends SwordItem {
                         EquipmentSlotGroup.MAINHAND
                 )
                 .add(
-                        GeneHunterAttributeInit.ONE_HAND_WEAPON_DAMAGE,
+                        GeneHunterAttributeInit.ONE_HAND_WEAPON_DAMAGE.holder(),
                         new AttributeModifier(
                                 ResourceLocation.fromNamespaceAndPath(GeneHunter.MODID, "test_one_hand_damage_sword/one_hand_weapon_damage"),
                                 9.0D,

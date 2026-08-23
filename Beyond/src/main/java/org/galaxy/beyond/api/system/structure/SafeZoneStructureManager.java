@@ -1,6 +1,9 @@
 package org.galaxy.beyond.api.system.structure;
 
+import com.lowdragmc.lowdraglib2.gui.util.ClickData;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -218,6 +221,7 @@ public class SafeZoneStructureManager implements ISafeZoneStructureManager {
             }
         }
         return null;
+
     }
 
     private boolean isSafeStanding(ServerLevel level, BlockPos pos) {

@@ -23,7 +23,7 @@ public class WeaponDamageConversionRateTrait implements ITrait {
 
     @Override
     public Holder<Attribute> getAttribute() {
-        return GeneHunterAttributeInit.WEAPON_DAMAGE_CONVERSION_RATE;
+        return GeneHunterAttributeInit.WEAPON_DAMAGE_CONVERSION_RATE.holder();
     }
 
     @Override

@@ -15,10 +15,10 @@ public final class WeaponDamageHandler {
         double gripDamage = 0.0D;
         double matchedShapeDamage = 0.0D;
         double convertedShapeDamage = 0.0D;
-        double conversionRate = value(player.getAttribute(GeneHunterAttributeInit.WEAPON_DAMAGE_CONVERSION_RATE));
+        double conversionRate = value(player.getAttribute(GeneHunterAttributeInit.WEAPON_DAMAGE_CONVERSION_RATE.holder()));
 
         for (WeaponDamageType type : WeaponDamageTypes.values()) {
-            double damage = value(player.getAttribute(type.attribute()));
+            double damage = value(player.getAttribute(type.attribute().holder()));
             if (type.channel() == WeaponDamageType.Channel.GRIP) {
                 if (player.getMainHandItem().is(type.tag())) {
                     gripDamage += damage;

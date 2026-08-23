@@ -1,5 +1,6 @@
 package org.galaxy.gene_hunter.api.init;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -12,6 +13,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.system.GeneHunterData;
 import org.galaxy.gene_hunter.api.system.gateway.GeneHunterDynamicGatewayData;
+import org.galaxy.gene_hunter.api.system.temperature.MobTemperatureData;
 
 @EventBusSubscriber
 public class GeneHunterAttachInit {
@@ -40,6 +42,20 @@ public class GeneHunterAttachInit {
             "dynamic_gateway_data",
             () -> AttachmentType.builder(GeneHunterDynamicGatewayData::new)
                     .serialize(GeneHunterDynamicGatewayData.CODEC.codec())
+                    .build()
+    );
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Long>> ATTACK_EXPLOSION_COOLDOWN_END_TICK = ATTACHMENT_TYPES.register(
+            "attack_explosion_cooldown_end_tick",
+            () -> AttachmentType.builder(() -> 0L)
+                    .serialize(Codec.LONG)
+                    .build()
+    );
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<MobTemperatureData>> MOB_TEMPERATURE = ATTACHMENT_TYPES.register(
+            "mob_temperature",
+            () -> AttachmentType.builder(() -> new MobTemperatureData())
+                    .serialize(MobTemperatureData.CODEC)
                     .build()
     );
 

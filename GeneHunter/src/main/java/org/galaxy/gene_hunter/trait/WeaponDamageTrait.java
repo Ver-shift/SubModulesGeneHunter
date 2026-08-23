@@ -34,7 +34,7 @@ public abstract class WeaponDamageTrait implements ITrait {
     public Holder<Attribute> getAttribute() {
         WeaponDamageType type = type();
         if (type != null) {
-            return type.attribute();
+            return type.attribute().holder();
         }
         return attribute();
     }
