@@ -20,7 +20,11 @@ import org.galaxy.beyond.api.system.structure.StructureManager;
 import org.galaxy.beyond.api.system.structure.core.ISafeZoneStructureManager;
 import org.galaxy.beyond.api.system.structure.core.IStructureManager;
 import org.galaxy.beyond.api.system.zone.ZoneManager;
+import org.galaxy.beyond.api.system.zone.LevelZoneData;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
+
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class BeyondManager implements IBeyondManager {
 
@@ -41,6 +45,8 @@ public class BeyondManager implements IBeyondManager {
     private final DefinitionManager definitionManager = new DefinitionManager();
     @Getter
     private final RogueCapManager rogueCapManager = new RogueCapManager(rogueContext);
+    /** Last allowed chunk per player, used to reject crossing the active-zone edge. */
+    private final Map<ServerPlayer, net.minecraft.world.level.ChunkPos> lastAllowedChunks = new WeakHashMap<>();
 
     @Override
     public void onLevelLoad(ServerLevel level) {
@@ -62,6 +68,43 @@ public class BeyondManager implements IBeyondManager {
     @Override
     public void playerTick(ServerPlayer player) {
         safeZoneStructureManager.playerTick(player);
+        enforceZoneBoundary(player);
+    }
+
+    /**
+     * Server-side movement guard for the active-zone boundary. The zone is chunk-granular, just
+     * like the existing border renderer: safe, node and active chunks are traversable, all other
+     * chunks are outside. Clamping only on a transition keeps this cheap for normal movement.
+     */
+    private void enforceZoneBoundary(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level) || !CommonConfig.isRogueDimension(level)) {
+            lastAllowedChunks.remove(player);
+            return;
+        }
+
+        net.minecraft.world.level.ChunkPos current = player.chunkPosition();
+        LevelZoneData data = BeyondAPI.getLevelZoneData(level);
+        if (data.hasAny(current)) {
+            lastAllowedChunks.put(player, current);
+            return;
+        }
+
+        net.minecraft.world.level.ChunkPos previous = lastAllowedChunks.get(player);
+        if (previous == null) return;
+
+        double x = player.getX();
+        double z = player.getZ();
+        double epsilon = 0.05D;
+        if (current.x > previous.x) x = previous.getMaxBlockX() + 1.0D - epsilon;
+        else if (current.x < previous.x) x = previous.getMinBlockX() + epsilon;
+        if (current.z > previous.z) z = previous.getMaxBlockZ() + 1.0D - epsilon;
+        else if (current.z < previous.z) z = previous.getMinBlockZ() + epsilon;
+
+        player.setPos(x, player.getY(), z);
+        var velocity = player.getDeltaMovement();
+        double vx = current.x == previous.x ? velocity.x : 0.0D;
+        double vz = current.z == previous.z ? velocity.z : 0.0D;
+        player.setDeltaMovement(vx, velocity.y, vz);
     }
 
     @Override
