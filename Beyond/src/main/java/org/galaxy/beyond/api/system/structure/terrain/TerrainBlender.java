@@ -15,13 +15,16 @@ import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import org.galaxy.beyond.Beyond;
 import org.galaxy.beyond.mixin.SinglePoolElementAccessor;
 import org.galaxy.beyond.mixin.StructureTemplateAccessor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public final class TerrainBlender {
 
@@ -35,12 +38,19 @@ public final class TerrainBlender {
     };
     private static final double SLOPE_NOISE_SCALE = 6.0;
     private static final int SLOPE_NOISE_STRENGTH = 3;
+    /**
+     * A structure is placed once per intersecting chunk. Keep its immutable template footprint
+     * around so those chunk callbacks do not repeatedly decode the same template palettes.
+     */
+    private static final Map<PiecesContainer, Map<Integer, List<BlockPos>>> TEMPLATE_ANCHOR_CACHE =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     private TerrainBlender() {
     }
 
     public static void blend(WorldGenLevel level, BoundingBox placeBox, ChunkPos chunkPos,
                              PiecesContainer pieces, TerrainBlendConfig config) {
+        long startedAt = System.nanoTime();
         BoundingBox chunkBox = new BoundingBox(
                 chunkPos.getMinBlockX(), level.getMinBuildHeight(), chunkPos.getMinBlockZ(),
                 chunkPos.getMaxBlockX(), level.getMaxBuildHeight() - 1, chunkPos.getMaxBlockZ()
@@ -66,6 +76,7 @@ public final class TerrainBlender {
 
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         int blendRadiusSq = blendRadius * blendRadius;
+        int blendedColumns = 0;
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
                 AnchorDistance nearest = footprint.nearest(x, z, blendRadiusSq);
@@ -74,14 +85,16 @@ public final class TerrainBlender {
                 int anchorY = nearest.anchor().getY();
                 boolean anchorColumn = nearest.distanceSq() == 0;
                 int maxSurfaceY = anchorColumn ? anchorY - 1 : level.getMaxBuildHeight() - 1;
-                int surfaceY = findTerrainSurfaceY(level, mutable, x, z, maxSurfaceY);
-                if (surfaceY <= level.getMinBuildHeight()) continue;
+                TerrainColumn terrain = sampleTerrainColumn(level, mutable, x, z, maxSurfaceY);
+                if (terrain.surfaceY() <= level.getMinBuildHeight()) continue;
 
-                ColumnMaterial material = sampleColumnMaterial(level, mutable, x, z, surfaceY);
-                BlendColumn column = BlendColumn.create(nearest, x, z, surfaceY, config);
-                blendColumn(level, mutable, x, z, column, config, material);
+                BlendColumn column = BlendColumn.create(nearest, x, z, terrain.surfaceY(), config);
+                blendColumn(level, mutable, x, z, column, config, terrain.material());
+                blendedColumns++;
             }
         }
+        Beyond.debugInfo("Terrain blend chunk=[{}, {}] columns={} elapsed={}us",
+                chunkPos.x, chunkPos.z, blendedColumns, (System.nanoTime() - startedAt) / 1_000L);
     }
 
     private static BoundingBox intersect(BoundingBox first, BoundingBox second) {
@@ -98,15 +111,24 @@ public final class TerrainBlender {
 
     private static List<BlockPos> collectAnchors(WorldGenLevel level, PiecesContainer pieces,
                                                  int depth, BoundingBox searchBox) {
-        List<BlockPos> anchors = collectTemplateFootprintAnchors(level, pieces, depth, searchBox);
+        List<BlockPos> anchors = filterAnchors(templateFootprintAnchors(level, pieces, depth), searchBox);
         if (!anchors.isEmpty()) {
             return anchors;
         }
         return collectPlacedFootprintAnchors(level, pieces, depth, searchBox);
     }
 
+    private static List<BlockPos> templateFootprintAnchors(WorldGenLevel level, PiecesContainer pieces, int depth) {
+        synchronized (TEMPLATE_ANCHOR_CACHE) {
+            Map<Integer, List<BlockPos>> anchorsByDepth = TEMPLATE_ANCHOR_CACHE.computeIfAbsent(
+                    pieces, ignored -> new HashMap<>());
+            return anchorsByDepth.computeIfAbsent(depth,
+                    ignored -> List.copyOf(collectTemplateFootprintAnchors(level, pieces, depth)));
+        }
+    }
+
     private static List<BlockPos> collectTemplateFootprintAnchors(WorldGenLevel level, PiecesContainer pieces,
-                                                                  int depth, BoundingBox searchBox) {
+                                                                   int depth) {
         Map<Long, BlockPos> anchors = new HashMap<>();
         for (StructurePiece piece : pieces.pieces()) {
             if (!(piece instanceof PoolElementStructurePiece poolPiece)
@@ -137,12 +159,20 @@ public final class TerrainBlender {
                 }
 
                 BlockPos anchor = StructureTemplate.calculateRelativePosition(settings, relative).offset(origin);
-                if (searchBox.isInside(anchor)) {
-                    addLowestAnchor(anchors, anchor);
-                }
+                addLowestAnchor(anchors, anchor);
             }
         }
         return new ArrayList<>(anchors.values());
+    }
+
+    private static List<BlockPos> filterAnchors(List<BlockPos> anchors, BoundingBox searchBox) {
+        List<BlockPos> filtered = new ArrayList<>();
+        for (BlockPos anchor : anchors) {
+            if (searchBox.isInside(anchor)) {
+                filtered.add(anchor);
+            }
+        }
+        return filtered;
     }
 
     private static int findLowestFootprintTemplateY(List<StructureTemplate.StructureBlockInfo> blocks) {
@@ -193,26 +223,27 @@ public final class TerrainBlender {
         }
     }
 
-    private static int findTerrainSurfaceY(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z, int maxY) {
+    /**
+     * Finds the visible terrain surface and its reusable top/filler materials in one descent.
+     * Previously these were two separate scans over the same world column.
+     */
+    private static TerrainColumn sampleTerrainColumn(WorldGenLevel level, BlockPos.MutableBlockPos pos,
+                                                     int x, int z, int maxY) {
         int minY = level.getMinBuildHeight();
-        int surfaceY = Math.min(level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1, maxY);
-        for (int y = surfaceY; y >= minY; y--) {
-            pos.set(x, y, z);
-            BlockState state = level.getBlockState(pos);
-            if (state.isAir() || isLoosePlant(state)) continue;
-            return y;
-        }
-        return minY;
-    }
-
-    private static ColumnMaterial sampleColumnMaterial(WorldGenLevel level, BlockPos.MutableBlockPos pos,
-                                                       int x, int z, int startY) {
+        int scanStartY = Math.min(level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z) - 1, maxY);
+        int surfaceY = minY;
+        boolean foundSurface = false;
         BlockState top = null;
         BlockState filler = null;
-        int minY = level.getMinBuildHeight();
-        for (int y = Math.min(startY, level.getMaxBuildHeight() - 1); y >= minY; y--) {
+
+        for (int y = scanStartY; y >= minY; y--) {
             pos.set(x, y, z);
             BlockState state = level.getBlockState(pos);
+            if (!foundSurface) {
+                if (state.isAir() || isLoosePlant(state)) continue;
+                surfaceY = y;
+                foundSurface = true;
+            }
             if (!isBlendMaterial(state)) continue;
 
             if (top == null) {
@@ -223,13 +254,16 @@ public final class TerrainBlender {
             }
         }
 
+        if (!foundSurface) {
+            return new TerrainColumn(minY, null);
+        }
         if (top == null) {
             top = Blocks.DIRT.defaultBlockState();
         }
         if (filler == null) {
             filler = defaultFiller(top);
         }
-        return new ColumnMaterial(top, filler);
+        return new TerrainColumn(surfaceY, new ColumnMaterial(top, filler));
     }
 
     private static void blendColumn(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z,
@@ -478,6 +512,9 @@ public final class TerrainBlender {
     }
 
     private record ColumnMaterial(BlockState top, BlockState filler) {
+    }
+
+    private record TerrainColumn(int surfaceY, ColumnMaterial material) {
     }
 
     private record BlendColumn(int anchorY, int surfaceY, int targetY, boolean anchorColumn) {
