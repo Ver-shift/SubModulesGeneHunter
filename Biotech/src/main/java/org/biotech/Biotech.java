@@ -5,8 +5,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import org.biotech.api.config.ServerConfig;
 import org.biotech.api.init.*;
 import org.slf4j.Logger;
 
@@ -20,8 +18,6 @@ public class Biotech {
     public Biotech(IEventBus modEventBus, ModContainer modContainer) {
 
         newRegistryInit(modEventBus);
-        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
-
 
         BiotechDataComponentInit.register(modEventBus);
         BiotechItemInit.register(modEventBus);
@@ -29,7 +25,6 @@ public class Biotech {
         BiotechAttachInit.register(modEventBus);
         BiotechAttributeInit.register(modEventBus);
         BiotechMenuInit.register(modEventBus);
-
     }
 
     public static ResourceLocation asResource(String path){
@@ -42,13 +37,7 @@ public class Biotech {
      */
     public void newRegistryInit(IEventBus modEventBus) {
 
-        modEventBus.addListener(BiotechTraitInit::registerRegistry);
-        BiotechTraitInit.register(modEventBus);
-        BiotechTraitInit.autoRegisterTraits();
-
-        modEventBus.addListener(BiotechGeneInit::registerRegistry);
         BiotechGeneInit.register(modEventBus);
-        BiotechGeneInit.autoRegisterGenes();
 
         BiotechLootTypeInit.register(modEventBus);
 

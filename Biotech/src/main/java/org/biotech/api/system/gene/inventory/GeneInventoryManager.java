@@ -4,11 +4,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import org.biotech.api.init.BiotechGeneInit;
 import org.biotech.api.init.BiotechMenuInit;
 import org.biotech.api.system.GeneData;
 import org.biotech.api.system.gene.core.manager.IGeneInventoryManager;
 import org.biotech.container.GeneMenu;
 import org.biotech.item.GeneItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 基因背包管理器 - 参考 Inventory 类的设计
@@ -84,14 +88,37 @@ public class GeneInventoryManager implements IGeneInventoryManager {
 
     @Override
     public AddResult addUnidentified(Rarity rarity) {
-        // 根据稀有度添加未鉴定基因
-        // 具体实现逻辑由外部配置决定
         int slotIndex = getFirstEmptySlot();
         if (slotIndex == -1) {
             return AddResult.FULL;
         }
-        // TODO: 根据稀有度生成基因并添加
-        return AddResult.SUCCESS;
+
+        var player = data.getPlayer();
+        if (player == null) {
+            return AddResult.INVALID_TYPE;
+        }
+
+        List<net.minecraft.resources.ResourceLocation> allGeneIds =
+                BiotechGeneInit.getGeneIds(player.level().registryAccess());
+        if (allGeneIds.isEmpty()) {
+            return AddResult.INVALID_TYPE;
+        }
+
+        List<net.minecraft.resources.ResourceLocation> rarityMatches = new ArrayList<>();
+        for (var id : allGeneIds) {
+            BiotechGeneInit.getGene(player.level().registryAccess(), id)
+                    .filter(definition -> definition.rarity() == rarity)
+                    .ifPresent(definition -> rarityMatches.add(id));
+        }
+
+        // A datapack may intentionally define only some rarity tiers.  Falling back
+        // keeps a core usable instead of silently consuming it with no result.
+        List<net.minecraft.resources.ResourceLocation> candidates =
+                rarityMatches.isEmpty() ? allGeneIds : rarityMatches;
+        var geneId = candidates.get(player.getRandom().nextInt(candidates.size()));
+        var definition = BiotechGeneInit.getGene(player.level().registryAccess(), geneId);
+        return definition.map(value -> add(slotIndex, GeneItem.createForGene(geneId, value)))
+                .orElse(AddResult.INVALID_TYPE);
     }
 
     @Override

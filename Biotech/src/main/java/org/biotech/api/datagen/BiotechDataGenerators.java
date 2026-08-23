@@ -21,7 +21,5 @@ public class BiotechDataGenerators {
         var pack = generator.getPackOutput();
 
         generator.addProvider(event.includeClient(),new BiotechItemModelProvider(pack,Biotech.MODID,helper));
-
-
     }
 }

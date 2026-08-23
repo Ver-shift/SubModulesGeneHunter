@@ -1,6 +1,5 @@
 package org.biotech.loot;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.biotech.api.init.BiotechGeneInit;
 import org.galaxylib.api.system.loot.LootManager;
@@ -17,15 +16,10 @@ public class GeneLootType implements ILootType<ItemStack> {
     
     @Override
     public Optional<ItemStack> resolve(LootEntryDefinition entry, LootManager.Context context) {
-        var gene = BiotechGeneInit.getGeneById(entry.id());
-        
-        // 检查基因是否存在（空基因检查）
-        if (gene == null || gene == BiotechGeneInit.EMPTY) {
-            return Optional.empty();
-        }
-        
-        // 创建 GeneItem ItemStack
-        ItemStack stack = GeneItem.createForGene(gene);
+        var gene = BiotechGeneInit.getGene(context.level().registryAccess(), entry.id());
+        if (gene.isEmpty()) return Optional.empty();
+
+        ItemStack stack = GeneItem.createForGene(entry.id(), gene.get());
         stack.setCount(entry.count());
         return Optional.of(stack);
     }

@@ -1,0 +1,20 @@
+{
+  "rarity": "epic",
+  "description": {"translate": "gene.biotech.ender_dragon_gene.description"},
+  "attributes": [
+    {
+      "type": "minecraft:generic.max_health",
+      "id": "biotech:ender_dragon_gene_health",
+      "amount": 4.0,
+      "operation": "add_value",
+      "slot": "any"
+    },
+    {
+      "type": "minecraft:generic.attack_speed",
+      "id": "biotech:ender_dragon_gene_attack_speed_penalty",
+      "amount": -0.05,
+      "operation": "add_multiplied_total",
+      "slot": "any"
+    }
+  ]
+}

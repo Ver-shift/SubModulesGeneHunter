@@ -1,0 +1,20 @@
+{
+  "rarity": "rare",
+  "description": {"translate": "gene.biotech.guardian_gene.description"},
+  "attributes": [
+    {
+      "type": "minecraft:generic.armor",
+      "id": "biotech:guardian_gene_armor",
+      "amount": 3.0,
+      "operation": "add_value",
+      "slot": "any"
+    },
+    {
+      "type": "minecraft:generic.movement_speed",
+      "id": "biotech:guardian_gene_speed_penalty",
+      "amount": -0.04,
+      "operation": "add_multiplied_total",
+      "slot": "any"
+    }
+  ]
+}

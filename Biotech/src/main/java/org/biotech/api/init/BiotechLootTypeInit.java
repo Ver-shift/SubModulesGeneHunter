@@ -4,8 +4,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.biotech.Biotech;
 import org.biotech.loot.GeneLootType;
-import org.biotech.loot.GeneTraitLootType;
-import org.biotech.loot.XeneTraitLootType;
 import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.core.ILootType;
 import net.minecraft.core.Registry;
@@ -31,13 +29,9 @@ public class BiotechLootTypeInit {
     public static <T extends ILootType<?>> Supplier<ILootType<?>> registerLootType(String name, Supplier<T> supplier) {
         return REGISTRAR.register(name, supplier);
     }
-    public static final Supplier<ILootType<?>> XENE_TRAIT_LOOT_TYPE;
-    public static final Supplier<ILootType<?>> GENE_TRAIT_LOOT_TYPE;
     public static final Supplier<ILootType<?>> GENE_LOOT_TYPE;
 
     static {
-        XENE_TRAIT_LOOT_TYPE = registerLootType("xene_trait", XeneTraitLootType::new);
-        GENE_TRAIT_LOOT_TYPE = registerLootType("gene_trait", GeneTraitLootType::new);
         GENE_LOOT_TYPE = registerLootType("gene", GeneLootType::new);
     }
 }

@@ -16,7 +16,7 @@ import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.biotech.api.BiotechAPI;
 import org.biotech.api.system.gene.inventory.PlayerGeneInventoryData;
-import org.biotech.api.system.trait.core.IStackTraitAccess;
+import org.biotech.Biotech;
 import org.biotech.item.GeneItem;
 import org.biotech.ui.IScalable;
 import org.biotech.ui.gene_inventroy.element.inventory.*;
@@ -419,10 +419,7 @@ public class GeneInventoryGroup extends UIElement implements IScalable {
             var itemStack = slot.getSlot().getItem();
 
             if (itemStack.getItem() instanceof GeneItem){
-                ResourceLocation textureResource = IStackTraitAccess.getSelectedTraitTexture(itemStack);
-                if (textureResource == null) {
-                    return;
-                }
+                ResourceLocation textureResource = Biotech.asResource("textures/item/gene_item.png");
                 IGuiTexture texture = SpriteTexture.of(textureResource);
 
 
@@ -437,42 +434,11 @@ public class GeneInventoryGroup extends UIElement implements IScalable {
                 context.pose.scale(scale, scale, 1);
                 context.drawTexture(texture, slotPos.getHoverOffsetX()+ 5,slotPos.getHoverOffsetY()+ 5, 12, 12);
 
-                int traitCount = IStackTraitAccess.getTraitCount(itemStack);
-                if (traitCount > 1) {
-                    Font font = Minecraft.getInstance().font;
-                    String roman = toRoman(traitCount);
-                    int badgeX = 16 - Math.round(font.width(roman) * ROMAN_TEXT_SCALE);
-                    int badgeY = 11;
-
-                    context.pose.pushPose();
-                    // Draw above slot/hover overlays to prevent being hidden.
-                    context.pose.translate(badgeX, badgeY, 200);
-                    context.pose.scale(ROMAN_TEXT_SCALE, ROMAN_TEXT_SCALE, 1.0F);
-                    context.graphics.drawString(font, roman, slotPos.getHoverOffsetX(), slotPos.getHoverOffsetY(), 0xFFFFE6FF, true);
-                    context.pose.popPose();
-                }
-
                 context.pose.popPose();
 
 
 
             }
-        }
-
-
-        private static String toRoman(int value) {
-            int[] numbers = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-            String[] symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-            StringBuilder result = new StringBuilder();
-            int remaining = Math.max(value, 0);
-
-            for (int i = 0; i < numbers.length && remaining > 0; i++) {
-                while (remaining >= numbers[i]) {
-                    result.append(symbols[i]);
-                    remaining -= numbers[i];
-                }
-            }
-            return result.toString();
         }
     }
 

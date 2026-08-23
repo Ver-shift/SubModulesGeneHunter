@@ -3,116 +3,51 @@ package org.biotech.api.system.gene;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Data;
-import net.minecraft.core.component.*;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.neoforged.neoforge.common.MutableDataComponentHolder;
-import org.biotech.api.system.gene.core.GeneRarity;
-import org.biotech.api.system.gene.core.IGene;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+/** A stack-local reference to an immutable datapack gene definition. */
 @Data
-public class GeneInstance implements MutableDataComponentHolder{
-
+public class GeneInstance {
     public static final GeneInstance EMPTY = new GeneInstance(null);
 
-    private IGene gene;
-    private int count = 1; //最高64堆叠
-    private final PatchedDataComponentMap components = new PatchedDataComponentMap(DataComponentMap.EMPTY);
+    @Nullable private final ResourceLocation geneId;
+    private int count = 1;
 
-    public GeneInstance(IGene gene) {
-        this.gene = gene;
-        if (gene != null) {
-            applyComponents(gene.getConfigBuilder().build());
-        }
+    public GeneInstance(@Nullable ResourceLocation geneId) {
+        this.geneId = geneId;
     }
 
-    // CODEC - gene 字段可为 null（返回 EMPTY 常量而非新实例）
-    public static final Codec<GeneInstance> CODEC = RecordCodecBuilder.create(instance ->
-        instance.group(
-            IGene.CODEC.optionalFieldOf("gene").forGetter(i -> Optional.ofNullable(i.getGene())),
-            Codec.INT.fieldOf("count").forGetter(GeneInstance::getCount),
-            DataComponentPatch.CODEC.fieldOf("components").forGetter(i -> i.components.asPatch())
-        ).apply(instance, (g, c, p) -> {
-            IGene gene = g.orElse(null);
-            // 如果 gene 为 null，返回 EMPTY 常量
-            if (gene == null) {
-                return GeneInstance.EMPTY;
-            }
-            GeneInstance instance1 = new GeneInstance(gene);
-            instance1.setCount(c);
-            instance1.applyComponents(p);
-            return instance1;
-        })
-    );
+    public boolean isEmpty() { return geneId == null; }
 
-    // STREAM_CODEC - 支持 null gene（EMPTY 实例）
+    public static final Codec<GeneInstance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceLocation.CODEC.optionalFieldOf("gene").forGetter(value -> Optional.ofNullable(value.geneId)),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(GeneInstance::getCount)
+    ).apply(instance, (id, count) -> {
+        GeneInstance value = new GeneInstance(id.orElse(null));
+        value.setCount(count);
+        return value;
+    }));
+
     public static final StreamCodec<RegistryFriendlyByteBuf, GeneInstance> STREAM_CODEC = new StreamCodec<>() {
         @Override
-        public void encode(RegistryFriendlyByteBuf buf, GeneInstance instance) {
-            // 写入 gene（支持 null）
-            IGene.STREAM_CODEC.encode(buf, instance.getGene());
-            // 写入 count
-            ByteBufCodecs.VAR_INT.encode(buf, instance.getCount());
-            // 写入 components
-            DataComponentPatch.STREAM_CODEC.encode(buf, instance.components.asPatch());
+        public GeneInstance decode(RegistryFriendlyByteBuf buffer) {
+            ResourceLocation id = ByteBufCodecs.BOOL.decode(buffer) ? buffer.readResourceLocation() : null;
+            GeneInstance value = new GeneInstance(id);
+            value.setCount(ByteBufCodecs.VAR_INT.decode(buffer));
+            return value;
         }
 
         @Override
-        public GeneInstance decode(RegistryFriendlyByteBuf buf) {
-            IGene gene = IGene.STREAM_CODEC.decode(buf);
-            int count = ByteBufCodecs.VAR_INT.decode(buf);
-            DataComponentPatch patch = DataComponentPatch.STREAM_CODEC.decode(buf);
-            GeneInstance instance = new GeneInstance(gene);
-            instance.setCount(count);
-            instance.applyComponents(patch);
-            return instance;
+        public void encode(RegistryFriendlyByteBuf buffer, GeneInstance value) {
+            ByteBufCodecs.BOOL.encode(buffer, value.geneId != null);
+            if (value.geneId != null) buffer.writeResourceLocation(value.geneId);
+            ByteBufCodecs.VAR_INT.encode(buffer, value.count);
         }
     };
-
-    
-
-
-    public GeneRarity getRarity(){
-        return GeneRarity.fromMinecraftRarity(components.get(DataComponents.RARITY));
-    }
-
-
-
-
-
-
-
-    @Override
-    public @Nullable <T> T set(DataComponentType<? super T> componentType, @Nullable T value) {
-        return this.components.set(componentType, value);
-    }
-
-    @Override
-    public @Nullable <T> T remove(DataComponentType<? extends T> componentType) {
-        return this.components.remove(componentType);
-    }
-
-    @Override
-    public void applyComponents(DataComponentPatch patch) {
-        this.components.applyPatch(patch);
-    }
-
-    @Override
-    public void applyComponents(DataComponentMap components) {
-        this.components.setAll(components);
-    }
-
-    @Override
-    public @NotNull DataComponentMap getComponents() {
-        return this.components;
-    }
-
-
-
-
 }

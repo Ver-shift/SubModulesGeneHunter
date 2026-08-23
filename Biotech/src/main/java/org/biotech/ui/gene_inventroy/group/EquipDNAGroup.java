@@ -37,8 +37,6 @@ public class EquipDNAGroup extends UIElement implements IScalable {
     private Player player;
     private IDynamicStackHandler stackHandler;
 
-    public static final int SLOT_COUNT = 6;
-
     public EquipDNAGroup(Player player) {
 
         initPlayerData(player);
@@ -61,7 +59,7 @@ public class EquipDNAGroup extends UIElement implements IScalable {
 
         });
         this.addChild(equipSlotsContainer);
-            // 创建6个槽位
+            // 槽位数量由 data/biotech/curios/slots/gene_equip_slot.json 的 Curios 配置决定。
             createSlots();
         this.emptyContainer = new UIElement();
         emptyContainer.setId("empty_container_1");
@@ -103,7 +101,10 @@ public class EquipDNAGroup extends UIElement implements IScalable {
     }
 
     private void createSlots(){
-        for (int i = 0; i < SLOT_COUNT; i++) {
+        if (stackHandler == null) {
+            return;
+        }
+        for (int i = 0; i < stackHandler.getSlots(); i++) {
             EquipGeneSlot slot = new EquipGeneSlot();
             slot.setId("equip_slot_" + i);
             slot.slotStyle(style -> {
@@ -112,10 +113,8 @@ public class EquipDNAGroup extends UIElement implements IScalable {
                 style.quickMovePriority(200);
             });
 
-            // 绑定到 stackHandler
-            if (stackHandler != null) {
-                slot.bind(stackHandler, i);
-            }
+            // 绑定 Curios 已按数据包槽位定义创建的实际处理器。
+            slot.bind(stackHandler, i);
 
             equipSlots.add(slot);
             equipSlotsContainer.addChild(slot);

@@ -5,11 +5,9 @@ import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.biotech.api.system.trait.core.IStackTraitAccess;
+import org.biotech.Biotech;
 import org.biotech.item.GeneItem;
 import org.biotech.ui.BiotechTexture;
 import org.biotech.ui.IScalable;
@@ -25,7 +23,6 @@ public class EquipGeneSlot extends ItemSlot implements IScalable {
     // 浮动动画
     private IBaseAnimation floatAnimation;
     private float currentScale = 1.0f;
-    private static final float ROMAN_TEXT_SCALE = 0.75f;
 
     public static final IGuiTexture slotOverlay = SpriteTexture
             .of(BiotechTexture.GUI_TEXTURE)
@@ -87,50 +84,16 @@ public class EquipGeneSlot extends ItemSlot implements IScalable {
     protected void drawItemStack(GUIContext guiContext, ItemStack itemStack) {
 
         if (itemStack.getItem() instanceof GeneItem){
-            ResourceLocation textureResource = IStackTraitAccess.getSelectedTraitTexture(itemStack);
-            if (textureResource == null) {
-                return;
-            }
+            ResourceLocation textureResource = Biotech.asResource("textures/item/gene_item.png");
             IGuiTexture texture = SpriteTexture.of(textureResource);
 
             guiContext.pose.pushPose();
             floatAnimation.animation(guiContext, currentScale);
             guiContext.drawTexture(texture, 0, 0, 18, 18);
 
-            int traitCount = IStackTraitAccess.getTraitCount(itemStack);
-            if (traitCount > 1) {
-                Font font = Minecraft.getInstance().font;
-                String roman = toRoman(traitCount);
-                int badgeX = 17 - Math.round(font.width(roman) * ROMAN_TEXT_SCALE);
-                int badgeY = 11;
-
-                guiContext.pose.pushPose();
-                // Raise Z so the badge is always above slot/icon overlays.
-                guiContext.pose.translate(badgeX, badgeY, 200);
-                guiContext.pose.scale(ROMAN_TEXT_SCALE, ROMAN_TEXT_SCALE, 1.0F);
-                guiContext.graphics.drawString(font, roman, 0, 0, 0xFFFFE6FF, true);
-                guiContext.pose.popPose();
-            }
-
             guiContext.pose.popPose();
 
         }
-    }
-
-
-    private static String toRoman(int value) {
-        int[] numbers = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-        String[] symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-        StringBuilder result = new StringBuilder();
-        int remaining = Math.max(value, 0);
-
-        for (int i = 0; i < numbers.length && remaining > 0; i++) {
-            while (remaining >= numbers[i]) {
-                result.append(symbols[i]);
-                remaining -= numbers[i];
-            }
-        }
-        return result.toString();
     }
 
     @Override
