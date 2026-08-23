@@ -39,7 +39,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ActiveZoneController {
 
     private static final int PROGRESS_INTERVAL = 20;
-    private static final int NODE_REGISTRATION_PER_TICK = 1;
+    // Structure starts have already been located off-thread; register a small batch per tick
+    // so expansion does not spend one full second per candidate while keeping main-thread work bounded.
+    private static final int NODE_REGISTRATION_PER_TICK = 8;
     private static final String[] SPINNER = {"|", "/", "-", "\\"};
 
     private final AsyncZoneExpansionService asyncExpansion;
@@ -272,6 +274,10 @@ public class ActiveZoneController {
     private static void scanPlacement(ServerLevel level, ChunkGeneratorStructureState state, Holder<Structure> holder,
                                       StructurePlacement placement, Set<Long> seeds, int maxRadius,
                                       Set<ChunkPos> located) {
+        if (placement instanceof RandomSpreadStructurePlacement spread) {
+            scanRandomSpreadPlacement(level, state, holder, spread, seeds, maxRadius, located);
+            return;
+        }
         long radiusSqr = (long) maxRadius * maxRadius;
         for (long seed : seeds) {
             int centerX = PackedChunkPos.x(seed);
@@ -284,6 +290,34 @@ public class ActiveZoneController {
                     int z = centerZ + dz;
                     if (!placement.isStructureChunk(state, x, z)) continue;
                     ChunkPos candidate = new ChunkPos(x, z);
+                    if (hasNodeStructure(level, holder, placement, candidate)) located.add(candidate);
+                }
+            }
+        }
+    }
+
+    /**
+     * Random-spread structures only have one candidate chunk per spacing cell. Enumerating every
+     * chunk in the radius is therefore needlessly expensive during active-zone expansion.
+     */
+    private static void scanRandomSpreadPlacement(ServerLevel level, ChunkGeneratorStructureState state,
+                                                  Holder<Structure> holder, RandomSpreadStructurePlacement placement,
+                                                  Set<Long> seeds, int maxRadius, Set<ChunkPos> located) {
+        int spacing = Math.max(1, placement.spacing());
+        int regionRadius = Math.floorDiv(maxRadius + spacing - 1, spacing) + 1;
+        long radiusSqr = (long) maxRadius * maxRadius;
+        long worldSeed = state.getLevelSeed();
+        for (long seed : seeds) {
+            int centerX = PackedChunkPos.x(seed);
+            int centerZ = PackedChunkPos.z(seed);
+            int centerRegionX = Math.floorDiv(centerX, spacing);
+            int centerRegionZ = Math.floorDiv(centerZ, spacing);
+            for (int regionX = centerRegionX - regionRadius; regionX <= centerRegionX + regionRadius; regionX++) {
+                for (int regionZ = centerRegionZ - regionRadius; regionZ <= centerRegionZ + regionRadius; regionZ++) {
+                    ChunkPos candidate = placement.getPotentialStructureChunk(worldSeed, regionX, regionZ);
+                    long dx = (long) candidate.x - centerX;
+                    long dz = (long) candidate.z - centerZ;
+                    if (dx * dx + dz * dz > radiusSqr) continue;
                     if (hasNodeStructure(level, holder, placement, candidate)) located.add(candidate);
                 }
             }
