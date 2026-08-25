@@ -33,6 +33,10 @@ public final class BiotechGeneInit {
         return registryAccess.registry(GENE_REGISTRY_KEY).flatMap(registry -> Optional.ofNullable(registry.get(id)));
     }
 
+    public static Optional<GeneDefinition> getXene(RegistryAccess registryAccess, ResourceLocation id) {
+        return registryAccess.registry(XENE_REGISTRY_KEY).flatMap(registry -> Optional.ofNullable(registry.get(id)));
+    }
+
     public static List<ResourceLocation> getGeneIds(RegistryAccess registryAccess) {
         return getIds(registryAccess, GENE_REGISTRY_KEY);
     }

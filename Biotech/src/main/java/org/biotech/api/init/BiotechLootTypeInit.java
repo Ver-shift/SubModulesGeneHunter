@@ -4,6 +4,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.biotech.Biotech;
 import org.biotech.loot.GeneLootType;
+import org.biotech.loot.XeneLootType;
 import org.galaxylib.api.init.GalaxyLibLootTypeInit;
 import org.galaxylib.api.system.loot.core.ILootType;
 import net.minecraft.core.Registry;
@@ -30,8 +31,13 @@ public class BiotechLootTypeInit {
         return REGISTRAR.register(name, supplier);
     }
     public static final Supplier<ILootType<?>> GENE_LOOT_TYPE;
+    public static final Supplier<ILootType<?>> XENE_LOOT_TYPE;
+    /** Compatibility name for GeneHunter versions that still request the old trait loot type. */
+    public static final Supplier<ILootType<?>> XENE_TRAIT_LOOT_TYPE;
 
     static {
         GENE_LOOT_TYPE = registerLootType("gene", GeneLootType::new);
+        XENE_LOOT_TYPE = registerLootType("xene", XeneLootType::new);
+        XENE_TRAIT_LOOT_TYPE = XENE_LOOT_TYPE;
     }
 }

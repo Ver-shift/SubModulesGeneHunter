@@ -156,6 +156,18 @@
             ]
         }
     ],
+    "lootTables": {
+        "biotech:xene": [
+            "gene_hunter:xene_trait_base"
+        ],
+        "gene_hunter:weapon": [
+            "gene_hunter:blade_weapon_base",
+            "gene_hunter:sword_weapon_base",
+            "gene_hunter:axe_weapon_base",
+            "gene_hunter:hammer_weapon_base",
+            "gene_hunter:polearm_weapon_base"
+        ]
+    },
     "progressCaps": [],
     "sceneRolls": [
         {

@@ -1,0 +1,9 @@
+{
+  "identify": "gene_hunter:axe_weapon_base",
+  "note": "斧类武器：巨斧、镰刀、战刃",
+  "loot_type": "gene_hunter:weapon",
+  "pools": [{"name":"axe","base_weight":100,"entries":[
+    {"id":"simplyswords:iron_greataxe","weight":10},{"id":"simplyswords:gold_greataxe","weight":8},{"id":"simplyswords:diamond_greataxe","weight":6},{"id":"simplyswords:netherite_greataxe","weight":4},{"id":"simplyswords:runic_greataxe","weight":2},
+    {"id":"simplyswords:iron_scythe","weight":10},{"id":"simplyswords:gold_scythe","weight":8},{"id":"simplyswords:diamond_scythe","weight":6},{"id":"simplyswords:netherite_scythe","weight":4},{"id":"simplyswords:runic_scythe","weight":2}
+  ]}]
+}

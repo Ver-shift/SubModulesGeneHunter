@@ -117,12 +117,25 @@ public class BeyondManager implements IBeyondManager {
 
     @Override
     public void playerChangedDimension(ServerPlayer player) {
+        if (CommonConfig.isRogueDimension(player.level())) {
+            ServerLevel level = (ServerLevel) player.level();
+            // Re-send both the persisted zone geometry and the rogue phase. The
+            // client starts with fresh level attachments after reconnecting or
+            // changing dimensions.
+            BeyondAPI.syncGlobalData(level);
+            BeyondAPI.syncLargeLevelDataFull(level);
+        }
         safeZoneStructureManager.onPlayerEnterDimension(player);
         safeZoneStructureManager.trySafeZoneSpawn(player);
     }
 
     @Override
     public void playerLoggedIn(ServerPlayer player) {
+        if (CommonConfig.isRogueDimension(player.level())) {
+            ServerLevel level = (ServerLevel) player.level();
+            BeyondAPI.syncGlobalData(level);
+            BeyondAPI.syncLargeLevelDataFull(level);
+        }
         safeZoneStructureManager.onPlayerEnterDimension(player);
         safeZoneStructureManager.trySafeZoneSpawn(player);
     }

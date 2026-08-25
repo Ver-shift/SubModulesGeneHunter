@@ -1,0 +1,1 @@
+{"rarity":"rare","description":{"translate":"xene.biotech.fixed_to_axe_ratio.description"},"attributes":[{"type":"gene_hunter:axe_fixed_damage_ratio_per_point","id":"gene_hunter:fixed_to_axe_ratio_rate","amount":1.0,"operation":"add_value","slot":"any"}]}

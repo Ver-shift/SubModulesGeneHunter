@@ -33,6 +33,8 @@ import java.util.UUID;
 
 @EventBusSubscriber(modid = GeneHunter.MODID)
 public final class AttackChainLightningHandler {
+    /** 传导伤害是系统固定值，不作为可堆叠的玩家属性暴露给数据包。 */
+    private static final double CHAIN_LIGHTNING_DAMAGE = 3.0D;
     private static final Map<UUID, List<ChainState>> ACTIVE_CHAINS = new HashMap<>();
 
     private AttackChainLightningHandler() {
@@ -47,7 +49,7 @@ public final class AttackChainLightningHandler {
         }
 
         double chance = AttackPropagationFactory.triggerChance(player, AttackPropagationFactory.Type.CHAIN_LIGHTNING);
-        double damage = attributeValue(player, GeneHunterAttributeInit.ATTACK_CHAIN_LIGHTNING_DAMAGE);
+        double damage = CHAIN_LIGHTNING_DAMAGE;
         if (chance <= 0.0D || damage <= 0.0D || player.getRandom().nextDouble() >= chance) {
             return;
         }

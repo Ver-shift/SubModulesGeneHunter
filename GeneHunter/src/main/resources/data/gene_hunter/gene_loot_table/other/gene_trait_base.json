@@ -1,23 +1,19 @@
 {
   "identify": "gene_hunter:gene_trait_base",
-  "note": "一些基础属性的表，血量，攻速，攻击力什么的",
-  "loot_type": "biotech:gene_trait",
+  "note": "Biotech 数据包基因池",
+  "loot_type": "biotech:gene",
   "pools": [
     {
       "name": "normal_attribute",
       "base_weight": 10,
       "entries": [
         {
-          "id": "biotech:speed_trait",
-          "weight": 1
+          "id": "biotech:ender_dragon_gene",
+          "weight": 2
         },
         {
-          "id": "biotech:attack_speed_trait",
-          "weight": 1
-        },
-        {
-          "id": "biotech:health_trait",
-          "weight": 1
+          "id": "biotech:guardian_gene",
+          "weight": 2
         }
       ]
     }

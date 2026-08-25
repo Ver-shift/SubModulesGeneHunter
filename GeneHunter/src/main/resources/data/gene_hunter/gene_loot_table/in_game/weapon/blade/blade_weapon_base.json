@@ -1,0 +1,12 @@
+{
+  "identify": "gene_hunter:blade_weapon_base",
+  "note": "刀类武器：环刃、短剑、弯刀、武士刀、战刃",
+  "loot_type": "gene_hunter:weapon",
+  "pools": [{"name":"blade","base_weight":100,"entries":[
+    {"id":"simplyswords:iron_chakram","weight":10},{"id":"simplyswords:gold_chakram","weight":8},{"id":"simplyswords:diamond_chakram","weight":6},{"id":"simplyswords:netherite_chakram","weight":4},{"id":"simplyswords:runic_chakram","weight":2},
+    {"id":"simplyswords:iron_sai","weight":10},{"id":"simplyswords:gold_sai","weight":8},{"id":"simplyswords:diamond_sai","weight":6},{"id":"simplyswords:netherite_sai","weight":4},{"id":"simplyswords:runic_sai","weight":2},
+    {"id":"simplyswords:iron_cutlass","weight":10},{"id":"simplyswords:gold_cutlass","weight":8},{"id":"simplyswords:diamond_cutlass","weight":6},{"id":"simplyswords:netherite_cutlass","weight":4},{"id":"simplyswords:runic_cutlass","weight":2},
+    {"id":"simplyswords:iron_katana","weight":10},{"id":"simplyswords:gold_katana","weight":8},{"id":"simplyswords:diamond_katana","weight":6},{"id":"simplyswords:netherite_katana","weight":4},{"id":"simplyswords:runic_katana","weight":2},
+    {"id":"simplyswords:iron_warglaive","weight":8},{"id":"simplyswords:gold_warglaive","weight":6},{"id":"simplyswords:diamond_warglaive","weight":4},{"id":"simplyswords:netherite_warglaive","weight":3},{"id":"simplyswords:runic_warglaive","weight":2}
+  ]}]
+}

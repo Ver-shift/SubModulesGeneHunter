@@ -1,0 +1,22 @@
+{
+  "rarity": "common",
+  "description": {
+    "translate": "xene.biotech.abandon_axe_sword.description"
+  },
+  "attributes": [
+    {
+      "type": "gene_hunter:sword_weapon_damage_rate",
+      "id": "gene_hunter:abandon_axe_sword_ratio",
+      "amount": 25,
+      "operation": "add_value",
+      "slot": "any"
+    },
+    {
+      "type": "gene_hunter:axe_weapon_damage_rate",
+      "id": "gene_hunter:abandon_axe_sword_axe_ratio",
+      "amount": -16,
+      "operation": "add_value",
+      "slot": "any"
+    }
+  ]
+}

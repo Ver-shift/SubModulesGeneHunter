@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.long_axe.description"},"attributes":[{"type":"minecraft:player.entity_interaction_range","id":"gene_hunter:long_axe_range","amount":0.75,"operation":"add_value","slot":"any"},{"type":"gene_hunter:axe_weapon_damage","id":"gene_hunter:long_axe_ratio","amount":-0.12,"operation":"add_multiplied_total","slot":"any"}]}

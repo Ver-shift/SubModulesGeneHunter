@@ -10,6 +10,7 @@ import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.data.spawn.ZombieExampleSpawnDefinition;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.galaxy.beyond.api.datagen.custom.RogueProgressProvider.enc;
 
@@ -40,6 +41,20 @@ public class GeneHunterProgress extends BaseProgress {
     @Override
     protected ResourceLocation spawnDefinition() {
         return SPAWN;
+    }
+
+    @Override
+    protected Map<ResourceLocation, List<ResourceLocation>> lootTables() {
+        return Map.of(
+                GeneHunter.asResource("weapon"), List.of(
+                        GeneHunter.asResource("blade_weapon_base"),
+                        GeneHunter.asResource("sword_weapon_base"),
+                        GeneHunter.asResource("axe_weapon_base"),
+                        GeneHunter.asResource("hammer_weapon_base"),
+                        GeneHunter.asResource("polearm_weapon_base")),
+                ResourceLocation.fromNamespaceAndPath("biotech", "xene"),
+                List.of(GeneHunter.asResource("xene_trait_base"))
+        );
     }
 
     @Override

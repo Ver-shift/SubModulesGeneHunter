@@ -13,13 +13,9 @@
   "item.biotech.epic_unidentified_gene": "史诗未解析核心",
   "gene.biotech.empty_gene.name": "异种天赋核心",
   "gene.biotech.ender_dragon_gene.name": "末影龙基因",
-  "gene.biotech.ender_dragon_gene.description": "最大生命 +4；攻击速度 -5%。",
+  "gene.biotech.ender_dragon_gene.description": "剑类伤害 +1；攻击速度 -8%。",
   "gene.biotech.guardian_gene.name": "守卫者基因",
-  "gene.biotech.guardian_gene.description": "护甲 +3；移动速度 -4%。",
-  "xene.biotech.swift_xene.name": "迅捷异种天赋组",
-  "xene.biotech.swift_xene.description": "移动速度 +8%；最大生命 -1。",
-  "xene.biotech.vital_xene.name": "活力异种天赋组",
-  "xene.biotech.vital_xene.description": "最大生命 +3；攻击速度 -5%。",
+  "gene.biotech.guardian_gene.description": "斧类武器伤害 +1；移动速度 -5%。",
   "biotech.ui.gene_inventory.gene_mode": "存储",
   "biotech.ui.gene_inventory.favorite_mode": "收藏"
 }

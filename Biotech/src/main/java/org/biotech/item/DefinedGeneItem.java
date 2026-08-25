@@ -43,6 +43,21 @@ public abstract class DefinedGeneItem extends Item implements ICurioItem {
         return TooltipUtil.suppressCuriosSlotTypeTooltip(tooltips, context, stack);
     }
 
+    /**
+     * The vanilla item component already renders the definition's attribute
+     * lines. Curios would append a second copy (and expose the internal Xene
+     * slot-expansion modifier), so suppress only Curios' duplicate block.
+     */
+    @Override
+    public List<Component> getAttributesTooltip(List<Component> tooltips, TooltipContext context, ItemStack stack) {
+        return List.of();
+    }
+
+    @Override
+    public List<Component> getAttributesTooltip(List<Component> tooltips, ItemStack stack) {
+        return List.of();
+    }
+
     /** Returns whether this stack was created from a registered datapack definition. */
     protected final boolean hasDefinition(ItemStack stack) {
         GeneInstance instance = stack.get(BiotechDataComponentInit.GENE_INSTANCE.get());

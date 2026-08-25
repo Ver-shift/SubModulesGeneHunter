@@ -7,12 +7,7 @@ import org.galaxy.gene_hunter.api.init.GeneHunterAttributeInit.PlayerAttribute;
 public record WeaponDamageType(
         String id,
         TagKey<Item> tag,
-        PlayerAttribute attribute,
-        String descriptionKey,
-        Channel channel
+        PlayerAttribute flatAttribute,
+        PlayerAttribute rateAttribute
 ) {
-    public enum Channel {
-        GRIP,
-        SHAPE
-    }
 }

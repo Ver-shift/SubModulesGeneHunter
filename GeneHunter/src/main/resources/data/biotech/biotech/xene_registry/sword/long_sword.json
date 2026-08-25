@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.long_sword.description"},"attributes":[{"type":"minecraft:player.entity_interaction_range","id":"gene_hunter:long_sword_range","amount":0.75,"operation":"add_value","slot":"any"},{"type":"gene_hunter:sword_weapon_damage","id":"gene_hunter:long_sword_ratio","amount":-0.12,"operation":"add_multiplied_total","slot":"any"}]}

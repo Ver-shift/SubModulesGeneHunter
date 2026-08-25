@@ -23,6 +23,7 @@ import org.galaxy.beyond.api.system.rogue.RogueManager;
 import org.galaxy.beyond.api.system.definition.IDefinitionManager;
 import org.galaxy.beyond.api.system.definition.RogueDefinition;
 import org.galaxy.beyond.api.system.definition.SpawnDefinition;
+import org.galaxy.beyond.api.system.definition.ProgressDefinition;
 import org.galaxy.beyond.api.system.spawn.character.Character;
 import org.galaxy.beyond.api.system.structure.SafeZoneStructureData;
 import org.galaxy.beyond.api.system.zone.core.IZoneManager;
@@ -67,6 +68,12 @@ public class BeyondAPI {
 
     public static Optional<SpawnDefinition> getSpawnDefinition(ResourceLocation id) {
         return Optional.ofNullable(getRogueDefinition(getOverWorld()).getSpawnDefinition(id));
+    }
+
+    /** 返回当前肉鸽关卡的数据包定义。 */
+    public static Optional<ProgressDefinition> getCurrentProgressDefinition(Level level) {
+        ResourceLocation id = getProgressType(level).getId();
+        return Optional.ofNullable(getRogueDefinition(getOverWorld()).getProgress(id));
     }
 
     public static SpawnDefinition getSpawnDefinitionOrThrow(ResourceLocation id) {
@@ -151,6 +158,21 @@ public class BeyondAPI {
     public static void syncLargeLevelData(ServerLevel level) {
         getLargeLevelData(level).prepareSyncSnapshot();
         level.syncData(BeyondAttachmentInit.LARGE_LEVEL_DATA.get());
+    }
+
+    /**
+     * Sends the persisted level-zone state as a full snapshot. This is needed when a
+     * client has just connected (or changed dimensions) and therefore has no usable
+     * delta-sync baseline yet.
+     */
+    public static void syncLargeLevelDataFull(ServerLevel level) {
+        BeyondLargeLevelData data = getLargeLevelData(level);
+        data.prepareFullSyncSnapshot();
+        try {
+            level.syncData(BeyondAttachmentInit.LARGE_LEVEL_DATA.get());
+        } finally {
+            data.clearFullSyncRequest();
+        }
     }
 
     public static void syncPlayerData(ServerPlayer player) {

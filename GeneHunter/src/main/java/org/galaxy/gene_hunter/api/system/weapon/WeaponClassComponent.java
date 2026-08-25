@@ -6,10 +6,11 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record WeaponClassComponent(WeaponGrip grip, WeaponShape shape) {
+/** Persistent weapon category used for the four supported shape tooltips. */
+public record WeaponClassComponent(WeaponShape shape) {
 
+    /** Keeps the component object-shaped so existing stacks with a retired `grip` field still decode. */
     public static final Codec<WeaponClassComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            WeaponGrip.CODEC.fieldOf("grip").forGetter(WeaponClassComponent::grip),
             WeaponShape.CODEC.fieldOf("shape").forGetter(WeaponClassComponent::shape)
     ).apply(instance, WeaponClassComponent::new));
 
@@ -17,39 +18,12 @@ public record WeaponClassComponent(WeaponGrip grip, WeaponShape shape) {
             ByteBufCodecs.fromCodecWithRegistries(CODEC);
 
     public String translationKey() {
-        return "tooltip.gene_hunter.weapon_class." + grip.id() + "." + shape.id();
-    }
-
-    public enum WeaponGrip {
-        ONE_HAND("one_hand"),
-        TWO_HAND("two_hand"),
-        POLEARM("polearm");
-
-        public static final Codec<WeaponGrip> CODEC = Codec.STRING.xmap(WeaponGrip::byId, WeaponGrip::id);
-        private final String id;
-
-        WeaponGrip(String id) {
-            this.id = id;
-        }
-
-        public String id() {
-            return id;
-        }
-
-        private static WeaponGrip byId(String id) {
-            for (WeaponGrip grip : values()) {
-                if (grip.id.equals(id)) {
-                    return grip;
-                }
-            }
-            return ONE_HAND;
-        }
+        return "tooltip.gene_hunter.weapon_class." + shape.id();
     }
 
     public enum WeaponShape {
         BLADE("blade"),
         SWORD("sword"),
-        HALBERD("halberd"),
         AXE("axe"),
         HAMMER("hammer");
 

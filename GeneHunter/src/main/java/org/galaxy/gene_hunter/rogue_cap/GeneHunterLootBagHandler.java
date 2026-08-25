@@ -16,9 +16,11 @@ import java.util.List;
 public class GeneHunterLootBagHandler {
 
     private static final List<net.minecraft.resources.ResourceLocation> WEAPON_TABLES = List.of(
-            GeneHunter.asResource("one_hand_weapon_base"),
-            GeneHunter.asResource("polearm_weapon_base"),
-            GeneHunter.asResource("two_hand_weapon_base")
+            GeneHunter.asResource("blade_weapon_base"),
+            GeneHunter.asResource("sword_weapon_base"),
+            GeneHunter.asResource("axe_weapon_base"),
+            GeneHunter.asResource("hammer_weapon_base"),
+            GeneHunter.asResource("polearm_weapon_base")
     );
 
     @SubscribeEvent

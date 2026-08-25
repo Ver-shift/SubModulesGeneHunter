@@ -38,6 +38,8 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
 
     private transient final List<LargeDataDelta> pendingDeltas = new ArrayList<>();
     private transient List<LargeDataDelta> syncSnapshot = List.of();
+    /** Set while a full attachment snapshot is being sent to newly connected clients. */
+    private transient boolean fullSyncRequested;
 
     public boolean addZoneChunks(ZoneType type, Collection<ChunkPos> chunks) {
         List<Long> added = new ArrayList<>();
@@ -182,6 +184,22 @@ public class BeyondLargeLevelData implements IPersistedSerializable {
 
     public void prepareSyncSnapshot() {
         syncSnapshot = drainPendingDeltasForSync();
+        fullSyncRequested = false;
+    }
+
+    public void prepareFullSyncSnapshot() {
+        // The full payload supersedes any queued deltas; do not replay them on the
+        // next incremental sync after the client has received this snapshot.
+        syncSnapshot = drainPendingDeltasForSync();
+        fullSyncRequested = true;
+    }
+
+    public boolean isFullSyncRequested() {
+        return fullSyncRequested;
+    }
+
+    public void clearFullSyncRequest() {
+        fullSyncRequested = false;
     }
 
     public List<LargeDataDelta> getSyncSnapshot() {

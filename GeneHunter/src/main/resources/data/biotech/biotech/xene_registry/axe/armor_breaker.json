@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.armor_breaker.description"},"attributes":[{"type":"gene_hunter:axe_weapon_damage","id":"gene_hunter:armor_breaker_ratio","amount":0.12,"operation":"add_multiplied_total","slot":"any"},{"type":"gene_hunter:critical_chance","id":"gene_hunter:armor_breaker_critical","amount":-0.10,"operation":"add_value","slot":"any"}]}

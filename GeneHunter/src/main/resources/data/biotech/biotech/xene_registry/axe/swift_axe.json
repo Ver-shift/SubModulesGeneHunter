@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.swift_axe.description"},"attributes":[{"type":"minecraft:generic.attack_speed","id":"gene_hunter:swift_axe_speed","amount":0.10,"operation":"add_multiplied_total","slot":"any"},{"type":"gene_hunter:axe_weapon_damage","id":"gene_hunter:swift_axe_damage","amount":-0.15,"operation":"add_value","slot":"any"}]}

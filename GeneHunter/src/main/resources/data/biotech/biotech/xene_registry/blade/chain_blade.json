@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.chain_blade.description"},"attributes":[{"type":"gene_hunter:blade_attack_chain_lightning_trigger_chance","id":"gene_hunter:chain_blade_chance","amount":0.08,"operation":"add_value","slot":"any"}]}

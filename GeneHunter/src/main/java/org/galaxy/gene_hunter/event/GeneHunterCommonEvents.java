@@ -25,18 +25,12 @@ public final class GeneHunterCommonEvents {
         SimplySwordsWeaponClasses.apply(event);
         event.modify(GeneHunterItemInit.TEST_SINGLE_HAND_SWORD.get(), builder -> builder.set(
                 GeneHunterComponentInit.WEAPON_CLASS.get(),
-                new WeaponClassComponent(
-                        WeaponClassComponent.WeaponGrip.ONE_HAND,
-                        WeaponClassComponent.WeaponShape.SWORD
-                )
+                new WeaponClassComponent(WeaponClassComponent.WeaponShape.SWORD)
         ));
         event.modify(GeneHunterItemInit.TEST_ONE_HAND_DAMAGE_SWORD.get(), builder -> {
             builder.set(
                     GeneHunterComponentInit.WEAPON_CLASS.get(),
-                    new WeaponClassComponent(
-                            WeaponClassComponent.WeaponGrip.ONE_HAND,
-                            WeaponClassComponent.WeaponShape.SWORD
-                    )
+                    new WeaponClassComponent(WeaponClassComponent.WeaponShape.SWORD)
             );
             builder.set(BetterCombatDataComponents.WEAPON_PRESET_ID, TEST_ONE_HAND_DAMAGE_SWORD_SPIN_PRESET);
         });

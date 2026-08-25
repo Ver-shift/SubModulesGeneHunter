@@ -3,16 +3,16 @@
   "description": {"translate": "gene.biotech.guardian_gene.description"},
   "attributes": [
     {
-      "type": "minecraft:generic.armor",
+      "type": "gene_hunter:axe_weapon_damage",
       "id": "biotech:guardian_gene_armor",
-      "amount": 3.0,
+      "amount": 1.0,
       "operation": "add_value",
       "slot": "any"
     },
     {
       "type": "minecraft:generic.movement_speed",
       "id": "biotech:guardian_gene_speed_penalty",
-      "amount": -0.04,
+      "amount": -0.05,
       "operation": "add_multiplied_total",
       "slot": "any"
     }

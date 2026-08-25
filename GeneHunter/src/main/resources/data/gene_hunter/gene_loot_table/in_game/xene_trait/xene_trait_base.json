@@ -1,100 +1,145 @@
 {
   "identify": "gene_hunter:xene_trait_base",
-  "note": "Xene词条池：基础属性、武器分类伤害、高级战斗属性",
-  "loot_type": "biotech:xene_trait",
+  "note": "GeneHunter 新版武器专精异种天赋池",
+  "loot_type": "biotech:xene",
   "pools": [
     {
-      "name": "basic_attribute",
-      "base_weight": 14,
+      "name": "weapon_specialization",
+      "base_weight": 12,
       "entries": [
         {
-          "id": "gene_hunter:attack_damage_trait",
-          "weight": 5
-        },
-        {
-          "id": "biotech:speed_trait",
+          "id": "biotech:blade_xene",
           "weight": 3
         },
         {
-          "id": "biotech:health_trait",
+          "id": "biotech:sword_xene",
           "weight": 3
         },
         {
-          "id": "gene_hunter:one_hand_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:two_hand_weapon_damage_trait",
-          "weight": 1
-        },
-        {
-          "id": "gene_hunter:polearm_weapon_damage_trait",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "name": "normal_attribute",
-      "base_weight": 9,
-      "entries": [
-        {
-          "id": "gene_hunter:blade_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:sword_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:halberd_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:axe_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:hammer_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:one_hand_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:two_hand_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:polearm_weapon_damage_trait",
-          "weight": 2
-        }
-      ]
-    },
-    {
-      "name": "advanced_attribute",
-      "base_weight": 4,
-      "entries": [
-        {
-          "id": "biotech:attack_speed_trait",
+          "id": "biotech:axe_xene",
           "weight": 3
         },
         {
-          "id": "gene_hunter:weapon_damage_conversion_rate_trait",
+          "id": "biotech:hammer_xene",
+          "weight": 3
+        },
+        {
+          "id": "biotech:blade/abandon_hammer",
           "weight": 1
         },
         {
-          "id": "gene_hunter:two_hand_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "gene_hunter:polearm_weapon_damage_trait",
-          "weight": 2
-        },
-        {
-          "id": "biotech:health_trait",
+          "id": "biotech:blade/swift_dull_blade",
           "weight": 1
-        }
+        },
+        {
+          "id": "biotech:blade/abandon_sword",
+          "weight": 1
+        },
+        {
+          "id": "biotech:blade/abandon_axe",
+          "weight": 1
+        },
+        {
+          "id": "biotech:blade/fixed_damage_blade",
+          "weight": 1
+        },
+        {
+          "id": "biotech:blade/non_critical_blade",
+          "weight": 1
+        },
+        {
+          "id": "biotech:blade/chain_blade",
+          "weight": 1
+        },
+        {
+          "id": "biotech:blade/slash_blade",
+          "weight": 1
+        },
+        {
+          "id": "biotech:blade/explosive_blade",
+          "weight": 1
+        },
+        {
+          "id": "biotech:first_strike",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/abandon_blade",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/abandon_sword",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/abandon_axe",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/swift_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/fixed_damage_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/critical_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/chain_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/slash_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/explosive_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/extreme_impact",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/hammer_amplification",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/deadly_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/long_handle_hammer",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/hammer_damage_for_experience",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/quick_hammer_amplification",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/critical_to_damage",
+          "weight": 1
+        },
+        {
+          "id": "biotech:hammer/range_hammer",
+          "weight": 1
+        },
+        {"id":"biotech:blade/experience_for_blade_damage","weight":1},
+        {"id":"biotech:blade/blade_damage_for_experience","weight":1},
+        {"id":"biotech:blade/fixed_damage_enhancement","weight":1},
+        {"id":"biotech:blade/blade_ratio_enhancement","weight":1},
+        {"id":"biotech:blade/blade_awakening","weight":1},
+        {"id":"biotech:blade/sacrifice_critical_damage","weight":1},
+        {"id":"biotech:blade/fixed_to_ratio","weight":1}
+        ,{"id":"biotech:sword/abandon_blade","weight":1},{"id":"biotech:sword/abandon_axe","weight":1},{"id":"biotech:sword/abandon_hammer","weight":1},{"id":"biotech:sword/swift_sword","weight":1},{"id":"biotech:sword/deadly_sword","weight":1},{"id":"biotech:sword/long_sword","weight":1},{"id":"biotech:sword/heavy_edge","weight":1},{"id":"biotech:sword/chain_sword","weight":1},{"id":"biotech:sword/slash_sword","weight":1},{"id":"biotech:sword/explosive_sword","weight":1},{"id":"biotech:sword/fixed_damage_enhancement","weight":1},{"id":"biotech:sword/sword_ratio_enhancement","weight":1}
+        ,{"id":"biotech:axe/abandon_blade","weight":1},{"id":"biotech:axe/abandon_sword","weight":1},{"id":"biotech:axe/abandon_hammer","weight":1},{"id":"biotech:axe/swift_axe","weight":1},{"id":"biotech:axe/armor_breaker","weight":1},{"id":"biotech:axe/long_axe","weight":1},{"id":"biotech:axe/axe_damage_for_experience","weight":1},{"id":"biotech:axe/fixed_damage_axe","weight":1},{"id":"biotech:axe/non_critical_axe","weight":1},{"id":"biotech:axe/chain_axe","weight":1},{"id":"biotech:axe/slash_axe","weight":1},{"id":"biotech:axe/explosive_axe","weight":1},{"id":"biotech:axe/extreme_axe","weight":1},{"id":"biotech:axe/axe_amplification","weight":1},{"id":"biotech:axe/axe_awakening","weight":1},{"id":"biotech:axe/sacrifice_critical_axe","weight":1},{"id":"biotech:axe/fixed_to_axe_ratio","weight":1}
       ]
     }
   ]

@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.kill_enchant.description"},"attributes":[{"type":"gene_hunter:kill_enchant_damage","id":"gene_hunter:kill_enchant_damage","amount":0.20,"operation":"add_value","slot":"any"}]}

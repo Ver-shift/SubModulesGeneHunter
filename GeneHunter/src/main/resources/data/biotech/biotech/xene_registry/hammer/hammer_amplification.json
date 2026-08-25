@@ -1,0 +1,1 @@
+{"rarity":"uncommon","description":{"translate":"xene.biotech.hammer_amplification.description"},"attributes":[{"type":"gene_hunter:hammer_weapon_damage","id":"gene_hunter:hammer_amplification_damage","amount":0.25,"operation":"add_multiplied_total","slot":"any"}]}

@@ -1,0 +1,15 @@
+{
+  "rarity": "rare",
+  "description": {
+    "translate": "xene.biotech.blade_awakening.description"
+  },
+  "attributes": [
+    {
+      "type": "gene_hunter:blade_attack_speed_damage_ratio_per_percent",
+      "id": "gene_hunter:blade_awakening_rate",
+      "amount": 1.0,
+      "operation": "add_value",
+      "slot": "any"
+    }
+  ]
+}

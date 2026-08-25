@@ -16,7 +16,9 @@ import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 关卡定义数据。
@@ -37,6 +39,15 @@ public class ProgressDefinition implements IPersistedSerializable {
      */
     @Persisted
     private ResourceLocation spawnDefinition;
+
+    /**
+     * 关卡可用的战利品表。键为 loot type id，值为表 id 列表。
+     * <p>
+     * 该字段是可选的；未配置时由具体玩法模块提供兼容默认值。
+     */
+    @Persisted
+    @Builder.Default
+    private Map<ResourceLocation, List<ResourceLocation>> lootTables = new HashMap<>();
 
     /**
      * 只在当前关卡初始化时加入的 RogueCap id。
@@ -67,6 +78,17 @@ public class ProgressDefinition implements IPersistedSerializable {
 
     public List<ResourceLocation> getProgressCaps() {
         return progressCaps != null ? progressCaps : List.of();
+    }
+
+    public Map<ResourceLocation, List<ResourceLocation>> getLootTables() {
+        if (lootTables == null) lootTables = new HashMap<>();
+        return lootTables;
+    }
+
+    public List<ResourceLocation> getLootTables(ResourceLocation lootType) {
+        if (lootType == null) return List.of();
+        List<ResourceLocation> ids = getLootTables().get(lootType);
+        return ids != null ? ids : List.of();
     }
 
     /**

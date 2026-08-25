@@ -1,0 +1,1 @@
+{"rarity":"rare","description":{"translate":"xene.biotech.critical_to_damage.description"},"attributes":[{"type":"gene_hunter:hammer_critical_chance_fixed_damage_per_percent","id":"gene_hunter:critical_to_damage_rate","amount":1.0,"operation":"add_value","slot":"any"}]}

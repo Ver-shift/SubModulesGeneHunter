@@ -13,8 +13,10 @@ public class ChoiceExperienceCost {
 
     private static final Map<ResourceLocation, Integer> TABLE_COSTS = Map.of(
             GeneHunter.asResource("xene_trait_base"), 10,
-            GeneHunter.asResource("one_hand_weapon_base"), 25,
-            GeneHunter.asResource("two_hand_weapon_base"), 30,
+            GeneHunter.asResource("blade_weapon_base"), 25,
+            GeneHunter.asResource("sword_weapon_base"), 25,
+            GeneHunter.asResource("axe_weapon_base"), 30,
+            GeneHunter.asResource("hammer_weapon_base"), 30,
             GeneHunter.asResource("polearm_weapon_base"), 30
     );
 

@@ -35,38 +35,65 @@ public final class GeneHunterAttributeInit {
     }
 
     // 武器伤害属性
-    /**
-     * 使用单手武器时提供的额外伤害。
-     */
-    public static final PlayerAttribute ONE_HAND_WEAPON_DAMAGE = playerAttribute("one_hand_weapon_damage", 0.0, 0.0, 10000.0);
-
-    /**
-     * 使用双手武器时提供的额外伤害。
-     */
-    public static final PlayerAttribute TWO_HAND_WEAPON_DAMAGE = playerAttribute("two_hand_weapon_damage", 0.0, 0.0, 10000.0);
-
-    /**
-     * 使用长杆武器时提供的额外伤害。
-     */
-    public static final PlayerAttribute POLEARM_WEAPON_DAMAGE = playerAttribute("polearm_weapon_damage", 0.0, 0.0, 10000.0);
-
-    /** 使用刀类武器时提供的额外伤害。 */
+    /** 使用刀类武器时提供的攻击力加成，可同时包含固定值与百分比。 */
     public static final PlayerAttribute BLADE_WEAPON_DAMAGE = playerAttribute("blade_weapon_damage", 0.0, 0.0, 10000.0);
+    /** 刀类武器伤害倍率，数值按百分比存储。 */
+    public static final PlayerAttribute BLADE_WEAPON_DAMAGE_RATE = playerAttribute("blade_weapon_damage_rate", 0.0, -10000.0, 10000.0);
 
-    /** 使用剑类武器时提供的额外伤害。 */
+    /** 使用剑类武器时提供的攻击力加成，可同时包含固定值与百分比。 */
     public static final PlayerAttribute SWORD_WEAPON_DAMAGE = playerAttribute("sword_weapon_damage", 0.0, 0.0, 10000.0);
+    /** 剑类武器伤害倍率，数值按百分比存储。 */
+    public static final PlayerAttribute SWORD_WEAPON_DAMAGE_RATE = playerAttribute("sword_weapon_damage_rate", 0.0, -10000.0, 10000.0);
 
-    /** 使用戟类武器时提供的额外伤害。 */
-    public static final PlayerAttribute HALBERD_WEAPON_DAMAGE = playerAttribute("halberd_weapon_damage", 0.0, 0.0, 10000.0);
-
-    /** 使用斧类武器时提供的额外伤害。 */
+    /** 使用斧类武器时提供的攻击力加成，可同时包含固定值与百分比。 */
     public static final PlayerAttribute AXE_WEAPON_DAMAGE = playerAttribute("axe_weapon_damage", 0.0, 0.0, 10000.0);
+    /** 斧类武器伤害倍率，数值按百分比存储。 */
+    public static final PlayerAttribute AXE_WEAPON_DAMAGE_RATE = playerAttribute("axe_weapon_damage_rate", 0.0, -10000.0, 10000.0);
 
-    /** 使用锤类武器时提供的额外伤害。 */
+    /** 使用锤类武器时提供的攻击力加成，可同时包含固定值与百分比。 */
     public static final PlayerAttribute HAMMER_WEAPON_DAMAGE = playerAttribute("hammer_weapon_damage", 0.0, 0.0, 10000.0);
+    /** 锤类武器伤害倍率，数值按百分比存储。 */
+    public static final PlayerAttribute HAMMER_WEAPON_DAMAGE_RATE = playerAttribute("hammer_weapon_damage_rate", 0.0, -10000.0, 10000.0);
 
     /** 未匹配武器形制伤害加成转换为最终伤害的比例。 */
     public static final PlayerAttribute WEAPON_DAMAGE_CONVERSION_RATE = playerAttribute("weapon_damage_conversion_rate", 0.0, 0.0, 1.0);
+
+    /** 对同一目标的首次攻击造成额外伤害的比例。 */
+    public static final PlayerAttribute FIRST_ATTACK_DAMAGE_RATIO = playerAttribute("first_attack_damage_ratio", 0.0, 0.0, 1.0);
+
+    /** 击杀敌人后获得的武器附魔攻击力。 */
+    public static final PlayerAttribute KILL_ENCHANT_DAMAGE = playerAttribute("kill_enchant_damage", 0.0, 0.0, 10000.0);
+
+    /** 生命值达到该比例时激活高生命伤害加成。 */
+    public static final PlayerAttribute HIGH_HEALTH_DAMAGE_THRESHOLD = playerAttribute("high_health_damage_threshold", 0.0, 0.0, 1.0);
+
+    /** 高生命伤害加成激活时获得的攻击力倍率。 */
+    public static final PlayerAttribute HIGH_HEALTH_DAMAGE_RATIO = playerAttribute("high_health_damage_ratio", 0.0, 0.0, 1.0);
+
+    /** 玩家攻击产生暴击的概率。暴击额外造成 50% 伤害。 */
+    public static final PlayerAttribute CRITICAL_CHANCE = playerAttribute("critical_chance", 0.0, -1.0, 1.0);
+
+    /** 暴击时在基础 50% 之外追加的伤害比例。 */
+    public static final PlayerAttribute CRITICAL_DAMAGE_RATIO = playerAttribute("critical_damage_ratio", 0.0, -0.5, 100.0);
+
+    /** 获得经验时的倍率。 */
+    public static final PlayerAttribute EXPERIENCE_GAIN_MULTIPLIER = playerAttribute("experience_gain_multiplier", 1.0, 0.0, 100.0);
+
+    /** 每 1% 攻速额外转化的锤类伤害比例。 */
+    public static final PlayerAttribute HAMMER_ATTACK_SPEED_DAMAGE_RATIO_PER_PERCENT = playerAttribute("hammer_attack_speed_damage_ratio_per_percent", 0.0, 0.0, 1.0);
+
+    /** 每 1% 暴击率额外转化的锤类固定伤害。 */
+    public static final PlayerAttribute HAMMER_CRITICAL_CHANCE_FIXED_DAMAGE_PER_PERCENT = playerAttribute("hammer_critical_chance_fixed_damage_per_percent", 0.0, 0.0, 100.0);
+
+    /** 每点额外攻击范围额外转化的锤类伤害比例。 */
+    public static final PlayerAttribute HAMMER_RANGE_DAMAGE_RATIO_PER_POINT = playerAttribute("hammer_range_damage_ratio_per_point", 0.0, 0.0, 1.0);
+
+    public static final PlayerAttribute BLADE_ATTACK_SPEED_DAMAGE_RATIO_PER_PERCENT = playerAttribute("blade_attack_speed_damage_ratio_per_percent", 0.0, 0.0, 1.0);
+    public static final PlayerAttribute AXE_ATTACK_SPEED_DAMAGE_RATIO_PER_PERCENT = playerAttribute("axe_attack_speed_damage_ratio_per_percent", 0.0, 0.0, 1.0);
+    public static final PlayerAttribute BLADE_LOST_CRITICAL_FIXED_DAMAGE_PER_PERCENT = playerAttribute("blade_lost_critical_fixed_damage_per_percent", 0.0, 0.0, 100.0);
+    public static final PlayerAttribute AXE_LOST_CRITICAL_FIXED_DAMAGE_PER_PERCENT = playerAttribute("axe_lost_critical_fixed_damage_per_percent", 0.0, 0.0, 100.0);
+    public static final PlayerAttribute BLADE_FIXED_DAMAGE_RATIO_PER_POINT = playerAttribute("blade_fixed_damage_ratio_per_point", 0.0, 0.0, 1.0);
+    public static final PlayerAttribute AXE_FIXED_DAMAGE_RATIO_PER_POINT = playerAttribute("axe_fixed_damage_ratio_per_point", 0.0, 0.0, 1.0);
 
     // 攻击爆炸属性
     /** 攻击时在被击中目标位置触发爆炸的概率。 */
@@ -96,9 +123,6 @@ public final class GeneHunterAttributeInit {
 
     /** 连锁闪电可额外传导到的目标次数。 */
     public static final PlayerAttribute ATTACK_CHAIN_LIGHTNING_CHAIN_COUNT = playerAttribute("attack_chain_lightning_chain_count", 10.0, 0.0, 100.0);
-
-    /** 每次连锁闪电命中造成的固定伤害。 */
-    public static final PlayerAttribute ATTACK_CHAIN_LIGHTNING_DAMAGE = playerAttribute("attack_chain_lightning_damage", 3.0, 0.0, 100000.0);
 
     /** 连锁闪电每次传导之间的等待时间，单位为 tick。 */
     public static final PlayerAttribute ATTACK_CHAIN_LIGHTNING_PROPAGATION_INTERVAL = playerAttribute("attack_chain_lightning_propagation_interval", 1.0, 1.0, 100.0);
@@ -156,15 +180,31 @@ public final class GeneHunterAttributeInit {
     @SubscribeEvent
     public static void modifyEntityAttributes(EntityAttributeModificationEvent event) {
         // 为玩家添加自定义属性
-        event.add(EntityType.PLAYER, ONE_HAND_WEAPON_DAMAGE.holder());
-        event.add(EntityType.PLAYER, TWO_HAND_WEAPON_DAMAGE.holder());
-        event.add(EntityType.PLAYER, POLEARM_WEAPON_DAMAGE.holder());
         event.add(EntityType.PLAYER, BLADE_WEAPON_DAMAGE.holder());
+        event.add(EntityType.PLAYER, BLADE_WEAPON_DAMAGE_RATE.holder());
         event.add(EntityType.PLAYER, SWORD_WEAPON_DAMAGE.holder());
-        event.add(EntityType.PLAYER, HALBERD_WEAPON_DAMAGE.holder());
+        event.add(EntityType.PLAYER, SWORD_WEAPON_DAMAGE_RATE.holder());
         event.add(EntityType.PLAYER, AXE_WEAPON_DAMAGE.holder());
+        event.add(EntityType.PLAYER, AXE_WEAPON_DAMAGE_RATE.holder());
         event.add(EntityType.PLAYER, HAMMER_WEAPON_DAMAGE.holder());
+        event.add(EntityType.PLAYER, HAMMER_WEAPON_DAMAGE_RATE.holder());
         event.add(EntityType.PLAYER, WEAPON_DAMAGE_CONVERSION_RATE.holder());
+        event.add(EntityType.PLAYER, FIRST_ATTACK_DAMAGE_RATIO.holder());
+        event.add(EntityType.PLAYER, KILL_ENCHANT_DAMAGE.holder());
+        event.add(EntityType.PLAYER, HIGH_HEALTH_DAMAGE_THRESHOLD.holder());
+        event.add(EntityType.PLAYER, HIGH_HEALTH_DAMAGE_RATIO.holder());
+        event.add(EntityType.PLAYER, CRITICAL_CHANCE.holder());
+        event.add(EntityType.PLAYER, CRITICAL_DAMAGE_RATIO.holder());
+        event.add(EntityType.PLAYER, EXPERIENCE_GAIN_MULTIPLIER.holder());
+        event.add(EntityType.PLAYER, HAMMER_ATTACK_SPEED_DAMAGE_RATIO_PER_PERCENT.holder());
+        event.add(EntityType.PLAYER, HAMMER_CRITICAL_CHANCE_FIXED_DAMAGE_PER_PERCENT.holder());
+        event.add(EntityType.PLAYER, HAMMER_RANGE_DAMAGE_RATIO_PER_POINT.holder());
+        event.add(EntityType.PLAYER, BLADE_ATTACK_SPEED_DAMAGE_RATIO_PER_PERCENT.holder());
+        event.add(EntityType.PLAYER, AXE_ATTACK_SPEED_DAMAGE_RATIO_PER_PERCENT.holder());
+        event.add(EntityType.PLAYER, BLADE_LOST_CRITICAL_FIXED_DAMAGE_PER_PERCENT.holder());
+        event.add(EntityType.PLAYER, AXE_LOST_CRITICAL_FIXED_DAMAGE_PER_PERCENT.holder());
+        event.add(EntityType.PLAYER, BLADE_FIXED_DAMAGE_RATIO_PER_POINT.holder());
+        event.add(EntityType.PLAYER, AXE_FIXED_DAMAGE_RATIO_PER_POINT.holder());
         event.add(EntityType.PLAYER, ATTACK_EXPLOSION_TRIGGER_CHANCE.holder());
         event.add(EntityType.PLAYER, ATTACK_EXPLOSION_COOLDOWN.holder());
         event.add(EntityType.PLAYER, ATTACK_EXPLOSION_RADIUS.holder());
@@ -175,7 +215,6 @@ public final class GeneHunterAttributeInit {
         event.add(EntityType.PLAYER, HAMMER_ATTACK_EXPLOSION_TRIGGER_CHANCE.holder());
         event.add(EntityType.PLAYER, ATTACK_CHAIN_LIGHTNING_TRIGGER_CHANCE.holder());
         event.add(EntityType.PLAYER, ATTACK_CHAIN_LIGHTNING_CHAIN_COUNT.holder());
-        event.add(EntityType.PLAYER, ATTACK_CHAIN_LIGHTNING_DAMAGE.holder());
         event.add(EntityType.PLAYER, ATTACK_CHAIN_LIGHTNING_PROPAGATION_INTERVAL.holder());
         event.add(EntityType.PLAYER, ATTACK_CHAIN_LIGHTNING_RANGE.holder());
         event.add(EntityType.PLAYER, BLADE_ATTACK_CHAIN_LIGHTNING_TRIGGER_CHANCE.holder());

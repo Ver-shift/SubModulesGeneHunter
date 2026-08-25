@@ -1,0 +1,1 @@
+{"rarity":"rare","description":{"translate":"xene.biotech.quick_hammer_amplification.description"},"attributes":[{"type":"gene_hunter:hammer_attack_speed_damage_ratio_per_percent","id":"gene_hunter:quick_hammer_amplification_rate","amount":1.0,"operation":"add_value","slot":"any"}]}

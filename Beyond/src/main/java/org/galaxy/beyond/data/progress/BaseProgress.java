@@ -8,12 +8,14 @@ import org.galaxy.beyond.api.system.spawn.character.CassandraCharacter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class BaseProgress {
 
     public ProgressDefinition build() {
         return ProgressDefinition.builder()
                 .spawnDefinition(spawnDefinition())
+                .lootTables(lootTables())
                 .progressCaps(progressCaps())
                 .sceneRolls(scenes())
                 .encounters(encounters())
@@ -28,6 +30,11 @@ public abstract class BaseProgress {
 
     protected List<ResourceLocation> progressCaps() {
         return List.of();
+    }
+
+    /** 关卡战利品表配置；默认为空，由玩法模块按需提供兼容默认值。 */
+    protected Map<ResourceLocation, List<ResourceLocation>> lootTables() {
+        return Map.of();
     }
 
     protected List<Encounter> greenEncounters() {

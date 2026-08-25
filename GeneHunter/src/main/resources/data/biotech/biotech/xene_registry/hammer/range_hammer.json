@@ -1,0 +1,1 @@
+{"rarity":"rare","description":{"translate":"xene.biotech.range_hammer.description"},"attributes":[{"type":"gene_hunter:hammer_range_damage_ratio_per_point","id":"gene_hunter:range_hammer_rate","amount":1.0,"operation":"add_value","slot":"any"}]}

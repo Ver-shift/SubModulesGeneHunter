@@ -1,0 +1,8 @@
+{
+  "identify": "gene_hunter:hammer_weapon_base",
+  "note": "锤类武器：巨锤",
+  "loot_type": "gene_hunter:weapon",
+  "pools": [{"name":"hammer","base_weight":100,"entries":[
+    {"id":"simplyswords:iron_greathammer","weight":10},{"id":"simplyswords:gold_greathammer","weight":8},{"id":"simplyswords:diamond_greathammer","weight":6},{"id":"simplyswords:netherite_greathammer","weight":4},{"id":"simplyswords:runic_greathammer","weight":2}
+  ]}]
+}

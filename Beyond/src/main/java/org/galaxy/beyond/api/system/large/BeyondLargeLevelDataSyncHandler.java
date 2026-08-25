@@ -11,7 +11,7 @@ public class BeyondLargeLevelDataSyncHandler implements AttachmentSyncHandler<Be
 
     @Override
     public void write(RegistryFriendlyByteBuf buf, BeyondLargeLevelData attachment, boolean initialSync) {
-        if (initialSync) {
+        if (initialSync || attachment.isFullSyncRequested()) {
             buf.writeBoolean(true);
             attachment.writeFull(buf);
             return;

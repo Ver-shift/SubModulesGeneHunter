@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.slash_axe.description"},"attributes":[{"type":"gene_hunter:axe_attack_slash_trigger_chance","id":"gene_hunter:slash_axe_chance","amount":0.08,"operation":"add_value","slot":"any"}]}

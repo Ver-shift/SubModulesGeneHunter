@@ -1,0 +1,11 @@
+{
+  "identify": "gene_hunter:sword_weapon_base",
+  "note": "剑类武器：刺剑、长剑、巨剑、双刃剑",
+  "loot_type": "gene_hunter:weapon",
+  "pools": [{"name":"sword","base_weight":100,"entries":[
+    {"id":"simplyswords:iron_rapier","weight":10},{"id":"simplyswords:gold_rapier","weight":8},{"id":"simplyswords:diamond_rapier","weight":6},{"id":"simplyswords:netherite_rapier","weight":4},{"id":"simplyswords:runic_rapier","weight":2},
+    {"id":"simplyswords:iron_longsword","weight":10},{"id":"simplyswords:gold_longsword","weight":8},{"id":"simplyswords:diamond_longsword","weight":6},{"id":"simplyswords:netherite_longsword","weight":4},{"id":"simplyswords:runic_longsword","weight":2},
+    {"id":"simplyswords:iron_claymore","weight":8},{"id":"simplyswords:gold_claymore","weight":6},{"id":"simplyswords:diamond_claymore","weight":4},{"id":"simplyswords:netherite_claymore","weight":3},{"id":"simplyswords:runic_claymore","weight":2},
+    {"id":"simplyswords:iron_twinblade","weight":8},{"id":"simplyswords:gold_twinblade","weight":6},{"id":"simplyswords:diamond_twinblade","weight":4},{"id":"simplyswords:netherite_twinblade","weight":3},{"id":"simplyswords:runic_twinblade","weight":2}
+  ]}]
+}

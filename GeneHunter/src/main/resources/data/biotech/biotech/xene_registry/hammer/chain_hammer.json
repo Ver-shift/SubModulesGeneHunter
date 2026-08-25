@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.chain_hammer.description"},"attributes":[{"type":"gene_hunter:hammer_attack_chain_lightning_trigger_chance","id":"gene_hunter:chain_hammer_chance","amount":0.08,"operation":"add_value","slot":"any"}]}

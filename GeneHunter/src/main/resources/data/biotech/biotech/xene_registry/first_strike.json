@@ -1,0 +1,1 @@
+{"rarity":"common","description":{"translate":"xene.biotech.first_strike.description"},"attributes":[{"type":"gene_hunter:first_attack_damage_ratio","id":"gene_hunter:first_strike_damage","amount":0.20,"operation":"add_value","slot":"any"}]}

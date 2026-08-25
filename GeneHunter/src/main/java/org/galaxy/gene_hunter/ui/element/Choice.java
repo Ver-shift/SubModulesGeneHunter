@@ -11,15 +11,10 @@ import dev.vfyjxf.taffy.style.AlignItems;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import org.biotech.api.system.trait.core.IStackTraitAccess;
-import org.biotech.api.system.trait.core.ITrait;
 import org.biotech.ui.BiotechTexture;
 import org.biotech.ui.gene_inventroy.element.BaseRoot;
-
-import java.util.List;
 
 public class Choice extends UIElement {
 
@@ -119,19 +114,8 @@ public class Choice extends UIElement {
             return;
         }
 
-        List<ITrait> traits = IStackTraitAccess.getTraits(stack);
-        if (traits.isEmpty()) {
-            label.setText(stack.getHoverName());
-            return;
-        }
-
-        MutableComponent text = Component.empty();
-        for (int i = 0; i < traits.size(); i++) {
-            if (i > 0) {
-                text.append(Component.literal(" / "));
-            }
-            text.append(traits.get(i).getDisplayName());
-        }
-        label.setText(text);
+        // Genes and Xenes are now datapack definitions, so the stack name is
+        // the canonical label and no retired Trait API lookup is required.
+        label.setText(stack.getHoverName());
     }
 }

@@ -3,6 +3,7 @@ package org.galaxy.gene_hunter.datagen.tag;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -12,7 +13,6 @@ import org.galaxy.gene_hunter.GeneHunter;
 import org.galaxy.gene_hunter.api.init.GeneHunterItemInit;
 import org.galaxy.gene_hunter.api.init.GeneHunterTags;
 import org.galaxy.gene_hunter.api.system.weapon.SimplySwordsWeaponClasses.Family;
-import org.galaxy.gene_hunter.api.system.weapon.WeaponClassComponent.WeaponGrip;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,36 +47,19 @@ public class GeneHunterTagProvider extends ItemTagsProvider {
 
     @Override
     protected void addTags(@NotNull HolderLookup.Provider provider) {
-        // ========== 单手武器 ==========
-        tagGrip(GeneHunterTags.ONE_HAND_WEAPON, WeaponGrip.ONE_HAND);
-        tag(GeneHunterTags.ONE_HAND_WEAPON).add(GeneHunterItemInit.TEST_SINGLE_HAND_SWORD.get());
-        tag(GeneHunterTags.ONE_HAND_WEAPON).add(GeneHunterItemInit.TEST_ONE_HAND_DAMAGE_SWORD.get());
-        tagItems(GeneHunterTags.ONE_HAND_WEAPON, VANILLA_AXES);
-        tagItems(GeneHunterTags.ONE_HAND_WEAPON, VANILLA_SWORDS);
-
-        // ========== 双手武器 ==========
-        tagGrip(GeneHunterTags.TWO_HAND_WEAPON, WeaponGrip.TWO_HAND);
-
-        // ========== 长杆武器 ==========
-        tagGrip(GeneHunterTags.POLEARM_WEAPON, WeaponGrip.POLEARM);
-
         // ========== 武器形态 ==========
         tagFamilies(GeneHunterTags.BLADE_WEAPON, Family.SAI, Family.CUTLASS, Family.KATANA,
-                Family.CHAKRAM);
+                Family.CHAKRAM, Family.UNIQUE_BLADE);
         tagFamilies(GeneHunterTags.SWORD_WEAPON, Family.RAPIER, Family.LONGSWORD, Family.CLAYMORE,
-                Family.TWINBLADE);
+                Family.TWINBLADE, Family.SPEAR, Family.HALBERD, Family.GLAIVE, Family.UNIQUE_SWORD);
+        // Present only in some Simply Swords configurations/versions.
+        tag(GeneHunterTags.SWORD_WEAPON).addOptional(ResourceLocation.fromNamespaceAndPath("simplyswords", "dreadtide"));
         tag(GeneHunterTags.SWORD_WEAPON).add(GeneHunterItemInit.TEST_SINGLE_HAND_SWORD.get());
         tag(GeneHunterTags.SWORD_WEAPON).add(GeneHunterItemInit.TEST_ONE_HAND_DAMAGE_SWORD.get());
         tagItems(GeneHunterTags.SWORD_WEAPON, VANILLA_SWORDS);
-        tagFamilies(GeneHunterTags.HALBERD_WEAPON, Family.SPEAR, Family.HALBERD, Family.GLAIVE,
-                Family.SCYTHE);
-        tagFamilies(GeneHunterTags.AXE_WEAPON, Family.GREATAXE, Family.WARGLAIVE);
+        tagFamilies(GeneHunterTags.AXE_WEAPON, Family.GREATAXE, Family.WARGLAIVE, Family.SCYTHE, Family.UNIQUE_AXE);
         tagItems(GeneHunterTags.AXE_WEAPON, VANILLA_AXES);
-        tagFamilies(GeneHunterTags.HAMMER_WEAPON, Family.GREATHAMMER);
-    }
-
-    private void tagGrip(TagKey<Item> tagKey, WeaponGrip grip) {
-        addFamilies(tag(tagKey), family -> family.grip() == grip);
+        tagFamilies(GeneHunterTags.HAMMER_WEAPON, Family.GREATHAMMER, Family.UNIQUE_HAMMER);
     }
 
     private void tagFamilies(TagKey<Item> tagKey, Family... families) {
@@ -88,15 +71,6 @@ public class GeneHunterTagProvider extends ItemTagsProvider {
 
     private void tagItems(TagKey<Item> tagKey, Item... items) {
         tag(tagKey).add(items);
-    }
-
-    private void addFamilies(IntrinsicTagAppender<Item> tag, java.util.function.Predicate<Family> predicate) {
-        for (Family family : Family.values()) {
-            if (!predicate.test(family)) {
-                continue;
-            }
-            family.items().forEach(item -> tag.add(item.get()));
-        }
     }
 
 }
